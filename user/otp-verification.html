@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroWatch - OTP Verification</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --font-family: 'Outfit', sans-serif;
+            --primary-color: #000000;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: #f8f9fa;
+        }
+
+        .signup-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 450px;
+            background: #fff;
+            padding: 50px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .login-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .login-subtitle {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 30px;
+        }
+
+        .form-control {
+            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            text-align: center;
+            letter-spacing: 5px;
+            font-size: 1.2rem;
+        }
+
+        .btn-dark-custom {
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            width: 100%;
+            border: none;
+        }
+
+        .btn-dark-custom:hover {
+            background: #333;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="signup-container">
+        <div class="login-box">
+            <h2 class="login-title">Verification</h2>
+            <p class="login-subtitle">We have sent a verification code to your email.</p>
+            <form action="login.html">
+                <input type="text" class="form-control" placeholder="1 2 3 4" maxlength="4" required>
+
+                <button type="submit" class="btn btn-dark-custom">Verify & Login</button>
+
+                <div class="mt-4">
+                    <small>Didn't receive code? <a href="#"
+                            class="fw-bold text-dark text-decoration-none">Resend</a></small>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroWatch - Login</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --font-family: 'Outfit', sans-serif;
+            --primary-color: #000000;
+        }
+
+        body {
+            font-family: var(--font-family);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .split-screen {
+            display: flex;
+            height: 100%;
+        }
+
+        .left-pane {
+            flex: 1;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .right-pane {
+            flex: 1;
+            background: #fcfcfc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 50px;
+        }
+
+        .logo {
+            font-size: 4rem;
+            font-weight: 700;
+            letter-spacing: -2px;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+
+        .form-control {
+            padding: 15px;
+            background: #fff;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .btn-dark-custom {
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            width: 100%;
+            border: none;
+        }
+
+        .btn-dark-custom:hover {
+            background: #333;
+        }
+
+        @media (max-width: 768px) {
+            .split-screen {
+                flex-direction: column;
+                overflow-y: auto;
+            }
+
+            .left-pane {
+                padding: 50px 0;
+            }
+
+            .logo {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="split-screen">
+        <div class="left-pane">
+            <img src="../common/images/logo.png" alt="AeroWatch" class="logo" style="max-height: 120px;">
+        </div>
+        <div class="right-pane">
+            <div class="login-box">
+                <h2 class="login-title">Login</h2>
+                <form action="home.html">
+                    <input type="email" class="form-control" placeholder="Email" required>
+                    <input type="password" class="form-control" placeholder="Password" required>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="keepLogged">
+                            <label class="form-check-label small" for="keepLogged">
+                                Keep me logged in
+                            </label>
+                        </div>
+                        <a href="forgot-password.html" class="small text-muted text-decoration-none">More info</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-dark-custom">Email Login <span
+                            class="float-end">&rarr;</span></button>
+
+                    <div class="mt-4 text-center">
+                        <small>Don't have an account? <a href="signup.html"
+                                class="fw-bold text-dark text-decoration-none">Sign up</a></small>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

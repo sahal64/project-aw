@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroWatch - Product Details</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --font-family: 'Outfit', sans-serif;
+            --primary-color: #000000;
+            --secondary-color: #f8f9fa;
+            --text-color: #333333;
+            --muted-color: #6c757d;
+        }
+
+        body {
+            font-family: var(--font-family);
+            color: var(--text-color);
+            background-color: #ffffff;
+        }
+
+        .navbar {
+            padding-top: 20px;
+            padding-bottom: 20px;
+            background-color: #fff;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: var(--text-color);
+            margin: 0 10px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-link.active {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .icon-btn {
+            font-size: 1.2rem;
+            color: var(--text-color);
+            margin-left: 15px;
+            text-decoration: none;
+        }
+
+        /* Product Gallery */
+        .product-gallery-thumbs {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .thumb-img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .thumb-img:hover,
+        .thumb-img.active {
+            border-color: var(--primary-color);
+        }
+
+        .main-img-container {
+            background-color: #f8f9fa;
+            border-radius: 20px;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .main-img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        /* Product Info */
+        .product-title-large {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .product-price-large {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .size-btn {
+            border: 1px solid #ddd;
+            background: #fff;
+            color: #333;
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin-right: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .size-btn:hover,
+        .size-btn.active {
+            background: var(--primary-color);
+            color: #fff;
+            border-color: var(--primary-color);
+        }
+
+        .quantity-input {
+            width: 50px;
+            text-align: center;
+            border: none;
+            background: #f8f9fa;
+        }
+
+        .qty-btn {
+            background: #f8f9fa;
+            border: none;
+            width: 30px;
+            height: 38px;
+            color: #333;
+        }
+
+        .add-to-cart-btn {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            text-transform: uppercase;
+            width: 100%;
+        }
+
+        .add-to-cart-btn:hover {
+            background: #333;
+        }
+
+        .tags span {
+            background: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+
+        /* Footer (Minimal for snippet) */
+        footer {
+            margin-top: 50px;
+            border-top: 1px solid #eee;
+            padding: 30px 0;
+        }
+    </style>
+    <style>
+        /* Search Inline */
+        .search-form-inline {
+            position: absolute;
+            right: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 250px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .search-form-inline.active {
+            opacity: 1;
+            visibility: visible;
+            right: 180px;
+        }
+
+        .search-form-inline input {
+            border-radius: 20px;
+            padding-left: 15px;
+            padding-right: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid px-5">
+            <a class="navbar-brand" href="home.html"><img src="../common/images" alt="AeroWatch"
+                    style="height: 55px;"></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="home.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="product.html">Shop</a></li>
+                    <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+                </ul>
+            </div>
+            <div class="d-flex align-items-center position-relative">
+                <form class="search-form-inline" id="search-form-inline" action="product.html">
+                    <input type="text" class="form-control" placeholder="Search...">
+                </form>
+                <a href="#" class="icon-btn" id="search-trigger"><i class="bi bi-search"></i></a>
+                <a href="wishlist.html" class="icon-btn"><i class="bi bi-heart"></i></a>
+                <a href="account.html" class="icon-btn"><i class="bi bi-person"></i></a>
+                <a href="cart.html" class="icon-btn"><i class="bi bi-bag"></i></a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Product Details -->
+    <div class="container px-5 mt-5">
+        <div class="row">
+            <!-- Gallery -->
+            <div class="col-lg-1 d-none d-lg-flex product-gallery-thumbs">
+                <img src="images/Aston_Martin_Watches_Case_Blue_Dial_41mm_Watch_Grey_FARFETCH_IN/10001.webp"
+                    class="thumb-img active">
+                <img src="images/Aston_Martin_Watches_Case_Blue_Dial_41mm_Watch_Grey_FARFETCH_IN/10002.webp"
+                    class="thumb-img">
+                <img src="images/Aston_Martin_Watches_Case_Blue_Dial_41mm_Watch_Grey_FARFETCH_IN/10003.webp"
+                    class="thumb-img">
+                <img src="images/Aston_Martin_Watches_Case_Blue_Dial_41mm_Watch_Grey_FARFETCH_IN/10004.webp"
+                    class="thumb-img">
+            </div>
+            <div class="col-lg-6">
+                <div class="main-img-container">
+                    <button class="btn btn-sm btn-light position-absolute top-0 end-0 m-3 rounded-circle"><i
+                            class="bi bi-arrows-fullscreen"></i></button>
+                    <img src="images/10001.jpg" id="mainImage" class="main-img">
+                </div>
+            </div>
+
+            <!-- Details -->
+            <div class="col-lg-5 ps-lg-5">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="rating mb-2"><i class="bi bi-star-fill"></i> 4.9 <a href="#"
+                                class="text-muted ms-2 text-decoration-underline">142 reviews</a></div>
+                        <h1 class="product-title-large">Aston Martin Skeleton Sports Watch</h1>
+                        <div class="product-price-large mb-3">₹4,10,000 <span
+                                class="text-muted fs-6 text-decoration-line-through ms-2">$199.99</span></div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="fw-bold">Size:</h6>
+                    <div class="d-flex">
+                        <div class="size-btn active">S</div>
+                        <div class="size-btn">M</div>
+                        <div class="size-btn">L</div>
+                        <div class="size-btn">XL</div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center mb-4">
+                    <div class="d-flex align-items-center bg-light rounded me-3">
+                        <button class="qty-btn rounded-start" id="btn-decrease">-</button>
+                        <input type="text" value="1" class="quantity-input" id="quantity-input" readonly>
+                        <button class="qty-btn rounded-end" id="btn-increase">+</button>
+                    </div>
+                    <button class="add-to-cart-btn" onclick="window.location.href='cart.html'"><i
+                            class="bi bi-bag-plus me-2"></i> Add to cart</button>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="mb-4">
+                    <p class="text-muted small">
+                        The St. Louis Meramec Canoe Company was founded by Alfred Wickett in 1922. Wickett had
+                        previously worked for the Old Town Canoe Co from 1900 to 1914. Manufacturing of the classic
+                        wooden canoes in Valley Park, Missouri ceased in 1978.
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="fw-bold small">Fabric + Care</h6>
+                    <p class="text-muted small">Material: Soft wool blend<br>Color: Various</p>
+                </div>
+
+                <div class="mb-3">
+                    <h6 class="fw-bold small">Sale Performance</h6>
+                    <p class="text-muted small">Sales: 12<br>Review Count: -</p>
+                </div>
+
+                <div class="mb-3 tags">
+                    <h6 class="fw-bold small mb-2">Keywords</h6>
+                    <span class="d-inline-block border">Men's fashion</span>
+                    <span class="d-inline-block border">Smart bar</span>
+                    <span class="d-inline-block border">Casual accessory</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommended Products -->
+        <div class="mt-5 pt-5">
+            <h4 class="fw-bold mb-4">Recommended products</h4>
+            <div class="row g-4">
+                <div class="col-md-3 col-6">
+                    <div class="card border-0 bg-light p-3">
+                        <img src="https://placehold.co/200x200" class="img-fluid mb-2">
+                        <h6 class="fw-bold">Black Watch</h6>
+                        <span class="text-primary fw-bold">$169.99</span>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="card border-0 bg-light p-3">
+                        <img src="https://placehold.co/200x200" class="img-fluid mb-2">
+                        <h6 class="fw-bold">Smart Watch</h6>
+                        <span class="text-primary fw-bold">$169.99</span>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="card border-0 bg-light p-3">
+                        <img src="https://placehold.co/200x200" class="img-fluid mb-2">
+                        <h6 class="fw-bold">Silver Watch</h6>
+                        <span class="text-primary fw-bold">$169.99</span>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="card border-0 bg-light p-3">
+                        <img src="https://placehold.co/200x200" class="img-fluid mb-2">
+                        <h6 class="fw-bold">Gold Watch</h6>
+                        <span class="text-primary fw-bold">$169.99</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container text-center">
+            <small class="text-muted">AeroWatch © 2026</small>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Search Toggle (Inline)
+            const searchTrigger = document.getElementById('search-trigger');
+            const searchForm = document.getElementById('search-form-inline');
+            const searchInput = searchForm.querySelector('input');
+
+            if (searchTrigger && searchForm) {
+                searchTrigger.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    searchForm.classList.toggle('active');
+                    if (searchForm.classList.contains('active')) {
+                        setTimeout(() => searchInput.focus(), 100);
+                    }
+                });
+
+                // Close when clicking outside
+                document.addEventListener('click', function (e) {
+                    if (!searchForm.contains(e.target) && !searchTrigger.contains(e.target)) {
+                        searchForm.classList.remove('active');
+                    }
+                });
+            }
+        });
+
+        // Product Data
+        const products = {
+            1: {
+                title: "Aston Martin Skeleton Sports Watch",
+                price: "₹4,10,000",
+                originalPrice: "$199.99",
+                rating: 4.9,
+                reviews: 142,
+                image: "images/10001.jpg",
+                thumbs: [
+                    "images/Aston_Martin_Watches_Case_Blue_Dial_41mm_Watch_Grey_FARFETCH_IN/10001.webp",
+                    "images/Aston_Martin_Watches_Case_Blue_Dial_41mm_Watch_Grey_FARFETCH_IN/10002.webp",
+                    "images/Aston_Martin_Watches_Case_Blue_Dial_41mm_Watch_Grey_FARFETCH_IN/10003.webp",
+                    "images/Aston_Martin_Watches_Case_Blue_Dial_41mm_Watch_Grey_FARFETCH_IN/10004.webp"
+                ]
+            },
+            2: {
+                title: "Casio Chronograph Stainless Steel Watch",
+                price: "₹20,000",
+                originalPrice: "₹25,000",
+                rating: 4.8,
+                reviews: 80,
+                image: "images/10002.jpg",
+                thumbs: ["images/10002.jpg", "images/10002.jpg", "images/10002.jpg", "images/10002.jpg"]
+            },
+            3: {
+                title: "Versace Two-Tone Luxury Watch",
+                price: "₹1,45,000",
+                originalPrice: "₹1,60,000",
+                rating: 4.2,
+                reviews: 10,
+                image: "images/10003.jpg",
+                thumbs: ["images/10003.jpg", "images/10003.jpg", "images/10003.jpg", "images/10003.jpg"]
+            },
+            4: {
+                title: "Diesel Gold Chronograph Watch",
+                price: "₹32,000",
+                originalPrice: "₹40,000",
+                rating: 4.0,
+                reviews: 5,
+                image: "images/10004.jpg",
+                thumbs: ["images/10004.jpg", "images/10004.jpg", "images/10004.jpg", "images/10004.jpg"]
+            },
+            5: {
+                title: "Golden Hour",
+                price: "$299.99",
+                originalPrice: "$350.00",
+                rating: 5.0,
+                reviews: 2,
+                image: "https://placehold.co/500x500/e9ecef/495057?text=Watch+Epsilon",
+                thumbs: ["https://placehold.co/100x100/e9ecef/495057?text=Thumb1", "https://placehold.co/100x100/e9ecef/495057?text=Thumb2", "https://placehold.co/100x100/e9ecef/495057?text=Thumb3", "https://placehold.co/100x100/e9ecef/495057?text=Thumb4"]
+            },
+            6: {
+                title: "Silver Lining",
+                price: "$120.00",
+                originalPrice: "$150.00",
+                rating: 4.6,
+                reviews: 22,
+                image: "https://placehold.co/500x500/e9ecef/495057?text=Watch+Zeta",
+                thumbs: ["https://placehold.co/100x100/e9ecef/495057?text=Thumb1", "https://placehold.co/100x100/e9ecef/495057?text=Thumb2", "https://placehold.co/100x100/e9ecef/495057?text=Thumb3", "https://placehold.co/100x100/e9ecef/495057?text=Thumb4"]
+            }
+        };
+
+        const mainImg = document.getElementById('mainImage');
+        const thumbs = document.querySelectorAll('.thumb-img');
+
+        // Dynamic Data Loading
+        const urlParams = new URLSearchParams(window.location.search);
+        const productId = urlParams.get('id') || 1; // Default to ID 1
+        const product = products[productId] || products[1];
+
+        if (product) {
+            document.querySelector('.product-title-large').textContent = product.title;
+            // Handle Price HTML structure safely
+            const priceEl = document.querySelector('.product-price-large');
+            if (priceEl) {
+                priceEl.innerHTML = `${product.price} <span class="text-muted fs-6 text-decoration-line-through ms-2">${product.originalPrice}</span>`;
+            }
+            mainImg.src = product.image;
+
+            // Update Rating
+            const ratingEl = document.querySelector('.rating');
+            if (ratingEl) {
+                ratingEl.innerHTML = `<i class="bi bi-star-fill"></i> ${product.rating} <a href="#" class="text-muted ms-2 text-decoration-underline">${product.reviews} reviews</a>`;
+            }
+
+            // Update thumbs
+            thumbs.forEach((thumb, index) => {
+                if (product.thumbs[index]) {
+                    thumb.src = product.thumbs[index];
+                }
+            });
+        }
+
+        // Gallery Interaction
+        thumbs.forEach(thumb => {
+            thumb.addEventListener('click', function () {
+                // Update main image
+                mainImg.src = this.src.replace('100x100', '500x500'); // Simple heuristic for placeholder
+
+                // Active state
+                thumbs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Quantity logic
+        const qtyInput = document.getElementById('quantity-input');
+        const btnDecrease = document.getElementById('btn-decrease');
+        const btnIncrease = document.getElementById('btn-increase');
+
+        if (qtyInput && btnDecrease && btnIncrease) {
+            btnDecrease.addEventListener('click', () => {
+                let val = parseInt(qtyInput.value) || 1;
+                if (val > 1) {
+                    qtyInput.value = val - 1;
+                }
+            });
+
+            btnIncrease.addEventListener('click', () => {
+                let val = parseInt(qtyInput.value) || 1;
+                qtyInput.value = val + 1;
+            });
+        }
+
+    </script>
+</body>
+
+</html>

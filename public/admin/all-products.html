@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroWatch - All Products</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --font-family: 'Outfit', sans-serif;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #fff;
+            border-right: 1px solid #eee;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            display: block;
+            color: #000;
+            text-decoration: none;
+        }
+
+        .nav-label {
+            font-size: 0.8rem;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 10px;
+            margin-top: 20px;
+            display: block;
+        }
+
+        .nav-link {
+            color: #6c757d;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: #000;
+            color: #fff;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+        }
+
+        .table-img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            background: #fff;
+            border: 1px solid #eee;
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <a href="dashboard.html" class="sidebar-brand"><img src="../common/images/logo.png" alt="AeroWatch"
+                style="max-height: 50px;"></a>
+
+        <span class="nav-label">Main menu</span>
+        <nav class="nav flex-column">
+            <a href="dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
+            <a href="order-management.html" class="nav-link"><i class="bi bi-cart"></i> Order Management</a>
+            <a href="customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
+            <a href="coupon.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Coupon Code</a>
+            <a href="categories.html" class="nav-link"><i class="bi bi-tags"></i> Categories</a>
+            <a href="transaction.html" class="nav-link"><i class="bi bi-wallet2"></i> Transaction</a>
+            <a href="brand.html" class="nav-link"><i class="bi bi-award"></i> Brand</a>
+        </nav>
+
+        <span class="nav-label">Product</span>
+        <nav class="nav flex-column">
+            <a href="add-product.html" class="nav-link"><i class="bi bi-plus-circle"></i> Add Products</a>
+            <a href="all-products.html" class="nav-link active"><i class="bi bi-list-ul"></i> Product List</a>
+        </nav>
+
+        <span class="nav-label">Admin</span>
+        <nav class="nav flex-column">
+            <a href="admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
+            <a href="../user/home.html" class="nav-link mt-3 text-danger"><i class="bi bi-box-arrow-right"></i>
+                Logout</a>
+        </nav>
+
+        <div class="mt-auto pt-4">
+            <div class="d-flex align-items-center p-3 rounded bg-light">
+                <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center"
+                    style="width: 35px; height: 35px;">M</div>
+                <div class="ms-3">
+                    <h6 class="mb-0 fs-6">Mark Bert</h6>
+                    <small class="text-muted" style="font-size: 0.7rem;">Manager</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold m-0">Product List</h4>
+            <a href="add-product.html" class="btn btn-dark"><i class="bi bi-plus-lg"></i> Add New Product</a>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <table class="table align-middle table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="../user/images/10001.jpg" class="table-img me-3">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">Aston Martin Skeleton Sports Watch</h6>
+                                        <small class="text-muted">ID: #prod-1</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Accessories</td>
+                            <td>₹4,10,000</td>
+                            <td>45</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-light text-success" onclick="addToCart(1)"
+                                    title="Add to Cart"><i class="bi bi-cart-plus-fill"></i></button>
+                                <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="../user/images/10002.jpg" class="table-img me-3">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">Casio Chronograph Stainless Steel</h6>
+                                        <small class="text-muted">ID: #prod-2</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Accessories</td>
+                            <td>₹20,000</td>
+                            <td>120</td>
+                            <td><span class="badge bg-warning text-dark">Low Stock</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-light text-success" onclick="addToCart(2)"
+                                    title="Add to Cart"><i class="bi bi-cart-plus-fill"></i></button>
+                                <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="../user/images/10003.jpg" class="table-img me-3">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">Versace Two-Tone Luxury Watch</h6>
+                                        <small class="text-muted">ID: #prod-3</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Accessories</td>
+                            <td>₹1,45,000</td>
+                            <td>12</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-light text-success" onclick="addToCart(3)"
+                                    title="Add to Cart"><i class="bi bi-cart-plus-fill"></i></button>
+                                <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="../user/images/10004.jpg" class="table-img me-3">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">Diesel Gold Chronograph Watch</h6>
+                                        <small class="text-muted">ID: #prod-4</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Accessories</td>
+                            <td>₹32,000</td>
+                            <td>8</td>
+                            <td><span class="badge bg-danger">Critical Stock</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-light text-success" onclick="addToCart(4)"
+                                    title="Add to Cart"><i class="bi bi-cart-plus-fill"></i></button>
+                                <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="https://placehold.co/500x500/e9ecef/495057?text=Watch+Epsilon"
+                                        class="table-img me-3">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">Golden Hour</h6>
+                                        <small class="text-muted">ID: #prod-5</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Accessories</td>
+                            <td>$299.99</td>
+                            <td>50</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-light text-success" onclick="addToCart(5)"
+                                    title="Add to Cart"><i class="bi bi-cart-plus-fill"></i></button>
+                                <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="https://placehold.co/500x500/e9ecef/495057?text=Watch+Zeta"
+                                        class="table-img me-3">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">Silver Lining</h6>
+                                        <small class="text-muted">ID: #prod-6</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Accessories</td>
+                            <td>$120.00</td>
+                            <td>100</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-light text-success" onclick="addToCart(6)"
+                                    title="Add to Cart"><i class="bi bi-cart-plus-fill"></i></button>
+                                <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+<script>
+    // Product Data (Synchronized with user side, but with adjusted image paths)
+    const products = {
+        1: {
+            id: 1,
+            title: "Aston Martin Skeleton Sports Watch",
+            price: 410000,
+            priceStr: "₹4,10,000",
+            image: "../user/images/10001.jpg"
+        },
+        2: {
+            id: 2,
+            title: "Casio Chronograph Stainless Steel Watch",
+            price: 20000,
+            priceStr: "₹20,000",
+            image: "../user/images/10002.jpg"
+        },
+        3: {
+            id: 3,
+            title: "Versace Two-Tone Luxury Watch",
+            price: 145000,
+            priceStr: "₹1,45,000",
+            image: "../user/images/10003.jpg"
+        },
+        4: {
+            id: 4,
+            title: "Diesel Gold Chronograph Watch",
+            price: 32000,
+            priceStr: "₹32,000",
+            image: "../user/images/10004.jpg"
+        },
+        5: {
+            id: 5,
+            title: "Golden Hour",
+            price: 24000,
+            priceStr: "$299.99",
+            image: "https://placehold.co/500x500/e9ecef/495057?text=Watch+Epsilon"
+        },
+        6: {
+            id: 6,
+            title: "Silver Lining",
+            price: 10000,
+            priceStr: "$120.00",
+            image: "https://placehold.co/500x500/e9ecef/495057?text=Watch+Zeta"
+        }
+    };
+
+    function addToCart(productId) {
+        const product = products[productId];
+        if (!product) {
+            alert("Error: Product not found!");
+            return;
+        }
+
+        // Get existing cart
+        let cart = JSON.parse(localStorage.getItem('cartItems')) || [];
+
+        // Check if item exists
+        const existingItem = cart.find(item => item.id == productId);
+
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({
+                id: productId,
+                title: product.title,
+                price: product.price,
+                priceStr: product.priceStr,
+                image: product.image,
+                quantity: 1
+            });
+        }
+
+        // Save back to local storage
+        localStorage.setItem('cartItems', JSON.stringify(cart));
+
+        // Feedback
+        alert(`${product.title} added to cart from Admin Panel!`);
+    }
+</script>
+
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroWatch - Order Details</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --font-family: 'Outfit', sans-serif;
+            --primary-color: #000000;
+        }
+
+        body {
+            font-family: var(--font-family);
+        }
+
+        .navbar {
+            padding-top: 20px;
+            padding-bottom: 20px;
+            background-color: #fff;
+            border-bottom: 1px solid #eee;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: #333;
+            margin: 0 10px;
+            text-transform: uppercase;
+        }
+
+        .icon-btn {
+            font-size: 1.2rem;
+            color: #333;
+            margin-left: 15px;
+            text-decoration: none;
+        }
+
+        .account-sidebar {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .account-nav .nav-link {
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            text-transform: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .account-nav .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .account-nav .nav-link:hover,
+        .account-nav .nav-link.active {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .order-card {
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .order-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .item-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+
+        footer {
+            margin-top: 80px;
+            padding: 30px 0;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid px-5">
+            <a class="navbar-brand" href="home.html"><img src="../common/images/logo.png" alt="AeroWatch"
+                    style="height: 55px;"></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span
+                    class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="home.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="product.html">Shop</a></li>
+                    <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+                </ul>
+            </div>
+            <div class="d-flex align-items-center">
+                <a href="wishlist.html" class="icon-btn"><i class="bi bi-heart"></i></a>
+                <a href="account.html" class="icon-btn text-dark"><i class="bi bi-person-fill"></i></a>
+                <a href="cart.html" class="icon-btn"><i class="bi bi-bag"></i></a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container px-5 mt-5">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-3 mb-4">
+                <div class="account-sidebar">
+                    <div class="d-flex align-items-center mb-4 px-3">
+                        <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 50px; height: 50px; font-size: 1.5rem;">J</div>
+                        <div class="ms-3">
+                            <h6 class="mb-0 fw-bold">John Doe</h6><small class="text-muted">john@example.com</small>
+                        </div>
+                    </div>
+                    <nav class="nav flex-column account-nav">
+                        <a class="nav-link" href="account.html"><i class="bi bi-grid-fill"></i> Dashboard</a>
+                        <a class="nav-link" href="profile-details.html"><i class="bi bi-person-fill"></i> My Profile</a>
+                        <a class="nav-link active" href="my-orders.html"><i class="bi bi-box-seam"></i> My Orders</a>
+                        <a class="nav-link" href="home.html"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="col-lg-9">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold mb-0">Order Details</h3>
+                    <a href="my-orders.html" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Back to
+                        Orders</a>
+                </div>
+
+                <div class="order-card">
+                    <div class="order-header d-flex justify-content-between align-items-center flex-wrap">
+                        <div>
+                            <h5 class="mb-1">Order #ORD-001</h5>
+                            <span class="text-muted small">Placed on Oct 24, 2025</span>
+                        </div>
+                        <div>
+                            <a href="invoice.html" class="btn btn-sm btn-outline-secondary me-2"><i
+                                    class="bi bi-receipt"></i> Invoice</a>
+                            <span class="badge bg-success fs-6">Delivered</span>
+                        </div>
+                    </div>
+
+                    <!-- Items -->
+                    <div class="item-row">
+                        <img src="images/10001.jpg" class="item-img me-3">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0">Aston Martin Skeleton Sports Watch</h6>
+                            <small class="text-muted">Qty: 1</small>
+                        </div>
+                        <div class="fw-bold">$199.99</div>
+                    </div>
+                    <!-- Item 2 -->
+                    <div class="item-row">
+                        <img src="https://placehold.co/80/e9ecef/495057?text=Band" class="item-img me-3">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0">Premium Leather Strap</h6>
+                            <small class="text-muted">Qty: 1</small>
+                        </div>
+                        <div class="fw-bold">$49.99</div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold">Shipping Address</h6>
+                            <p class="text-muted mb-0">
+                                John Doe<br>
+                                1234 Main St, Apt 4B<br>
+                                Springfield, IL 62704<br>
+                                United States
+                            </p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <h6 class="fw-bold">Payment Method</h6>
+                            <p class="text-muted mb-0">Visa ending in **** 4242</p>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="row">
+                        <div class="col-md-6 offset-md-6">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Subtotal</span>
+                                <span>$249.98</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Shipping</span>
+                                <span>$0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-bold fs-5 mt-2">
+                                <span>Total</span>
+                                <span>$249.98</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container text-center"><small class="text-muted">AeroWatch © 2026</small></div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

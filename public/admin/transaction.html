@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroWatch - Transactions</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <!-- jsPDF and AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        :root {
+            --font-family: 'Outfit', sans-serif;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #fff;
+            border-right: 1px solid #eee;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            display: block;
+            color: #000;
+            text-decoration: none;
+        }
+
+        .nav-label {
+            font-size: 0.8rem;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 10px;
+            margin-top: 20px;
+            display: block;
+        }
+
+        .nav-link {
+            color: #6c757d;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: #000;
+            color: #fff;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <a href="dashboard.html" class="sidebar-brand"><img src="../common/images/logo.png" alt="AeroWatch"
+                style="max-height: 50px;"></a>
+
+        <span class="nav-label">Main menu</span>
+        <nav class="nav flex-column">
+            <a href="dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
+            <a href="order-management.html" class="nav-link"><i class="bi bi-cart"></i> Order Management</a>
+            <a href="customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
+            <a href="coupon.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Coupon Code</a>
+            <a href="categories.html" class="nav-link"><i class="bi bi-tags"></i> Categories</a>
+            <a href="transaction.html" class="nav-link active"><i class="bi bi-wallet2"></i> Transaction</a>
+            <a href="brand.html" class="nav-link"><i class="bi bi-award"></i> Brand</a>
+        </nav>
+
+        <span class="nav-label">Product</span>
+        <nav class="nav flex-column">
+            <a href="add-product.html" class="nav-link"><i class="bi bi-plus-circle"></i> Add Products</a>
+            <a href="all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
+        </nav>
+
+        <span class="nav-label">Admin</span>
+        <nav class="nav flex-column">
+            <a href="admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
+            <a href="../user/home.html" class="nav-link mt-3 text-danger"><i class="bi bi-box-arrow-right"></i>
+                Logout</a>
+        </nav>
+
+        <div class="mt-auto pt-4">
+            <div class="d-flex align-items-center p-3 rounded bg-light">
+                <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center"
+                    style="width: 35px; height: 35px;">M</div>
+                <div class="ms-3">
+                    <h6 class="mb-0 fs-6">Mark Bert</h6>
+                    <small class="text-muted" style="font-size: 0.7rem;">Manager</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold m-0">Transactions</h4>
+            <div class="d-flex gap-2">
+                <input type="date" id="startDate" class="form-control" placeholder="Start Date">
+                <input type="date" id="endDate" class="form-control" placeholder="End Date">
+                <button id="filterBtn" class="btn btn-dark"><i class="bi bi-filter"></i> Filter</button>
+                <button id="resetBtn" class="btn btn-outline-secondary"><i
+                        class="bi bi-arrow-counterclockwise"></i></button>
+
+                <div class="dropdown">
+                    <button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-download"></i> Download
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" id="downloadCsv">CSV</a></li>
+                        <li><a class="dropdown-item" href="#" id="downloadPdf">PDF</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <table class="table align-middle table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Order ID</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Payment Method</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/transaction.js"></script>
+</body>
+
+</html>

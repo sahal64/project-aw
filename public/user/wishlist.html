@@ -252,9 +252,24 @@
                     <input type="text" class="form-control" placeholder="Search...">
                 </form>
                 <a href="#" class="icon-btn" id="search-trigger"><i class="bi bi-search"></i></a>
-                <a href="wishlist.html" class="icon-btn text-danger"><i class="bi bi-heart-fill"></i></a>
-                <a href="account.html" class="icon-btn"><i class="bi bi-person"></i></a>
-                <a href="cart.html" class="icon-btn"><i class="bi bi-bag"></i></a>
+                <a href="wishlist.html" class="icon-btn text-danger" title="Wishlist"><i
+                        class="bi bi-heart-fill"></i></a>
+                <a href="#" class="icon-btn" id="accountBtn" title="Account">
+                    <i class="bi bi-person"></i>
+                </a>
+                <a href="cart.html" class="icon-btn" title="Cart"><i class="bi bi-bag"></i></a>
+
+                <!-- GUEST NAV: Shown when NOT logged in -->
+                <div id="guest-nav" class="align-items-center ms-3 d-none">
+                    <a href="signup.html" class="btn btn-dark text-uppercase rounded-pill px-4"
+                        style="font-size: 0.85rem; padding-top: 8px; padding-bottom: 8px;">Sign Up</a>
+                </div>
+
+                <!-- USER NAV: Only Logout Button -->
+                <div id="user-nav" class="align-items-center d-none">
+                    <a href="#" class="icon-btn ms-3 text-danger" id="logout-btn" title="Logout"
+                        style="font-size: 1rem;"><i class="bi bi-box-arrow-right"></i></a>
+                </div>
             </div>
         </div>
     </nav>
@@ -322,8 +337,93 @@
                     }
                 });
             }
+
+            /* =====================
+               AUTH STATE
+            ====================== */
+            const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+
+            const guestNav = document.getElementById("guest-nav");
+            const userNav = document.getElementById("user-nav");
+            const logoutBtn = document.getElementById("logout-btn");
+
+            const accountBtn = document.getElementById("accountBtn");
+            const cartBtn = document.querySelector('a[href="cart.html"]');
+            // Wishlist is already here, but maybe we want to protect it? 
+            // In this file, we ARE on the wishlist page. 
+            // Logic dictates if not logged in, we shouldn't see content? 
+            // Or maybe just the nav logic. 
+            // The prompt said "protect pages (Wishlist, Account, Cart) via their respective icons".
+            // Since we are ON the page, we should probably redirect if not logged in, similar to account.html.
+
+            if (!isLoggedIn) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Login Required",
+                    text: "Please login to access your wishlist",
+                    confirmButtonText: "Login",
+                    confirmButtonColor: "#000",
+                    allowOutsideClick: false
+                }).then(() => {
+                    window.location.href = "login.html";
+                });
+                return; // Stop execution
+            }
+
+            /* =====================
+               NAVBAR VISIBILITY
+            ====================== */
+            if (guestNav && userNav) {
+                // We know we are logged in here because of the check above
+                guestNav.classList.remove("d-flex");
+                guestNav.classList.add("d-none");
+
+                userNav.classList.remove("d-none");
+                userNav.classList.add("d-flex");
+            }
+
+            /* =====================
+               PROTECT PAGES (Nav Links)
+            ====================== */
+            function protectPage(e, redirectTo) {
+                e.preventDefault();
+                // We are already logged in if we are seeing this page, but good to have.
+                const loggedInNow = localStorage.getItem("isLoggedIn") === "true";
+                if (!loggedInNow) {
+                    window.location.href = "login.html";
+                } else {
+                    window.location.href = redirectTo;
+                }
+            }
+
+            if (accountBtn) {
+                accountBtn.addEventListener("click", e => protectPage(e, "account.html"));
+            }
+            if (cartBtn) {
+                cartBtn.addEventListener("click", e => protectPage(e, "cart.html"));
+            }
+
+            /* =====================
+               LOGOUT
+            ====================== */
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", async function (e) {
+                    e.preventDefault();
+                    try {
+                        const res = await fetch("/api/auth/logout", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" }
+                        });
+                    } catch (error) {
+                        console.error("Logout failed:", error);
+                    }
+                    localStorage.removeItem("isLoggedIn");
+                    window.location.href = "home.html";
+                });
+            }
         });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 
 </html>

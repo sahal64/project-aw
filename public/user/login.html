@@ -110,7 +110,7 @@
         <div class="right-pane">
             <div class="login-box">
                 <h2 class="login-title">Login</h2>
-                <form action="home.html">
+                <form id="loginForm">
                     <input type="email" class="form-control" placeholder="Email" required>
                     <input type="password" class="form-control" placeholder="Password" required>
 
@@ -121,7 +121,7 @@
                                 Keep me logged in
                             </label>
                         </div>
-                        <a href="forgot-password.html" class="small text-muted text-decoration-none">More info</a>
+                        <a href="forgot-password.html" class="small text-decoration-none fw-bold">Forgot password?</a>
                     </div>
 
                     <button type="submit" class="btn btn-dark-custom">Email Login <span
@@ -135,6 +135,42 @@
             </div>
         </div>
     </div>
+
+
+    <script>
+        const form = document.getElementById("loginForm");
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const email = form.querySelector("input[type='email']").value;
+            const password = form.querySelector("input[type='password']").value;
+
+            const res = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.message || "Login failed");
+                return;
+            }
+
+            // ✅ LOCAL AUTH FLAG
+            localStorage.setItem("isLoggedIn", "true");
+
+            if (data.role === "admin") {
+                window.location.href = "../admin/dashboard.html";
+            } else {
+                window.location.href = "home.html";
+            }
+        });
+    </script>
+
+
 
 </body>
 

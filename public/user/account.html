@@ -138,7 +138,7 @@
 
 <body>
 
-    <!-- Header -->
+    <!-- Navigation -->
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container-fluid px-5">
             <a class="navbar-brand" href="home.html"><img src="../common/images/logo.png" alt="AeroWatch"
@@ -159,9 +159,23 @@
                     <input type="text" class="form-control" placeholder="Search...">
                 </form>
                 <a href="#" class="icon-btn" id="search-trigger"><i class="bi bi-search"></i></a>
-                <a href="wishlist.html" class="icon-btn"><i class="bi bi-heart"></i></a>
-                <a href="account.html" class="icon-btn text-dark"><i class="bi bi-person-fill"></i></a>
-                <a href="cart.html" class="icon-btn"><i class="bi bi-bag"></i></a>
+                <a href="wishlist.html" class="icon-btn" title="Wishlist"><i class="bi bi-heart"></i></a>
+                <a href="#" class="icon-btn" id="accountBtn" title="Account">
+                    <i class="bi bi-person"></i>
+                </a>
+                <a href="cart.html" class="icon-btn" title="Cart"><i class="bi bi-bag"></i></a>
+
+                <!-- GUEST NAV: Shown when NOT logged in -->
+                <div id="guest-nav" class="align-items-center ms-3 d-none">
+                    <a href="signup.html" class="btn btn-dark text-uppercase rounded-pill px-4"
+                        style="font-size: 0.85rem; padding-top: 8px; padding-bottom: 8px;">Sign Up</a>
+                </div>
+
+                <!-- USER NAV: Only Logout Button -->
+                <div id="user-nav" class="align-items-center d-none">
+                    <a href="#" class="icon-btn ms-3 text-danger" id="logout-btn" title="Logout"
+                        style="font-size: 1rem;"><i class="bi bi-box-arrow-right"></i></a>
+                </div>
             </div>
         </div>
     </nav>
@@ -276,8 +290,9 @@
     </footer>
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener("DOMContentLoaded", () => {
             // Search Toggle (Inline)
             const searchTrigger = document.getElementById('search-trigger');
             const searchForm = document.getElementById('search-form-inline');
@@ -299,8 +314,52 @@
                     }
                 });
             }
+
+            const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+
+            // If not logged in, redirect to login (Account page is protected)
+            if (!isLoggedIn) {
+                window.location.replace("login.html");
+                return;
+            }
+
+            /* =====================
+               NAVBAR VISIBILITY
+            ====================== */
+            const guestNav = document.getElementById("guest-nav");
+            const userNav = document.getElementById("user-nav");
+            const logoutBtn = document.getElementById("logout-btn");
+
+            // Should always be logged in here, but for consistency:
+            if (guestNav && userNav) {
+                guestNav.classList.remove("d-flex");
+                guestNav.classList.add("d-none");
+
+                userNav.classList.remove("d-none");
+                userNav.classList.add("d-flex");
+            }
+
+            /* =====================
+              LOGOUT
+           ====================== */
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", async function (e) {
+                    e.preventDefault();
+                    try {
+                        const res = await fetch("/api/auth/logout", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" }
+                        });
+                    } catch (error) {
+                        console.error("Logout failed:", error);
+                    }
+                    localStorage.removeItem("isLoggedIn");
+                    window.location.href = "home.html";
+                });
+            }
         });
     </script>
+
 </body>
 
 </html>

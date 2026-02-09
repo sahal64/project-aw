@@ -365,9 +365,23 @@
                     <input type="text" class="form-control" placeholder="Search...">
                 </form>
                 <a href="#" class="icon-btn" id="search-trigger"><i class="bi bi-search"></i></a>
-                <a href="wishlist.html" class="icon-btn"><i class="bi bi-heart"></i></a>
-                <a href="account.html" class="icon-btn"><i class="bi bi-person"></i></a>
-                <a href="cart.html" class="icon-btn"><i class="bi bi-bag"></i></a>
+                <a href="wishlist.html" class="icon-btn" title="Wishlist"><i class="bi bi-heart"></i></a>
+                <a href="#" class="icon-btn" id="accountBtn" title="Account">
+                    <i class="bi bi-person"></i>
+                </a>
+                <a href="cart.html" class="icon-btn" title="Cart"><i class="bi bi-bag"></i></a>
+
+                <!-- GUEST NAV: Shown when NOT logged in -->
+                <div id="guest-nav" class="align-items-center ms-3 d-none">
+                    <a href="signup.html" class="btn btn-dark text-uppercase rounded-pill px-4"
+                        style="font-size: 0.85rem; padding-top: 8px; padding-bottom: 8px;">Sign Up</a>
+                </div>
+
+                <!-- USER NAV: Only Logout Button -->
+                <div id="user-nav" class="align-items-center d-none">
+                    <a href="#" class="icon-btn ms-3 text-danger" id="logout-btn" title="Logout"
+                        style="font-size: 1rem;"><i class="bi bi-box-arrow-right"></i></a>
+                </div>
             </div>
         </div>
     </nav>
@@ -552,12 +566,9 @@
                                 </a>
                             </li>
                             <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                            <li class="page-item"><a class="page-link" href="#">2</a></li>
-                            <li class="page-item"><a class="page-link" href="#">3</a></li>
-                            <li class="page-item"><a class="page-link" href="#">4</a></li>
-                            <li class="page-item"><a class="page-link" href="#">5</a></li>
+                            <li class="page-item"><a class="page-link" href="product-2.html">2</a></li>
                             <li class="page-item">
-                                <a class="page-link" href="#" aria-label="Next">
+                                <a class="page-link" href="product-2.html" aria-label="Next">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
                             </li>
@@ -647,6 +658,95 @@
                     if (!searchForm.contains(e.target) && !searchTrigger.contains(e.target)) {
                         searchForm.classList.remove('active');
                     }
+                });
+            }
+
+            /* =====================
+               AUTH STATE
+            ====================== */
+            const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+
+            const guestNav = document.getElementById("guest-nav");
+            const userNav = document.getElementById("user-nav");
+            const logoutBtn = document.getElementById("logout-btn");
+
+            const accountBtn = document.getElementById("accountBtn");
+            const cartBtn = document.querySelector('a[href="cart.html"]');
+            const wishlistBtn = document.querySelector('a[href="wishlist.html"]');
+
+            /* =====================
+               NAVBAR VISIBILITY
+            ====================== */
+            if (guestNav && userNav) {
+                if (isLoggedIn) {
+                    // ✅ Logged in → only Logout (Show User Nav)
+                    guestNav.classList.remove("d-flex");
+                    guestNav.classList.add("d-none");
+
+                    userNav.classList.remove("d-none");
+                    userNav.classList.add("d-flex");
+                } else {
+                    // ❌ Not logged in → only Signup (Show Guest Nav)
+                    userNav.classList.remove("d-flex");
+                    userNav.classList.add("d-none");
+
+                    guestNav.classList.remove("d-none");
+                    guestNav.classList.add("d-flex");
+                }
+            }
+
+            /* =====================
+               PROTECT PAGES
+            ====================== */
+            function protectPage(e, redirectTo) {
+                e.preventDefault();
+
+                const loggedInNow = localStorage.getItem("isLoggedIn") === "true";
+
+                if (!loggedInNow) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Login Required",
+                        text: "Please login to continue",
+                        confirmButtonText: "Login",
+                        confirmButtonColor: "#000"
+                    }).then(() => {
+                        window.location.href = "login.html";
+                    });
+                } else {
+                    window.location.href = redirectTo;
+                }
+            }
+
+            if (accountBtn) {
+                accountBtn.addEventListener("click", e => protectPage(e, "account.html"));
+            }
+
+            // Note: Cart and Wishlist buttons might be inside the navbar or elsewhere
+            if (cartBtn) {
+                cartBtn.addEventListener("click", e => protectPage(e, "cart.html"));
+            }
+
+            if (wishlistBtn) {
+                wishlistBtn.addEventListener("click", e => protectPage(e, "wishlist.html"));
+            }
+
+            /* =====================
+               LOGOUT
+            ====================== */
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", async function (e) {
+                    e.preventDefault();
+                    try {
+                        const res = await fetch("/api/auth/logout", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" }
+                        });
+                    } catch (error) {
+                        console.error("Logout failed:", error);
+                    }
+                    localStorage.removeItem("isLoggedIn");
+                    window.location.href = "home.html";
                 });
             }
         });

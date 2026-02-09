@@ -74,7 +74,7 @@
     <div class="signup-container">
         <div class="login-box">
             <h2 class="login-title">Sign Up</h2>
-            <form action="otp-verification.html">
+            <form id="signupForm">
                 <input type="text" class="form-control" placeholder="Full Name" required>
                 <input type="email" class="form-control" placeholder="Email" required>
                 <input type="password" class="form-control" placeholder="Password" required>
@@ -89,6 +89,56 @@
             </form>
         </div>
     </div>
+
+
+
+<script>
+const form = document.getElementById("signupForm");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const inputs = form.querySelectorAll("input");
+  const name = inputs[0].value.trim();
+  const email = inputs[1].value.trim();
+  const password = inputs[2].value;
+  const confirmPassword = inputs[3].value;
+
+  if (password !== confirmPassword) {
+    alert("Passwords do not match");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message);
+      return;
+    }
+
+    // ✅ STORE EMAIL ONCE
+    localStorage.setItem("pendingEmail", email);
+
+    alert("Signup successful. Enter OTP.");
+    window.location.href = "otp-verification.html";
+
+  } catch (err) {
+    console.error(err);
+    alert("Frontend error");
+  }
+});
+</script>
+
+
+
+
 
 </body>
 

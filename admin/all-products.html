@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroWatch - All Products</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --font-family: 'Outfit', sans-serif;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #fff;
+            border-right: 1px solid #eee;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            display: block;
+            color: #000;
+            text-decoration: none;
+        }
+
+        .nav-label {
+            font-size: 0.8rem;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 10px;
+            margin-top: 20px;
+            display: block;
+        }
+
+        .nav-link {
+            color: #6c757d;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: #000;
+            color: #fff;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+        }
+
+        .table-img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            background: #fff;
+            border: 1px solid #eee;
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <a href="dashboard.html" class="sidebar-brand"><img src="../common/images/logo.png" alt="AeroWatch"
+                style="max-height: 50px;"></a>
+        <span class="nav-label">Main menu</span>
+        <nav class="nav flex-column">
+            <a href="dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
+            <a href="order-management.html" class="nav-link"><i class="bi bi-cart"></i> Order Management</a>
+            <a href="customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
+            <!-- ... -->
+        </nav>
+        <span class="nav-label">Product</span>
+        <nav class="nav flex-column">
+            <a href="add-product.html" class="nav-link"><i class="bi bi-plus-circle"></i> Add Products</a>
+            <a href="all-products.html" class="nav-link active"><i class="bi bi-list-ul"></i> Product List</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold m-0">Product List</h4>
+            <a href="add-product.html" class="btn btn-dark"><i class="bi bi-plus-lg"></i> Add New Product</a>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <table class="table align-middle table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Product Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="https://placehold.co/50x50" class="table-img me-3">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">Black Automatic Watch</h6>
+                                        <small class="text-muted">ID: #prod-1</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Accessories</td>
+                            <td>$169.99</td>
+                            <td>45</td>
+                            <td><span class="badge bg-success">Active</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="https://placehold.co/50x50" class="table-img me-3">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold">Smart Band 2024</h6>
+                                        <small class="text-muted">ID: #prod-2</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Electronics</td>
+                            <td>$59.99</td>
+                            <td>120</td>
+                            <td><span class="badge bg-warning text-dark">Low Stock</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

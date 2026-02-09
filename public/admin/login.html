@@ -58,6 +58,37 @@
             <button type="submit" class="btn btn-primary">Login</button>
         </form>
     </div>
+    <script>
+c
+
+const form = document.getElementById("loginForm");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const email = form.querySelector("input[type='email']").value;
+  const password = form.querySelector("input[type='password']").value;
+
+  const res = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.message);
+    return;
+  }
+
+  // ✅ SIMPLE REDIRECT
+  window.location.href = "home.html";
+});
+</script>
+
+
+
 </body>
 
 </html>

@@ -218,6 +218,40 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+(async () => {
+  try {
+    const res = await fetch("/api/auth/me", {
+      credentials: "include"
+    });
+
+    if (!res.ok) {
+      window.location.href = "login.html";
+    }
+  } catch (err) {
+    window.location.href = "login.html";
+  }
+})();
+</script>
+
+
+
+
+
+    <script>
+  // 🔐 Protect checkout page
+  fetch("/api/auth/me", {
+    credentials: "include"
+  })
+    .then(res => {
+      if (!res.ok) {
+        // Not logged in → redirect
+        window.location.href = "login.html";
+      }
+    });
+</script>
+
 </body>
 
 </html>

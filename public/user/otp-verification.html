@@ -84,18 +84,78 @@
         <div class="login-box">
             <h2 class="login-title">Verification</h2>
             <p class="login-subtitle">We have sent a verification code to your email.</p>
-            <form action="login.html">
-                <input type="text" class="form-control" placeholder="1 2 3 4" maxlength="4" required>
+            
+            <form id="otpForm">
+  <input
+    type="text"
+    id="otp"
+    class="form-control"
+    placeholder="1 2 3 4"
+    maxlength="4"
+    required
+  />
 
-                <button type="submit" class="btn btn-dark-custom">Verify & Login</button>
+  <button type="submit" class="btn btn-dark-custom">
+    Verify & Login
+  </button>
 
-                <div class="mt-4">
-                    <small>Didn't receive code? <a href="#"
-                            class="fw-bold text-dark text-decoration-none">Resend</a></small>
-                </div>
-            </form>
+  <div class="mt-4">
+    <small>
+      Didn't receive code?
+      <a href="#" id="resendOtp" class="fw-bold text-dark text-decoration-none">
+        Resend
+      </a>
+    </small>
+  </div>
+</form>
+
         </div>
     </div>
+
+
+
+
+    <script>
+console.log("Pending Email:", localStorage.getItem("pendingEmail"));
+
+const form = document.getElementById("otpForm");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const otp = document.getElementById("otp").value.trim();
+  const email = localStorage.getItem("pendingEmail");
+
+  console.log("EMAIL:", email);
+  console.log("OTP:", otp);
+
+  if (!email) {
+    alert("Invalid access");
+    window.location.href = "signup.html";
+    return;
+  }
+
+  const res = await fetch("/api/auth/verify-otp", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, otp })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.message);
+    return;
+  }
+
+  localStorage.removeItem("pendingEmail");
+  alert("Account verified successfully. Please login.");
+  window.location.href = "login.html";
+});
+</script>
+
+
+
 
 </body>
 

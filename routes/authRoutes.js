@@ -9,9 +9,11 @@ const {
   logoutUser,
   forgotPassword,
   resendForgotOtp, // 👈 ADD
-  resetPassword
+  resetPassword,
+  getMe
 } = require("../controllers/authController");
 
+const authMiddleware = require("../middlewares/authMiddleware");
 
 router.post("/register", registerUser);
 router.post("/verify-otp", verifyOtp);
@@ -21,6 +23,6 @@ router.post("/logout", logoutUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/resend-forgot-otp", resendForgotOtp);
 router.post("/reset-password", resetPassword);
-
+router.get("/me", authMiddleware, getMe);
 
 module.exports = router;

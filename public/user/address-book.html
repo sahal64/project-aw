@@ -181,15 +181,19 @@
                 <div class="account-sidebar">
                     <div class="d-flex align-items-center mb-4 px-3">
                         <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center"
-                            style="width: 50px; height: 50px; font-size: 1.5rem;">J</div>
+                            style="width: 50px; height: 50px; font-size: 1.5rem;">
+                            J
+                        </div>
                         <div class="ms-3">
-                            <h6 class="mb-0 fw-bold">John Doe</h6><small class="text-muted">john@example.com</small>
+                            <h6 class="mb-0 fw-bold">John Doe</h6>
+                            <small class="text-muted">john@example.com</small>
                         </div>
                     </div>
                     <div class="section-title text-muted text-uppercase fw-bold fs-6 mb-2 mt-4 ps-3">Manage My Account
                     </div>
                     <nav class="nav flex-column account-nav mb-2">
-                        <a class="nav-link" href="profile-details.html"><i class="bi bi-person"></i> My Profile</a>
+                        <a class="nav-link" href="profile-details.html"><i class="bi bi-person"></i> My
+                            Profile</a>
                         <a class="nav-link active" href="address-book.html"><i class="bi bi-geo-alt"></i> Address
                             Book</a>
                         <a class="nav-link" href="my-wallet.html"><i class="bi bi-wallet2"></i> My Payment Options</a>
@@ -205,7 +209,8 @@
                     </nav>
 
                     <nav class="nav flex-column account-nav">
-                        <a class="nav-link" href="signup.html"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                        <a class="nav-link" href="#" id="sidebar-logout"><i class="bi bi-box-arrow-right"></i>
+                            Logout</a>
                     </nav>
                 </div>
             </div>
@@ -322,23 +327,38 @@
     </div>
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-   
-   <script>
-  // 🔐 Protect address book page
-  fetch("/api/auth/me", {
-    credentials: "include"
-  })
-    .then(res => {
-      if (!res.ok) {
-        window.location.href = "login.html";
-      }
-    });
-</script>
 
-   
-   
-   
-   <script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+
+            // If not logged in, redirect to login
+            if (!isLoggedIn) {
+                window.location.replace("login.html");
+                return;
+            }
+
+            // Handle Logout from Sidebar
+            const sidebarLogout = document.getElementById("sidebar-logout");
+            if (sidebarLogout) {
+                sidebarLogout.addEventListener("click", async (e) => {
+                    e.preventDefault();
+                    try {
+                        await fetch("/api/auth/logout", { method: "POST" });
+                    } catch (err) {
+                        console.error(err);
+                    }
+                    localStorage.removeItem("isLoggedIn");
+                    window.location.href = "login.html";
+                });
+            }
+        });
+    </script>
+
+
+
+
+    <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Search Toggle (Inline)
             const searchTrigger = document.getElementById('search-trigger');

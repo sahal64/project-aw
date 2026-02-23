@@ -36,9 +36,9 @@ exports.registerUser = async (req, res) => {
       message: "Signup successful. OTP sent.",
     });
   } catch (error) {
-  console.error("REGISTER ERROR:", error);
-  res.status(500).json({ message: "Server error" });
-}
+    console.error("REGISTER ERROR:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 // VERIFY OTP
@@ -69,6 +69,16 @@ exports.verifyOtp = async (req, res) => {
     res.json({ message: "Account verified successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// GET CURRENT USER
+exports.getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
   }
 };
 

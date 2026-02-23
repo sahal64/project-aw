@@ -111,7 +111,7 @@
         <span class="nav-label">Admin</span>
         <nav class="nav flex-column">
             <a href="admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
-            <a href="../user/home.html" class="nav-link mt-3 text-danger"><i class="bi bi-box-arrow-right"></i>
+            <a href="#" class="nav-link mt-3 text-danger" id="admin-logout"><i class="bi bi-box-arrow-right"></i>
                 Logout</a>
         </nav>
 
@@ -130,7 +130,26 @@
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="fw-bold m-0">Categories</h4>
-            <a href="add-category.html" class="btn btn-dark"><i class="bi bi-plus-lg"></i> Add Category</a>
+            <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addCategoryModal"><i
+                    class="bi bi-plus-lg"></i> Add Category</button>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control border-start-0 ps-0" id="searchInput"
+                        placeholder="Search categories...">
+                </div>
+            </div>
+            <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                <select class="form-select w-auto d-inline-block" id="sortSelect">
+                    <option value="name-asc" selected>Name (A-Z)</option>
+                    <option value="name-desc">Name (Z-A)</option>
+                    <option value="count-asc">Products (Low to High)</option>
+                    <option value="count-desc">Products (High to Low)</option>
+                </select>
+            </div>
         </div>
 
         <div class="card border-0 shadow-sm">
@@ -145,42 +164,272 @@
                             <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td><img src="https://placehold.co/40" class="table-img"></td>
-                            <td class="fw-bold">Men's Fashion</td>
-                            <td>120</td>
-                            <td><span class="badge bg-success">Active</span></td>
-                            <td>
-                                <button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button>
-                                <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><img src="https://placehold.co/40" class="table-img"></td>
-                            <td class="fw-bold">Women's Fashion</td>
-                            <td>85</td>
-                            <td><span class="badge bg-success">Active</span></td>
-                            <td>
-                                <button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button>
-                                <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><img src="https://placehold.co/40" class="table-img"></td>
-                            <td class="fw-bold">Accessories</td>
-                            <td>200</td>
-                            <td><span class="badge bg-success">Active</span></td>
-                            <td>
-                                <button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button>
-                                <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
-                            </td>
-                        </tr>
+                    <tbody id="categoryTableBody">
+                        <!-- Content will be populated by JavaScript -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+
+    <!-- Add Category Modal -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold" id="addCategoryModalLabel">Add New Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addCategoryForm">
+                        <div class="mb-3">
+                            <label for="categoryName" class="form-label fw-bold">Category Name <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="categoryName" placeholder="e.g. Smart Watches"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="categoryIcon" class="form-label fw-bold">Icon</label>
+                            <input type="file" class="form-control" id="categoryIcon" accept="image/*">
+                            <div class="form-text">Recommended size: 40x40px</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="categoryStatus" class="form-label fw-bold">Status</label>
+                            <select class="form-select" id="categoryStatus">
+                                <option value="Active" selected>Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-dark" onclick="addCategory()">Save Category</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Category Modal -->
+    <div class="modal fade" id="editCategoryModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">Edit Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editCategoryId">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Category Name</label>
+                        <input type="text" class="form-control" id="editCategoryName">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Status</label>
+                        <select class="form-select" id="editCategoryStatus">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button class="btn btn-dark" onclick="updateCategory()">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById("admin-logout").addEventListener("click", async (e) => {
+            e.preventDefault();
+            try {
+                await fetch("/api/auth/logout", { method: "POST" });
+            } catch (err) {
+                console.error(err);
+            }
+            localStorage.removeItem("isLoggedIn");
+            window.location.href = "../user/login.html";
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+
+            let categories = [];
+            const tableBody = document.getElementById('categoryTableBody');
+            const searchInput = document.getElementById('searchInput');
+            const sortSelect = document.getElementById('sortSelect');
+
+            /* ================= LOAD FROM DB ================= */
+            async function loadCategories() {
+                try {
+                    const res = await fetch("/api/categories");
+                    const data = await res.json();
+                    categories = data;
+                    filterAndSort();
+                } catch (err) {
+                    console.error("Load Error:", err);
+                }
+            }
+
+            /* ================= RENDER ================= */
+            function renderCategories(data) {
+                tableBody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tableBody.innerHTML =
+                        '<tr><td colspan="5" class="text-center py-4">No categories found</td></tr>';
+                    return;
+                }
+
+                data.forEach(category => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                <td><img src="https://placehold.co/40" class="table-img"></td>
+                <td class="fw-bold">${category.name}</td>
+                <td>${category.productCount || 0}</td>
+                <td>
+                    <span class="badge ${category.status === "Active" ? "bg-success" : "bg-secondary"}">
+                        ${category.status}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-light me-2"
+                        onclick="openEditModal('${category._id}', '${category.name}', '${category.status}')">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-light text-danger"
+                        onclick="deleteCategory('${category._id}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+            /* ================= SEARCH + SORT ================= */
+            function filterAndSort() {
+                let filtered = categories.filter(cat =>
+                    cat.name.toLowerCase().includes(searchInput.value.toLowerCase())
+                );
+
+                const sortValue = sortSelect.value;
+
+                filtered.sort((a, b) => {
+                    if (sortValue === 'name-asc') return a.name.localeCompare(b.name);
+                    if (sortValue === 'name-desc') return b.name.localeCompare(a.name);
+                    if (sortValue === 'count-asc') return (a.productCount || 0) - (b.productCount || 0);
+                    if (sortValue === 'count-desc') return (b.productCount || 0) - (a.productCount || 0);
+                    return 0;
+                });
+
+                renderCategories(filtered);
+            }
+
+            searchInput.addEventListener('input', filterAndSort);
+            sortSelect.addEventListener('change', filterAndSort);
+
+            /* ================= ADD ================= */
+            window.addCategory = async function () {
+                const nameInput = document.getElementById('categoryName');
+                const statusInput = document.getElementById('categoryStatus');
+
+                if (!nameInput.value.trim()) {
+                    alert('Please enter a category name');
+                    return;
+                }
+
+                const res = await fetch("/api/categories", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        name: nameInput.value,
+                        status: statusInput.value
+                    })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.message);
+                    return;
+                }
+
+                bootstrap.Modal.getInstance(
+                    document.getElementById('addCategoryModal')
+                ).hide();
+
+                document.getElementById('addCategoryForm').reset();
+
+                loadCategories();
+            };
+
+            /* ================= DELETE ================= */
+            window.deleteCategory = async function (id) {
+                if (!confirm("Delete this category?")) return;
+
+                const res = await fetch(`/api/categories/${id}`, {
+                    method: "DELETE"
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.message);
+                    return;
+                }
+
+                loadCategories();
+            };
+
+            /* ================= OPEN EDIT ================= */
+            window.openEditModal = function (id, name, status) {
+                document.getElementById("editCategoryId").value = id;
+                document.getElementById("editCategoryName").value = name;
+                document.getElementById("editCategoryStatus").value = status;
+
+                new bootstrap.Modal(
+                    document.getElementById("editCategoryModal")
+                ).show();
+            };
+
+            /* ================= UPDATE ================= */
+            window.updateCategory = async function () {
+                const id = document.getElementById("editCategoryId").value;
+                const name = document.getElementById("editCategoryName").value;
+                const status = document.getElementById("editCategoryStatus").value;
+
+                const res = await fetch(`/api/categories/${id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, status })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.message);
+                    return;
+                }
+
+                bootstrap.Modal.getInstance(
+                    document.getElementById("editCategoryModal")
+                ).hide();
+
+                loadCategories();
+            };
+
+            loadCategories();
+        });
+    </script>
+
+
 
 </body>
 

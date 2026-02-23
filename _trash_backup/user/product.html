@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AeroWatch - Shop</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+<style>
+body { font-family: 'Outfit', sans-serif; background:#fff; }
+.navbar { padding:20px 0; background:#fff; }
+.nav-link { text-transform:uppercase; font-size:0.9rem; }
+
+.product-card {
+    background:#f8f9fa;
+    border-radius:15px;
+    padding:20px;
+    transition:0.3s;
+    cursor:pointer;
+    height:100%;
+}
+.product-card:hover {
+    background:#fff;
+    box-shadow:0 10px 20px rgba(0,0,0,0.05);
+}
+.product-img { max-height:200px; object-fit:contain; }
+.product-price { font-weight:700; }
+.filter-title { font-weight:700; }
+footer { margin-top:80px; padding:50px 0; border-top:1px solid #eee; }
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg sticky-top">
+<div class="container-fluid px-5">
+<a class="navbar-brand" href="home.html">
+<img src="../common/images/logo.png" style="height:55px;">
+</a>
+
+<div class="collapse navbar-collapse justify-content-center">
+<ul class="navbar-nav">
+<li class="nav-item"><a class="nav-link" href="home.html">Home</a></li>
+<li class="nav-item"><a class="nav-link active" href="product.html">Shop</a></li>
+<li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+<li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+</ul>
+</div>
+
+<div>
+<a href="wishlist.html" class="me-3"><i class="bi bi-heart fs-5"></i></a>
+<a href="account.html" class="me-3"><i class="bi bi-person fs-5"></i></a>
+<a href="cart.html"><i class="bi bi-bag fs-5"></i></a>
+</div>
+</div>
+</nav>
+
+<!-- SHOP -->
+<div class="container-fluid px-5 mt-4">
+<div class="row">
+
+<!-- SIDEBAR -->
+<div class="col-lg-3">
+<div class="mb-4">
+<h5 class="filter-title">Categories</h5>
+
+<div class="form-check mb-2">
+<input class="form-check-input category-filter" type="radio" name="category" value="all" checked>
+<label class="form-check-label">All</label>
+</div>
+
+<div class="form-check mb-2">
+<input class="form-check-input category-filter" type="radio" name="category" value="men">
+<label class="form-check-label">Men</label>
+</div>
+
+<div class="form-check mb-2">
+<input class="form-check-input category-filter" type="radio" name="category" value="women">
+<label class="form-check-label">Women</label>
+</div>
+
+</div>
+</div>
+
+<!-- PRODUCTS -->
+<div class="col-lg-9">
+    <div class="row g-4" id="product-container">
+        <!-- Dynamic products will load here -->
+    </div>
+
+    <div class="mt-5 d-flex justify-content-center">
+        <ul class="pagination" id="pagination"></ul>
+    </div>
+</div>
+
+
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer class="text-center">
+<p class="text-muted small">AeroWatch © 2026</p>
+</footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const productContainer = document.getElementById("product-container");
+    const paginationContainer = document.getElementById("pagination");
+
+    async function loadProducts() {
+        const params = new URLSearchParams(window.location.search);
+        const page = params.get("page") || 1;
+        const category = params.get("category") || "";
+
+        let url = `/api/products?page=${page}`;
+        if (category && category !== "all") {
+            url += `&category=${category}`;
+        }
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        productContainer.innerHTML = "";
+
+        if (!data.products || data.products.length === 0) {
+            productContainer.innerHTML = "<p>No products found</p>";
+            return;
+        }
+
+        data.products.forEach(product => {
+            productContainer.innerHTML += `
+                <div class="col-md-4">
+                    <div class="product-card">
+                        <img src="images/${product.image}" class="product-img w-100 mb-3">
+                        <div class="text-muted small">${product.category}</div>
+                        <h6>${product.name}</h6>
+                        <div class="product-price">₹${product.price}</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        // Pagination
+        paginationContainer.innerHTML = "";
+
+        for (let i = 1; i <= data.totalPages; i++) {
+            paginationContainer.innerHTML += `
+                <li class="page-item ${i == data.currentPage ? "active" : ""}">
+                    <a class="page-link" href="?page=${i}${category && category !== "all" ? "&category=" + category : ""}">
+                        ${i}
+                    </a>
+                </li>
+            `;
+        }
+    }
+
+    // CATEGORY FILTER (FIXED)
+    document.querySelectorAll(".category-filter").forEach(input => {
+        input.addEventListener("change", (e) => {
+            const selectedCategory = e.target.value;
+
+            if (selectedCategory === "all") {
+                window.location.href = "?page=1";
+            } else {
+                window.location.href = `?page=1&category=${selectedCategory}`;
+            }
+        });
+    });
+
+    loadProducts();
+});
+</script>
+
+
+
+</body>
+</html>

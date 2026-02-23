@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AeroWatch - Add Product</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+<style>
+body {
+    font-family: 'Outfit', sans-serif;
+    background:#f8f9fa;
+}
+.sidebar {
+    width:260px;
+    height:100vh;
+    position:fixed;
+    left:0;
+    top:0;
+    background:#fff;
+    border-right:1px solid #eee;
+    padding:20px;
+}
+.main-content {
+    margin-left:260px;
+    padding:40px;
+}
+.form-section {
+    background:#fff;
+    padding:30px;
+    border-radius:10px;
+    border:1px solid #eee;
+    margin-bottom:20px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <h5 class="fw-bold mb-4">AeroWatch Admin</h5>
+    <a href="dashboard.html" class="d-block mb-2 text-dark">Dashboard</a>
+    <a href="add-product.html" class="d-block mb-2 fw-bold text-dark">Add Product</a>
+    <a href="all-products.html" class="d-block text-dark">Product List</a>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+    <h4 class="fw-bold mb-4">Add New Product</h4>
+
+    <form id="addProductForm">
+
+        <div class="form-section">
+            <h5 class="fw-bold mb-3">General Information</h5>
+
+            <div class="mb-3">
+                <label class="form-label">Product Name</label>
+                <input type="text" id="name" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Brand</label>
+                <input type="text" id="brand" class="form-control" value="AeroWatch" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea id="description" class="form-control" rows="4"></textarea>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h5 class="fw-bold mb-3">Pricing & Stock</h5>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Price (₹)</label>
+                    <input type="number" id="price" class="form-control" required>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Stock Quantity</label>
+                    <input type="number" id="stock" class="form-control" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h5 class="fw-bold mb-3">Category</h5>
+
+            <select id="category" class="form-select mb-3" required>
+                <option value="">Select Category</option>
+                <option value="men">Men</option>
+                <option value="women">Women</option>
+            </select>
+        </div>
+
+        <div class="form-section">
+            <h5 class="fw-bold mb-3">Product Image</h5>
+            <input type="text" id="image" class="form-control" placeholder="e.g. watch1.jpg">
+        </div>
+
+        <div class="text-end">
+            <button type="submit" class="btn btn-dark px-4">Publish Product</button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+document.getElementById("addProductForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const product = {
+        name: document.getElementById("name").value,
+        brand: document.getElementById("brand").value,
+        price: document.getElementById("price").value,
+        stock: document.getElementById("stock").value,
+        category: document.getElementById("category").value,
+        image: document.getElementById("image").value || "dummy-watch.jpg",
+        description: document.getElementById("description").value
+    };
+
+    try {
+        const res = await fetch("/api/products", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify(product)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.message || "Error adding product");
+            return;
+        }
+
+        alert("✅ Product Added Successfully!");
+        document.getElementById("addProductForm").reset();
+
+    } catch (error) {
+        console.error(error);
+        alert("Server Error");
+    }
+});
+</script>
+
+</body>
+</html>

@@ -255,16 +255,9 @@
     <div class="container px-5 mt-5">
         <div class="row">
             <!-- Gallery -->
-            <div class="col-lg-1 d-none d-lg-flex product-gallery-thumbs">
-                <img src="images/Aston_Martin_Watches_Case_Blue_Dial_41mm_Watch_Grey_FARFETCH_IN/10001.webp"
-                    class="thumb-img active">
-                <img src="images/Aston_Martin_Watches_Case_Blue_Dial_41mm_Watch_Grey_FARFETCH_IN/10002.webp"
-                    class="thumb-img">
-                <img src="images/Aston_Martin_Watches_Case_Blue_Dial_41mm_Watch_Grey_FARFETCH_IN/10003.webp"
-                    class="thumb-img">
-                <img src="images/Aston_Martin_Watches_Case_Blue_Dial_41mm_Watch_Grey_FARFETCH_IN/10004.webp"
-                    class="thumb-img">
-            </div>
+           <div class="col-lg-1 d-none d-lg-flex product-gallery-thumbs" id="thumbs-container">
+</div>
+
             <div class="col-lg-6">
                 <div class="main-img-container">
                     <button class="btn btn-sm btn-light position-absolute top-0 end-0 m-3 rounded-circle"><i
@@ -277,23 +270,19 @@
             <div class="col-lg-5 ps-lg-5">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <div class="rating mb-2"><i class="bi bi-star-fill"></i> 4.9 <a href="#"
-                                class="text-muted ms-2 text-decoration-underline">142 reviews</a></div>
-                        <h1 class="product-title-large">Aston Martin Skeleton Sports Watch</h1>
-                        <div class="product-price-large mb-3">₹4,10,000 <span
-                                class="text-muted fs-6 text-decoration-line-through ms-2">$199.99</span></div>
+                       
+                       <h1 class="product-title-large"></h1>
+
+                            <p class="text-muted mb-1" id="product-brand"></p>
+                            <p class="text-muted mb-1" id="product-category"></p>
+                            <p class="fw-bold mb-2" id="product-stock"></p>
+
+                        <div class="product-price-large mb-3"></div>
+
                     </div>
                 </div>
 
-                <div class="mb-4">
-                    <h6 class="fw-bold">Size:</h6>
-                    <div class="d-flex">
-                        <div class="size-btn active">S</div>
-                        <div class="size-btn">M</div>
-                        <div class="size-btn">L</div>
-                        <div class="size-btn">XL</div>
-                    </div>
-                </div>
+                
 
                 <div class="d-flex align-items-center mb-4">
                     <div class="d-flex align-items-center bg-light rounded me-3">
@@ -301,36 +290,20 @@
                         <input type="text" value="1" class="quantity-input" id="quantity-input" readonly>
                         <button class="qty-btn rounded-end" id="btn-increase">+</button>
                     </div>
-                    <button class="add-to-cart-btn" onclick="window.location.href='cart.html'"><i
+                    <button class="add-to-cart-btn" id="addToCartBtn"><i
                             class="bi bi-bag-plus me-2"></i> Add to cart</button>
                 </div>
 
                 <hr class="my-4">
 
-                <div class="mb-4">
-                    <p class="text-muted small">
-                        The St. Louis Meramec Canoe Company was founded by Alfred Wickett in 1922. Wickett had
-                        previously worked for the Old Town Canoe Co from 1900 to 1914. Manufacturing of the classic
-                        wooden canoes in Valley Park, Missouri ceased in 1978.
-                    </p>
+                <div class="mt-4">
+                    <h6 class="fw-bold">Description</h6>
+                    <p class="text-muted" id="product-description"></p>
                 </div>
 
-                <div class="mb-3">
-                    <h6 class="fw-bold small">Fabric + Care</h6>
-                    <p class="text-muted small">Material: Soft wool blend<br>Color: Various</p>
-                </div>
 
-                <div class="mb-3">
-                    <h6 class="fw-bold small">Sale Performance</h6>
-                    <p class="text-muted small">Sales: 12<br>Review Count: -</p>
-                </div>
 
-                <div class="mb-3 tags">
-                    <h6 class="fw-bold small mb-2">Keywords</h6>
-                    <span class="d-inline-block border">Men's fashion</span>
-                    <span class="d-inline-block border">Smart bar</span>
-                    <span class="d-inline-block border">Casual accessory</span>
-                </div>
+               
             </div>
         </div>
 
@@ -371,254 +344,249 @@
     </div>
 
     <!-- Footer -->
-    <footer>
-        <div class="container text-center">
-            <small class="text-muted">AeroWatch © 2026</small>
-        </div>
-    </footer>
+
+      <footer>
+    <div class="container text-center">
+        <small class="text-muted">AeroWatch © 2026</small>
+    </div>
+</footer>
+
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Search Toggle (Inline)
-            const searchTrigger = document.getElementById('search-trigger');
-            const searchForm = document.getElementById('search-form-inline');
-            const searchInput = searchForm.querySelector('input');
+document.addEventListener("DOMContentLoaded", async function () {
 
-            if (searchTrigger && searchForm) {
-                searchTrigger.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    searchForm.classList.toggle('active');
-                    if (searchForm.classList.contains('active')) {
-                        setTimeout(() => searchInput.focus(), 100);
-                    }
-                });
+    let currentStock = 0;
+    /* =====================
+       SEARCH TOGGLE
+    ====================== */
+    const searchTrigger = document.getElementById('search-trigger');
+    const searchForm = document.getElementById('search-form-inline');
 
-                // Close when clicking outside
-                document.addEventListener('click', function (e) {
-                    if (!searchForm.contains(e.target) && !searchTrigger.contains(e.target)) {
-                        searchForm.classList.remove('active');
-                    }
-                });
-            }
-
-            /* =====================
-               AUTH STATE
-            ====================== */
-            const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-
-            const guestNav = document.getElementById("guest-nav");
-            const userNav = document.getElementById("user-nav");
-            const logoutBtn = document.getElementById("logout-btn");
-
-            const accountBtn = document.getElementById("accountBtn");
-            const cartBtn = document.querySelector('a[href="cart.html"]');
-            const wishlistBtn = document.querySelector('a[href="wishlist.html"]');
-
-            /* =====================
-               NAVBAR VISIBILITY
-            ====================== */
-            if (guestNav && userNav) {
-                if (isLoggedIn) {
-                    // ✅ Logged in → only Logout (Show User Nav)
-                    guestNav.classList.remove("d-flex");
-                    guestNav.classList.add("d-none");
-
-                    userNav.classList.remove("d-none");
-                    userNav.classList.add("d-flex");
-                } else {
-                    // ❌ Not logged in → only Signup (Show Guest Nav)
-                    userNav.classList.remove("d-flex");
-                    userNav.classList.add("d-none");
-
-                    guestNav.classList.remove("d-none");
-                    guestNav.classList.add("d-flex");
-                }
-            }
-
-            /* =====================
-               PROTECT PAGES
-            ====================== */
-            function protectPage(e, redirectTo) {
-                e.preventDefault();
-
-                const loggedInNow = localStorage.getItem("isLoggedIn") === "true";
-
-                if (!loggedInNow) {
-                    Swal.fire({
-                        icon: "warning",
-                        title: "Login Required",
-                        text: "Please login to continue",
-                        confirmButtonText: "Login",
-                        confirmButtonColor: "#000"
-                    }).then(() => {
-                        window.location.href = "login.html";
-                    });
-                } else {
-                    window.location.href = redirectTo;
-                }
-            }
-
-            if (accountBtn) {
-                accountBtn.addEventListener("click", e => protectPage(e, "account.html"));
-            }
-
-            if (cartBtn) {
-                cartBtn.addEventListener("click", e => protectPage(e, "cart.html"));
-            }
-
-            if (wishlistBtn) {
-                wishlistBtn.addEventListener("click", e => protectPage(e, "wishlist.html"));
-            }
-
-            /* =====================
-               LOGOUT
-            ====================== */
-            if (logoutBtn) {
-                logoutBtn.addEventListener("click", async function (e) {
-                    e.preventDefault();
-                    try {
-                        const res = await fetch("/api/auth/logout", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" }
-                        });
-                    } catch (error) {
-                        console.error("Logout failed:", error);
-                    }
-                    localStorage.removeItem("isLoggedIn");
-                    window.location.href = "home.html";
-                });
-            }
+    if (searchTrigger && searchForm) {
+        searchTrigger.addEventListener('click', function (e) {
+            e.preventDefault();
+            searchForm.classList.toggle('active');
         });
 
-        // Product Data
-        const products = {
-            1: {
-                title: "Aston Martin Skeleton Sports Watch",
-                price: "₹4,10,000",
-                originalPrice: "$199.99",
-                rating: 4.9,
-                reviews: 142,
-                image: "images/10001.jpg",
-                thumbs: [
-                    "images/Aston_Martin_Watches_Case_Blue_Dial_41mm_Watch_Grey_FARFETCH_IN/10001.webp",
-                    "images/Aston_Martin_Watches_Case_Blue_Dial_41mm_Watch_Grey_FARFETCH_IN/10002.webp",
-                    "images/Aston_Martin_Watches_Case_Blue_Dial_41mm_Watch_Grey_FARFETCH_IN/10003.webp",
-                    "images/Aston_Martin_Watches_Case_Blue_Dial_41mm_Watch_Grey_FARFETCH_IN/10004.webp"
-                ]
-            },
-            2: {
-                title: "Casio Chronograph Stainless Steel Watch",
-                price: "₹20,000",
-                originalPrice: "₹25,000",
-                rating: 4.8,
-                reviews: 80,
-                image: "images/10002.jpg",
-                thumbs: ["images/10002.jpg", "images/10002.jpg", "images/10002.jpg", "images/10002.jpg"]
-            },
-            3: {
-                title: "Versace Two-Tone Luxury Watch",
-                price: "₹1,45,000",
-                originalPrice: "₹1,60,000",
-                rating: 4.2,
-                reviews: 10,
-                image: "images/10003.jpg",
-                thumbs: ["images/10003.jpg", "images/10003.jpg", "images/10003.jpg", "images/10003.jpg"]
-            },
-            4: {
-                title: "Diesel Gold Chronograph Watch",
-                price: "₹32,000",
-                originalPrice: "₹40,000",
-                rating: 4.0,
-                reviews: 5,
-                image: "images/10004.jpg",
-                thumbs: ["images/10004.jpg", "images/10004.jpg", "images/10004.jpg", "images/10004.jpg"]
-            },
-            5: {
-                title: "Golden Hour",
-                price: "$299.99",
-                originalPrice: "$350.00",
-                rating: 5.0,
-                reviews: 2,
-                image: "https://placehold.co/500x500/e9ecef/495057?text=Watch+Epsilon",
-                thumbs: ["https://placehold.co/100x100/e9ecef/495057?text=Thumb1", "https://placehold.co/100x100/e9ecef/495057?text=Thumb2", "https://placehold.co/100x100/e9ecef/495057?text=Thumb3", "https://placehold.co/100x100/e9ecef/495057?text=Thumb4"]
-            },
-            6: {
-                title: "Silver Lining",
-                price: "$120.00",
-                originalPrice: "$150.00",
-                rating: 4.6,
-                reviews: 22,
-                image: "https://placehold.co/500x500/e9ecef/495057?text=Watch+Zeta",
-                thumbs: ["https://placehold.co/100x100/e9ecef/495057?text=Thumb1", "https://placehold.co/100x100/e9ecef/495057?text=Thumb2", "https://placehold.co/100x100/e9ecef/495057?text=Thumb3", "https://placehold.co/100x100/e9ecef/495057?text=Thumb4"]
+        document.addEventListener('click', function (e) {
+            if (!searchForm.contains(e.target) && !searchTrigger.contains(e.target)) {
+                searchForm.classList.remove('active');
             }
+        });
+    }
+
+    /* =====================
+       AUTH STATE
+    ====================== */
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+
+    const guestNav = document.getElementById("guest-nav");
+    const userNav = document.getElementById("user-nav");
+    const logoutBtn = document.getElementById("logout-btn");
+
+    if (guestNav && userNav) {
+        if (isLoggedIn) {
+            guestNav.classList.add("d-none");
+            userNav.classList.remove("d-none");
+        } else {
+            userNav.classList.add("d-none");
+            guestNav.classList.remove("d-none");
+        }
+    }
+
+    /* =====================
+       LOGOUT
+    ====================== */
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", async function (e) {
+            e.preventDefault();
+            try {
+                await fetch("/api/auth/logout", { method: "POST" });
+            } catch (error) {
+                console.error("Logout failed:", error);
+            }
+            localStorage.removeItem("isLoggedIn");
+            window.location.href = "home.html";
+        });
+    }
+
+    /* =====================
+       LOAD PRODUCT FROM BACKEND
+    ====================== */
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get("id");
+
+    if (!productId) {
+        alert("Product ID not found");
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/products/${productId}`);
+        const product = await res.json();
+
+        if (!res.ok) {
+            alert(product.message || "Product not found");
+            return;
+        }
+
+
+        const addToCartBtn = document.getElementById("addToCartBtn");
+
+addToCartBtn.addEventListener("click", function () {
+
+    const quantity = parseInt(document.getElementById("quantity-input").value);
+
+    let cart = JSON.parse(localStorage.getItem("cartItems")) || [];
+
+    const existingIndex = cart.findIndex(item => item.id === product._id);
+
+    if (existingIndex > -1) {
+
+        const newQty = cart[existingIndex].quantity + quantity;
+
+        if (newQty > product.stock) {
+            alert("Cannot add more than available stock");
+            return;
+        }
+
+        cart[existingIndex].quantity = newQty;
+
+    } else {
+
+        if (quantity > product.stock) {
+            alert("Cannot add more than available stock");
+            return;
+        }
+
+        const cartItem = {
+            id: product._id,
+            title: product.name,
+            price: product.price,
+            priceStr: `₹${product.price}`,
+            image: product.images && product.images.length > 0
+                    ? product.images[0]
+                    : "/common/images/default.png",
+            quantity: quantity
         };
 
-        const mainImg = document.getElementById('mainImage');
-        const thumbs = document.querySelectorAll('.thumb-img');
+        cart.push(cartItem);
+    }
 
-        // Dynamic Data Loading
-        const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('id') || 1; // Default to ID 1
-        const product = products[productId] || products[1];
+    localStorage.setItem("cartItems", JSON.stringify(cart));
+    Swal.fire({
+    icon: "success",
+    title: "Added to Cart",
+    timer: 1200,
+    showConfirmButton: false
+});
+});
 
-        if (product) {
-            document.querySelector('.product-title-large').textContent = product.title;
-            // Handle Price HTML structure safely
-            const priceEl = document.querySelector('.product-price-large');
-            if (priceEl) {
-                priceEl.innerHTML = `${product.price} <span class="text-muted fs-6 text-decoration-line-through ms-2">${product.originalPrice}</span>`;
-            }
-            mainImg.src = product.image;
 
-            // Update Rating
-            const ratingEl = document.querySelector('.rating');
-            if (ratingEl) {
-                ratingEl.innerHTML = `<i class="bi bi-star-fill"></i> ${product.rating} <a href="#" class="text-muted ms-2 text-decoration-underline">${product.reviews} reviews</a>`;
-            }
+       // Title
+document.querySelector(".product-title-large").textContent = product.name;
 
-            // Update thumbs
-            thumbs.forEach((thumb, index) => {
-                if (product.thumbs[index]) {
-                    thumb.src = product.thumbs[index];
-                }
-            });
+// Brand
+document.getElementById("product-brand").textContent =
+    `Brand: ${product.brand}`;
+
+// Category
+document.getElementById("product-category").textContent =
+    `Category: ${product.category}`;
+
+// Stock
+const stockElement = document.getElementById("product-stock");
+stockElement.textContent = `Stock: ${product.stock} available`;
+currentStock = product.stock;
+
+// Price
+document.querySelector(".product-price-large").innerHTML =
+    `₹${product.price}`;
+
+// Disable button if out of stock
+
+
+if (product.stock === 0) {
+    stockElement.textContent = "Out of stock";
+    stockElement.classList.add("text-danger");
+    addToCartBtn.disabled = true;
+}
+
+        // Description
+        const desc = document.getElementById("product-description");
+        if (desc) {
+            desc.textContent = product.description || "No description available.";
         }
 
-        // Gallery Interaction
-        thumbs.forEach(thumb => {
-            thumb.addEventListener('click', function () {
-                // Update main image
-                mainImg.src = this.src.replace('100x100', '500x500'); // Simple heuristic for placeholder
+        // Main Image
+       const mainImg = document.getElementById("mainImage");
+       const thumbsContainer = document.getElementById("thumbs-container");
 
-                // Active state
-                thumbs.forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-            });
+if (product.images && product.images.length > 0) {
+
+    mainImg.src = product.images[0];
+
+    thumbsContainer.innerHTML = "";
+
+    product.images.forEach((img, index) => {
+
+        const thumb = document.createElement("img");
+        thumb.src = img;
+        thumb.classList.add("thumb-img");
+
+        if (index === 0) {
+            thumb.classList.add("active");
+        }
+
+        thumb.addEventListener("click", function () {
+            mainImg.src = img;
+            document.querySelectorAll(".thumb-img").forEach(t => t.classList.remove("active"));
+            thumb.classList.add("active");
         });
 
-        // Quantity logic
-        const qtyInput = document.getElementById('quantity-input');
-        const btnDecrease = document.getElementById('btn-decrease');
-        const btnIncrease = document.getElementById('btn-increase');
+        thumbsContainer.appendChild(thumb);
+    });
+}
 
-        if (qtyInput && btnDecrease && btnIncrease) {
-            btnDecrease.addEventListener('click', () => {
-                let val = parseInt(qtyInput.value) || 1;
-                if (val > 1) {
-                    qtyInput.value = val - 1;
-                }
-            });
 
-            btnIncrease.addEventListener('click', () => {
-                let val = parseInt(qtyInput.value) || 1;
-                qtyInput.value = val + 1;
-            });
-        }
+    } catch (error) {
+        console.error("Error loading product:", error);
+        alert("Error loading product");
+    }
 
-    </script>
+    /* =====================
+       GALLERY CLICK
+    ====================== */
+    
+
+    /* =====================
+       QUANTITY LOGIC
+    ====================== */
+    const qtyInput = document.getElementById('quantity-input');
+    const btnDecrease = document.getElementById('btn-decrease');
+    const btnIncrease = document.getElementById('btn-increase');
+
+    if (qtyInput && btnDecrease && btnIncrease) {
+        btnDecrease.addEventListener('click', () => {
+            let val = parseInt(qtyInput.value) || 1;
+            if (val > 1) qtyInput.value = val - 1;
+        });
+
+       btnIncrease.addEventListener('click', () => {
+    let val = parseInt(qtyInput.value) || 1;
+
+    if (val < currentStock) {
+        qtyInput.value = val + 1;
+    }
+});
+    }
+
+});
+</script>
+
 </body>
 
 </html>

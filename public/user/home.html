@@ -548,39 +548,19 @@
             </div>
         </div>
 
-        <!-- Categories -->
-        <div class="row g-4 mt-4">
-            <div class="col-md-12">
-                <h4 class="mb-4">Start exploring. <span class="text-muted">Good things are waiting for you</span></h4>
-            </div>
-            <div class="col-md-4">
-                <div class="category-card" onclick="window.location.href='product.html'">
-                    <div>
-                        <h5>For Men's</h5>
-                        <small class="text-muted">Starting at $24</small>
-                    </div>
-                    <i class="bi bi-arrow-right"></i>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="category-card" onclick="window.location.href='product.html'">
-                    <div>
-                        <h5>For Women's</h5>
-                        <small class="text-muted">Starting at $19</small>
-                    </div>
-                    <i class="bi bi-arrow-right"></i>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="category-card" onclick="window.location.href='product.html'">
-                    <div>
-                        <h5>Accessories</h5>
-                        <small class="text-muted">Explore accessories</small>
-                    </div>
-                    <i class="bi bi-arrow-right"></i>
-                </div>
-            </div>
-        </div>
+       <!-- Categories -->
+<div class="mt-4">
+    <h4 class="mb-4">
+        Start exploring.
+        <span class="text-muted">Good things are waiting for you</span>
+    </h4>
+
+    <div class="row g-4" id="categoryContainer">
+        <!-- Categories will load here -->
+    </div>
+</div>
+
+
 
         <!-- Recommendations (Products) -->
         <div class="mt-5">
@@ -812,122 +792,131 @@
         <!-- Bootstrap JS Bundle -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
+        <!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-                /* =====================
-                   AUTH STATE
-                ====================== */
-                const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-                const guestNav = document.getElementById("guest-nav");
-                const userNav = document.getElementById("user-nav");
-                const logoutBtn = document.getElementById("logout-btn");
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
-                const accountBtn = document.getElementById("accountBtn");
-                const cartBtn = document.querySelector('a[href="cart.html"]');
-                const wishlistBtn = document.querySelector('a[href="wishlist.html"]');
+    /* =====================
+       AUTH STATE
+    ====================== */
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
 
-                /* =====================
-                   NAVBAR VISIBILITY
-                ====================== */
-                if (guestNav && userNav) {
-                    if (isLoggedIn) {
-                        // ✅ Logged in → only Logout (Show User Nav)
-                        guestNav.classList.remove("d-flex");
-                        guestNav.classList.add("d-none");
+    const guestNav = document.getElementById("guest-nav");
+    const userNav = document.getElementById("user-nav");
+    const logoutBtn = document.getElementById("logout-btn");
 
-                        userNav.classList.remove("d-none");
-                        userNav.classList.add("d-flex");
-                    } else {
-                        // ❌ Not logged in → only Signup (Show Guest Nav)
-                        userNav.classList.remove("d-flex");
-                        userNav.classList.add("d-none");
+    const accountBtn = document.getElementById("accountBtn");
+    const cartBtn = document.querySelector('a[href="cart.html"]');
+    const wishlistBtn = document.querySelector('a[href="wishlist.html"]');
 
-                        guestNav.classList.remove("d-none");
-                        guestNav.classList.add("d-flex");
-                    }
-                }
+    if (guestNav && userNav) {
+        if (isLoggedIn) {
+            guestNav.classList.replace("d-flex", "d-none");
+            userNav.classList.replace("d-none", "d-flex");
+        } else {
+            userNav.classList.replace("d-flex", "d-none");
+            guestNav.classList.replace("d-none", "d-flex");
+        }
+    }
 
-                /* =====================
-                   PROTECT PAGES
-                ====================== */
-                function protectPage(e, redirectTo) {
-                    e.preventDefault();
+    if (accountBtn) {
+        accountBtn.addEventListener("click", e => protectPage(e, "account.html"));
+    }
 
-                    const loggedInNow = localStorage.getItem("isLoggedIn") === "true";
+    if (cartBtn) {
+        cartBtn.addEventListener("click", e => protectPage(e, "cart.html"));
+    }
 
-                    if (!loggedInNow) {
-                        Swal.fire({
-                            icon: "warning",
-                            title: "Login Required",
-                            text: "Please login to continue",
-                            confirmButtonText: "Login",
-                            confirmButtonColor: "#000"
-                        }).then(() => {
-                            window.location.href = "login.html";
-                        });
-                    } else {
-                        window.location.href = redirectTo;
-                    }
-                }
+    if (wishlistBtn) {
+        wishlistBtn.addEventListener("click", e => protectPage(e, "wishlist.html"));
+    }
 
-                if (accountBtn) {
-                    accountBtn.addEventListener("click", e => protectPage(e, "account.html"));
-                }
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", async function (e) {
+            e.preventDefault();
+            await fetch("/api/auth/logout", { method: "POST" });
+            localStorage.removeItem("isLoggedIn");
+            window.location.href = "home.html";
+        });
+    }
 
-                if (cartBtn) {
-                    cartBtn.addEventListener("click", e => protectPage(e, "cart.html"));
-                }
+    /* =====================
+       LOAD CATEGORIES
+    ====================== */
+    loadCategories();
 
-                if (wishlistBtn) {
-                    wishlistBtn.addEventListener("click", e => protectPage(e, "wishlist.html"));
-                }
+});
 
-                /* =====================
-                   LOGOUT
-                ====================== */
-                if (logoutBtn) {
-                    logoutBtn.addEventListener("click", async function (e) {
-                        e.preventDefault();
-                        try {
-                            const res = await fetch("/api/auth/logout", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" }
-                            });
-                        } catch (error) {
-                            console.error("Logout failed:", error);
-                        }
 
-                        localStorage.removeItem("isLoggedIn");
-                        window.location.href = "home.html";
-                    });
-                }
+function protectPage(e, redirectTo) {
+    e.preventDefault();
 
-            });
+    const loggedInNow = localStorage.getItem("isLoggedIn") === "true";
 
-            // Search Toggle (Inline)
-            const searchTrigger = document.getElementById('search-trigger');
-            const searchForm = document.getElementById('search-form-inline');
-            const searchInput = searchForm.querySelector('input');
+    if (!loggedInNow) {
+        Swal.fire({
+            icon: "warning",
+            title: "Login Required",
+            text: "Please login to continue",
+            confirmButtonText: "Login",
+            confirmButtonColor: "#000"
+        }).then(() => {
+            window.location.href = "login.html";
+        });
+    } else {
+        window.location.href = redirectTo;
+    }
+}
 
-            if (searchTrigger && searchForm) {
-                searchTrigger.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    searchForm.classList.toggle('active');
-                    if (searchForm.classList.contains('active')) {
-                        setTimeout(() => searchInput.focus(), 100);
-                    }
-                });
 
-                // Close when clicking outside
-                document.addEventListener('click', function (e) {
-                    if (!searchForm.contains(e.target) && !searchTrigger.contains(e.target)) {
-                        searchForm.classList.remove('active');
-                    }
-                });
-            }
-        </script>
+async function loadCategories() {
+    try {
+        const res = await fetch("/api/categories");
+        const categories = await res.json();
+
+        const container = document.getElementById("categoryContainer");
+        container.innerHTML = "";
+
+        if (!categories.length) {
+            container.innerHTML = `
+                <div class="col-12 text-center text-muted">
+                    No categories available
+                </div>
+            `;
+            return;
+        }
+
+        categories.forEach(cat => {
+            container.innerHTML += `
+                <div class="col-md-4">
+                    <div class="category-card"
+                         onclick="window.location.href='product.html?category=${cat._id}'">
+                        <div>
+                            <h5>${cat.name}</h5>
+                            <small class="text-muted">
+                                ${cat.productCount || 0} Products
+                            </small>
+                        </div>
+                        <i class="bi bi-arrow-right"></i>
+                    </div>
+                </div>
+            `;
+        });
+
+    } catch (err) {
+        console.error("Error loading categories:", err);
+    }
+}
+</script>
+
+
+
+        
 
 
 

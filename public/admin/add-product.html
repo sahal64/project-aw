@@ -128,7 +128,7 @@
         <span class="nav-label">Admin</span>
         <nav class="nav flex-column">
             <a href="admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
-            <a href="../user/home.html" class="nav-link mt-3 text-danger"><i class="bi bi-box-arrow-right"></i>
+            <a href="#" class="nav-link mt-3 text-danger" id="admin-logout"><i class="bi bi-box-arrow-right"></i>
                 Logout</a>
         </nav>
 
@@ -147,18 +147,26 @@
     <div class="main-content">
         <h4 class="fw-bold mb-4">Add New Product</h4>
 
-        <form>
+        <form id="addProductForm">
+
             <div class="row">
                 <div class="col-lg-8">
                     <div class="form-section">
                         <h5 class="fw-bold mb-4">General Information</h5>
                         <div class="mb-3">
                             <label class="form-label">Product Name</label>
-                            <input type="text" class="form-control" placeholder="e.g. Black Automatic Watch">
+                            <input type="text" id="productName" class="form-control" required>
                         </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Brand</label>
+                            <input type="text" class="form-control" id="brand" placeholder="Enter brand name">
+                        </div>
+
+
                         <div class="mb-3">
                             <label class="form-label">Description</label>
-                            <textarea class="form-control" rows="5" placeholder="Product description..."></textarea>
+                            <textarea id="productDescription" class="form-control" rows="5"></textarea>
                         </div>
                     </div>
 
@@ -167,7 +175,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Base Price ($)</label>
-                                <input type="number" class="form-control" placeholder="0.00">
+                                <input type="number" id="productPrice" class="form-control" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Discount Price ($)</label>
@@ -175,7 +183,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Stock Quantity</label>
-                                <input type="number" class="form-control" placeholder="0">
+                                <input type="number" id="productStock" class="form-control" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">SKU</label>
@@ -189,35 +197,110 @@
                     <div class="form-section">
                         <h5 class="fw-bold mb-4">Category</h5>
                         <label class="form-label">Product Category</label>
-                        <select class="form-select mb-3">
-                            <option>Accessories</option>
-                            <option>Men's Fashion</option>
-                            <option>Women's Fashion</option>
+                        <select id="productCategory" class="form-select mb-3" required>
+                            <option value="men">Men</option>
+                             <option value="women">Women</option>
                         </select>
                         <label class="form-label">Tags</label>
                         <input type="text" class="form-control" placeholder="e.g. watch, luxury">
                     </div>
 
                     <div class="form-section">
-                        <h5 class="fw-bold mb-4">Media</h5>
-                        <div class="image-upload-box mb-3">
-                            <i class="bi bi-cloud-upload fs-1"></i>
-                            <p class="mb-0 mt-2">Click to upload image</p>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <img src="https://placehold.co/60" class="rounded border p-1">
-                            <img src="https://placehold.co/60" class="rounded border p-1">
-                        </div>
-                    </div>
+    <h5 class="fw-bold mb-4">Media</h5>
+
+    <label class="form-label">Upload Product Images (Max 5, 1MB each)</label>
+    <input 
+        type="file" 
+        id="productImages" 
+        class="form-control" 
+        multiple 
+        accept="image/*"
+        required
+    >
+</div>
+
                 </div>
             </div>
 
             <div class="d-flex justify-content-end mb-5">
                 <button type="button" class="btn btn-light me-2">Cancel</button>
-                <button type="button" class="btn btn-dark px-4">Publish Product</button>
+                <button type="submit" class="btn btn-dark px-4">Publish Product</button>
             </div>
         </form>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // ==========================
+    // ADMIN LOGOUT
+    // ==========================
+    document.getElementById("admin-logout").addEventListener("click", async (e) => {
+        e.preventDefault();
+        try {
+            await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+        } catch (err) {
+            console.error(err);
+        }
+        window.location.href = "../user/login.html";
+    });
+
+
+   // ==========================
+// ADD PRODUCT (WITH IMAGES)
+// ==========================
+document.getElementById("addProductForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData();
+
+    formData.append("name", document.getElementById("productName").value);
+    formData.append("description", document.getElementById("productDescription").value);
+    formData.append("price", document.getElementById("productPrice").value);
+    formData.append("stock", document.getElementById("productStock").value);
+    formData.append("category", document.getElementById("productCategory").value);
+    formData.append("brand", document.getElementById("brand").value);
+
+
+    const files = document.getElementById("productImages").files;
+
+    if (files.length === 0) {
+        alert("Please upload at least 1 image");
+        return;
+    }
+
+    if (files.length > 5) {
+        alert("Maximum 5 images allowed");
+        return;
+    }
+
+    for (let i = 0; i < files.length; i++) {
+        formData.append("images", files[i]);
+    }
+
+    try {
+        const res = await fetch("/api/products", {
+            method: "POST",
+            body: formData,
+            credentials: "include"
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.message || "Error adding product");
+            return;
+        }
+
+        alert("Product added successfully!");
+        window.location.href = "all-products.html";
+
+    } catch (err) {
+        console.error("Add product error:", err);
+        alert("Something went wrong");
+    }
+});
+
+</script>
 
 </body>
 

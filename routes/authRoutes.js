@@ -10,7 +10,8 @@ const {
   forgotPassword,
   resendForgotOtp, // 👈 ADD
   resetPassword,
-  getMe
+  getMe,
+  refreshAccessToken
 } = require("../controllers/authController");
 
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -23,6 +24,8 @@ router.post("/logout", logoutUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/resend-forgot-otp", resendForgotOtp);
 router.post("/reset-password", resetPassword);
+router.post("/refresh", refreshAccessToken);
 router.get("/me", authMiddleware, getMe);
+
 
 module.exports = router;

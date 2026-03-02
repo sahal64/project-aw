@@ -226,41 +226,22 @@
         <div class="row g-4 mb-4">
             <div class="col-md-4">
                 <div class="stat-card">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <div class="stat-label">Total Sales</div>
-                            <div class="stat-value">$350K</div>
-                            <div class="stat-change up"><i class="bi bi-arrow-up"></i> 10.4% <span
-                                    class="text-muted fw-normal">vs last month</span></div>
-                        </div>
-                        <button class="btn btn-sm btn-outline-dark h-50">Details</button>
-                    </div>
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value" id="totalRevenue">₹0</div>
                 </div>
             </div>
+
             <div class="col-md-4">
                 <div class="stat-card">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <div class="stat-label">Total Orders</div>
-                            <div class="stat-value">10.7K</div>
-                            <div class="stat-change up"><i class="bi bi-arrow-up"></i> 12.4% <span
-                                    class="text-muted fw-normal">vs last month</span></div>
-                        </div>
-                        <button class="btn btn-sm btn-outline-dark h-50">Details</button>
-                    </div>
+                    <div class="stat-label">Total Orders</div>
+                    <div class="stat-value" id="totalOrders">0</div>
                 </div>
             </div>
+
             <div class="col-md-4">
                 <div class="stat-card">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <div class="stat-label">Pending & Canceled</div>
-                            <div class="stat-value">509 <small class="fw-normal text-muted fs-6">Orders</small></div>
-                            <div class="stat-change down"><i class="bi bi-arrow-down"></i> 94 <span
-                                    class="text-danger">Canceled</span></div>
-                        </div>
-                        <button class="btn btn-sm btn-outline-dark h-50">Details</button>
-                    </div>
+                    <div class="stat-label">Total Customers</div>
+                    <div class="stat-value" id="totalUsers">0</div>
                 </div>
             </div>
         </div>
@@ -279,21 +260,8 @@
                         </div>
                     </div>
                     <!-- CSS Chart Placeholder -->
-                    <div class="chart-placeholder">
-                        <div class="bar" style="height: 40%"></div>
-                        <div class="bar" style="height: 60%"></div>
-                        <div class="bar" style="height: 45%"></div>
-                        <div class="bar" style="height: 80%"></div>
-                        <div class="bar" style="height: 70%"></div>
-                        <div class="bar" style="height: 90%; background: #000;">
-                            <!-- Tooltip simulated -->
-                            <div
-                                style="position: absolute; background: #000; color: #fff; padding: 5px; border-radius: 5px; font-size: 0.7rem; top: 40%; transform: translateX(-20%);">
-                                Wed<br>$15,409
-                            </div>
-                        </div>
-                        <div class="bar" style="height: 65%"></div>
-                    </div>
+                    <canvas id="revenueChart" height="100"></canvas>
+
                     <div class="d-flex justify-content-between mt-2 text-muted small px-3">
                         <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
                     </div>
@@ -302,29 +270,17 @@
             <div class="col-lg-4">
                 <div class="stat-card">
                     <h5 class="fw-bold mb-4">Recent Orders</h5>
-                    <div class="list-group list-group-flush">
-                        <div class="list-group-item px-0 py-3 border-bottom d-flex align-items-center">
-                            <img src="https://placehold.co/50x50" class="rounded me-3">
-                            <div>
-                                <h6 class="m-0 fw-bold">Black Watch</h6>
-                                <small class="text-muted">Lessie Alexander - $123.00</small>
-                            </div>
-                        </div>
-                        <div class="list-group-item px-0 py-3 border-bottom d-flex align-items-center">
-                            <img src="https://placehold.co/50x50" class="rounded me-3">
-                            <div>
-                                <h6 class="m-0 fw-bold">Smart Band</h6>
-                                <small class="text-muted">John Doe - $59.00</small>
-                            </div>
-                        </div>
-                        <div class="list-group-item px-0 py-3 d-flex align-items-center">
-                            <img src="https://placehold.co/50x50" class="rounded me-3">
-                            <div>
-                                <h6 class="m-0 fw-bold">Leather Strap</h6>
-                                <small class="text-muted">Jane Smith - $34.00</small>
-                            </div>
-                        </div>
+                    <div class="list-group list-group-flush" id="recentOrders">
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-label">Low Stock Products</div>
+                    <div class="stat-value text-danger" id="lowStock">0</div>
                 </div>
             </div>
         </div>
@@ -332,16 +288,196 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // ==========================
+        // ADMIN AUTH CHECK
+        // ==========================
+        async function checkAdminAuth() {
+            try {
+                let res = await fetch("/api/auth/me", {
+                    credentials: "include"
+                });
+
+                if (res.status === 401) {
+                    const refreshRes = await fetch("/api/auth/refresh", {
+                        method: "POST",
+                        credentials: "include"
+                    });
+
+                    if (!refreshRes.ok) {
+                        window.location.href = "../user/login.html";
+                        return;
+                    }
+
+                    res = await fetch("/api/auth/me", {
+                        credentials: "include"
+                    });
+                }
+
+                if (!res.ok) {
+                    window.location.href = "../user/login.html";
+                    return;
+                }
+
+                const user = await res.json();
+
+                if (user.role !== "admin") {
+                    window.location.href = "../user/home.html";
+                    return;
+                }
+
+            } catch (err) {
+                window.location.href = "../user/login.html";
+            }
+        }
+
         document.getElementById("admin-logout").addEventListener("click", async (e) => {
             e.preventDefault();
             try {
-                await fetch("/api/auth/logout", { method: "POST" });
+                await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
             } catch (err) {
                 console.error(err);
             }
-            localStorage.removeItem("isLoggedIn");
             window.location.href = "../user/login.html";
+        });
+
+        // ==========================
+        // LOAD DASHBOARD DATA
+        // ==========================
+        async function loadDashboard() {
+            try {
+                const res = await fetch("/api/dashboard", {
+                    credentials: "include"
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert("Failed to load dashboard");
+                    return;
+                }
+
+                document.getElementById("totalRevenue").innerText =
+                    "₹" + data.stats.totalRevenue.toLocaleString("en-IN");
+
+                document.getElementById("totalOrders").innerText =
+                    data.stats.totalOrders;
+
+                document.getElementById("totalUsers").innerText =
+                    data.stats.totalUsers;
+
+                document.getElementById("lowStock").innerText =
+                    data.stats.lowStockProducts;
+
+            } catch (err) {
+                console.error("Dashboard error:", err);
+            }
+        }
+
+        // ==========================
+        // LOAD RECENT ORDERS
+        // ==========================
+        async function loadRecentOrders() {
+            try {
+                const res = await fetch("/api/orders", {
+                    credentials: "include"
+                });
+
+                const orders = await res.json();
+
+                const container = document.getElementById("recentOrders");
+                container.innerHTML = "";
+
+                orders.slice(0, 5).forEach(order => {
+                    const item = document.createElement("div");
+                    item.className =
+                        "list-group-item px-0 py-3 border-bottom d-flex justify-content-between";
+
+                    item.innerHTML = `
+                <div>
+                    <h6 class="m-0 fw-bold">Order #${order._id.slice(-6)}</h6>
+                    <small class="text-muted">
+                        ₹${order.totalAmount} • ${order.orderStatus}
+                    </small>
+                </div>
+                <span class="badge bg-${order.paymentStatus === "Paid" ? "success" : "warning"}">
+                    ${order.paymentStatus}
+                </span>
+            `;
+
+                    container.appendChild(item);
+                });
+
+            } catch (err) {
+                console.error("Recent orders error:", err);
+            }
+        }
+
+
+        // ==========================
+        // LOAD REVENUE CHART
+        // ==========================
+        async function loadRevenueChart() {
+            try {
+                const res = await fetch("/api/dashboard/revenue-chart", {
+                    credentials: "include"
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) return;
+
+                const ctx = document.getElementById("revenueChart").getContext("2d");
+
+                new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: [
+                            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+                        ],
+                        datasets: [{
+                            label: "Revenue",
+                            data: data.data,
+                            borderColor: "#000",
+                            backgroundColor: "rgba(0,0,0,0.05)",
+                            tension: 0.4,
+                            fill: true,
+                            pointRadius: 4,
+                            pointBackgroundColor: "#000"
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        animation: {
+                            duration: 1500,
+                            easing: "easeInOutQuart"
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                ticks: {
+                                    callback: function (value) {
+                                        return "₹" + value;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+            } catch (err) {
+                console.error("Chart error:", err);
+            }
+        }
+
+        checkAdminAuth().then(() => {
+            loadDashboard();
+            loadRecentOrders();
+            loadRevenueChart();
         });
     </script>
 </body>

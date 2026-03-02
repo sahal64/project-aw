@@ -138,17 +138,19 @@
 
 
     <script>
-        const form = document.getElementById("loginForm");
+    const form = document.getElementById("loginForm");
 
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault();
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-            const email = form.querySelector("input[type='email']").value;
-            const password = form.querySelector("input[type='password']").value;
+        const email = form.querySelector("input[type='email']").value;
+        const password = form.querySelector("input[type='password']").value;
 
+        try {
             const res = await fetch("/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",   // 🔥 VERY IMPORTANT
                 body: JSON.stringify({ email, password })
             });
 
@@ -159,7 +161,7 @@
                 return;
             }
 
-            // ✅ LOCAL AUTH FLAG
+            // optional local flag (not required for auth)
             localStorage.setItem("isLoggedIn", "true");
 
             if (data.role === "admin") {
@@ -167,8 +169,13 @@
             } else {
                 window.location.href = "home.html";
             }
-        });
-    </script>
+
+        } catch (err) {
+            console.error("Login error:", err);
+            alert("Something went wrong");
+        }
+    });
+</script>
 
 
 

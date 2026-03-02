@@ -13,31 +13,39 @@ const productSchema = new mongoose.Schema(
     },
 
     price: { 
-      type: Number, 
-      required: true 
-    },
+  type: Number, 
+  required: true,
+  min: 0
+},
 
-    stock: { 
-      type: Number, 
-      required: true 
-    },
+stock: { 
+  type: Number, 
+  required: true,
+  min: 0
+},
 
     category: { 
       type: String, 
       required: true,
-      enum: ["men", "women","limited"]   // ✅ Only allow these two
+      enum: ["men", "women", "limited"]
     },
 
     images: [
-       {
-          type: String
-       }
-            ]
-,
+      {
+        type: String
+      }
+    ],
 
     description: { 
       type: String 
+    },
+
+    // ✅ ADD THIS
+    isActive: {
+      type: Boolean,
+      default: true
     }
+
   },
   { timestamps: true }
 );

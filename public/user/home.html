@@ -167,18 +167,72 @@
 
         /* Categories */
         .category-card {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 30px;
+            border-radius: 15px;
+            padding: 40px 30px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: 0.3s;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-start;
+            transition: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             cursor: pointer;
+            min-height: 250px;
+            position: relative;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        .category-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.1) 100%);
+            z-index: 1;
+            transition: 0.4s;
         }
 
         .category-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .category-card:hover::before {
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.3) 100%);
+        }
+
+        .category-card .cat-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-card h5 {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .category-card .text-muted {
+            color: #ccc !important;
+            font-size: 0.95rem;
+        }
+
+        .category-card i {
+            color: #fff;
+            font-size: 1.5rem;
+            transition: 0.3s;
+        }
+
+        .category-card:hover i {
+            transform: translateX(8px);
         }
 
         /* Products */
@@ -548,157 +602,28 @@
             </div>
         </div>
 
-       <!-- Categories -->
-<div class="mt-4">
-    <h4 class="mb-4">
-        Start exploring.
-        <span class="text-muted">Good things are waiting for you</span>
-    </h4>
+        <!-- Categories -->
+        <div class="mt-4">
+            <h4 class="mb-4">
+                Start exploring.
+                <span class="text-muted">Good things are waiting for you</span>
+            </h4>
 
-    <div class="row g-4" id="categoryContainer">
-        <!-- Categories will load here -->
-    </div>
-</div>
+            <div class="row g-4" id="categoryContainer">
+                <!-- Categories will load here -->
+            </div>
+        </div>
 
 
 
         <!-- Recommendations (Products) -->
         <div class="mt-5">
             <h4 class="section-title">Recommendations. <span>Best matching products for you</span></h4>
-            <div class="row g-4">
-                <!-- Product 1 -->
-                <div class="col-6 col-md-3">
-                    <div class="product-card" onclick="window.location.href='single-product.html'">
-                        <div class="wishlist-btn" onclick="event.stopPropagation()"><i class="bi bi-bag-plus"></i></div>
-                        <div class="product-img-container">
-                            <img src="images/10001.jpg" alt="Premium Watches" class="product-img">
-                        </div>
-                        <div class="product-category">Accessories</div>
-                        <a href="single-product.html" class="product-title">Aston Martin Skeleton Sports Watch</a>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="rating"><i class="bi bi-star-fill"></i> 4.5 (145)</div>
-                            <div class="product-price">₹4,10,000</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Product 2 -->
-                <div class="col-6 col-md-3">
-                    <div class="product-card" onclick="window.location.href='single-product.html'">
-                        <div class="wishlist-btn" onclick="event.stopPropagation()"><i class="bi bi-bag-plus"></i></div>
-                        <div class="product-img-container">
-                            <img src="images/10002.jpg" alt="Premium  Watches" class="product-img">
-                        </div>
-                        <div class="product-category">Accessories</div>
-                        <a href="single-product.html" class="product-title">Casio Chronograph Stainless Steel Watch</a>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="rating"><i class="bi bi-star-fill"></i> 4.8 (24)</div>
-                            <div class="product-price">₹20,000</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Product 3 -->
-                <div class="col-6 col-md-3">
-                    <div class="product-card" onclick="window.location.href='single-product.html'">
-                        <div class="wishlist-btn" onclick="event.stopPropagation()"><i class="bi bi-bag-plus"></i></div>
-                        <div class="product-img-container">
-                            <img src="images/10003.jpg" alt="Product" class="product-img">
-                        </div>
-                        <div class="product-category">Accessories</div>
-                        <a href="single-product.html" class="product-title">Versace Two-Tone Luxury Watch</a>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="rating"><i class="bi bi-star-fill"></i> 4.2 (10)</div>
-                            <div class="product-price">₹1,45,000</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Product 4 -->
-                <div class="col-6 col-md-3">
-                    <div class="product-card" onclick="window.location.href='single-product.html'">
-                        <div class="wishlist-btn" onclick="event.stopPropagation()"><i class="bi bi-bag-plus"></i></div>
-                        <div class="product-img-container">
-                            <img src="images/10004.jpg" alt="Product" class="product-img">
-                        </div>
-                        <div class="product-category">Accessories</div>
-                        <a href="single-product.html" class="product-title">Diesel Gold Chronograph Watch</a>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="rating"><i class="bi bi-star-fill"></i> 4.9 (450)</div>
-                            <div class="product-price">₹32,000</div>
-                        </div>
-                    </div>
-                </div>
+            <div class="row g-4" id="recommendationsContainer">
+                <!-- Products will load here dynamically -->
             </div>
         </div>
 
-        <!-- Best Sellers -->
-        <div class="mt-5">
-            <h4 class="section-title">Best Sellers. <span>Best selling of the month</span></h4>
-            <div class="row g-4">
-                <!-- Product 1 -->
-                <div class="col-6 col-md-3">
-                    <div class="product-card" onclick="window.location.href='single-product.html'">
-                        <div class="wishlist-btn" onclick="event.stopPropagation()"><i class="bi bi-bag-plus"></i></div>
-                        <div class="product-img-container">
-                            <img src="https://placehold.co/300x300/e9ecef/495057?text=Watch+5" alt="Product"
-                                class="product-img">
-                        </div>
-                        <div class="product-category">Accessories</div>
-                        <a href="single-product.html" class="product-title">Luxury Gold Watch</a>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="rating"><i class="bi bi-star-fill"></i> 5.0 (20)</div>
-                            <div class="product-price">$469.99</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Product 2 -->
-                <div class="col-6 col-md-3">
-                    <div class="product-card" onclick="window.location.href='single-product.html'">
-                        <div class="wishlist-btn" onclick="event.stopPropagation()"><i class="bi bi-bag-plus"></i></div>
-                        <div class="product-img-container">
-                            <img src="https://placehold.co/300x300/e9ecef/495057?text=Watch+6" alt="Product"
-                                class="product-img">
-                        </div>
-                        <div class="product-category">Accessories</div>
-                        <a href="single-product.html" class="product-title">Minimalist Watch</a>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="rating"><i class="bi bi-star-fill"></i> 4.4 (54)</div>
-                            <div class="product-price">$89.99</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Product 3 -->
-                <div class="col-6 col-md-3">
-                    <div class="product-card" onclick="window.location.href='single-product.html'">
-                        <div class="wishlist-btn" onclick="event.stopPropagation()"><i class="bi bi-bag-plus"></i></div>
-                        <div class="product-img-container">
-                            <img src="https://placehold.co/300x300/e9ecef/495057?text=Watch+7" alt="Product"
-                                class="product-img">
-                        </div>
-                        <div class="product-category">Accessories</div>
-                        <a href="single-product.html" class="product-title">Diver Pro Watch</a>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="rating"><i class="bi bi-star-fill"></i> 4.7 (89)</div>
-                            <div class="product-price">$299.00</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Product 4 -->
-                <div class="col-6 col-md-3">
-                    <div class="product-card" onclick="window.location.href='single-product.html'">
-                        <div class="wishlist-btn" onclick="event.stopPropagation()"><i class="bi bi-bag-plus"></i></div>
-                        <div class="product-img-container">
-                            <img src="https://placehold.co/300x300/e9ecef/495057?text=Watch+8" alt="Product"
-                                class="product-img">
-                        </div>
-                        <div class="product-category">Accessories</div>
-                        <a href="single-product.html" class="product-title">Chronograph Watch</a>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="rating"><i class="bi bi-star-fill"></i> 4.6 (112)</div>
-                            <div class="product-price">$199.50</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Promo Banner -->
         <div class="promo-banner mt-5 overflow-hidden p-0">
@@ -793,130 +718,258 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
         <!-- Bootstrap JS Bundle -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Bootstrap JS Bundle -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Bootstrap JS Bundle -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
 
-    /* =====================
-       AUTH STATE
-    ====================== */
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+                /* =====================
+                   AUTH STATE
+                ====================== */
+                const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
 
-    const guestNav = document.getElementById("guest-nav");
-    const userNav = document.getElementById("user-nav");
-    const logoutBtn = document.getElementById("logout-btn");
+                const guestNav = document.getElementById("guest-nav");
+                const userNav = document.getElementById("user-nav");
+                const logoutBtn = document.getElementById("logout-btn");
 
-    const accountBtn = document.getElementById("accountBtn");
-    const cartBtn = document.querySelector('a[href="cart.html"]');
-    const wishlistBtn = document.querySelector('a[href="wishlist.html"]');
+                const accountBtn = document.getElementById("accountBtn");
+                const cartBtn = document.querySelector('a[href="cart.html"]');
+                const wishlistBtn = document.querySelector('a[href="wishlist.html"]');
 
-    if (guestNav && userNav) {
-        if (isLoggedIn) {
-            guestNav.classList.replace("d-flex", "d-none");
-            userNav.classList.replace("d-none", "d-flex");
-        } else {
-            userNav.classList.replace("d-flex", "d-none");
-            guestNav.classList.replace("d-none", "d-flex");
-        }
-    }
+                if (guestNav && userNav) {
+                    if (isLoggedIn) {
+                        guestNav.classList.replace("d-flex", "d-none");
+                        userNav.classList.replace("d-none", "d-flex");
+                    } else {
+                        userNav.classList.replace("d-flex", "d-none");
+                        guestNav.classList.replace("d-none", "d-flex");
+                    }
+                }
 
-    if (accountBtn) {
-        accountBtn.addEventListener("click", e => protectPage(e, "account.html"));
-    }
+                if (accountBtn) {
+                    accountBtn.addEventListener("click", e => protectPage(e, "account.html"));
+                }
 
-    if (cartBtn) {
-        cartBtn.addEventListener("click", e => protectPage(e, "cart.html"));
-    }
+                if (cartBtn) {
+                    cartBtn.addEventListener("click", e => protectPage(e, "cart.html"));
+                }
 
-    if (wishlistBtn) {
-        wishlistBtn.addEventListener("click", e => protectPage(e, "wishlist.html"));
-    }
+                if (wishlistBtn) {
+                    wishlistBtn.addEventListener("click", e => protectPage(e, "wishlist.html"));
+                }
 
-    if (logoutBtn) {
-        logoutBtn.addEventListener("click", async function (e) {
-            e.preventDefault();
-            await fetch("/api/auth/logout", { method: "POST" });
-            localStorage.removeItem("isLoggedIn");
-            window.location.href = "home.html";
-        });
-    }
+                if (logoutBtn) {
+                    logoutBtn.addEventListener("click", async function (e) {
+                        e.preventDefault();
+                        await fetch("/api/auth/logout", { method: "POST" });
+                        localStorage.removeItem("isLoggedIn");
+                        window.location.href = "home.html";
+                    });
+                }
 
-    /* =====================
-       LOAD CATEGORIES
-    ====================== */
-    loadCategories();
+                /* =====================
+                   LOAD CATEGORIES
+                ====================== */
+                loadCategories();
 
-});
+                /* =====================
+                   LOAD RECOMMENDATIONS
+                ====================== */
+                loadRecommendations();
 
-
-function protectPage(e, redirectTo) {
-    e.preventDefault();
-
-    const loggedInNow = localStorage.getItem("isLoggedIn") === "true";
-
-    if (!loggedInNow) {
-        Swal.fire({
-            icon: "warning",
-            title: "Login Required",
-            text: "Please login to continue",
-            confirmButtonText: "Login",
-            confirmButtonColor: "#000"
-        }).then(() => {
-            window.location.href = "login.html";
-        });
-    } else {
-        window.location.href = redirectTo;
-    }
-}
+            });
 
 
-async function loadCategories() {
-    try {
-        const res = await fetch("/api/categories");
-        const categories = await res.json();
+            function protectPage(e, redirectTo) {
+                e.preventDefault();
 
-        const container = document.getElementById("categoryContainer");
-        container.innerHTML = "";
+                const loggedInNow = localStorage.getItem("isLoggedIn") === "true";
 
-        if (!categories.length) {
-            container.innerHTML = `
+                if (!loggedInNow) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Login Required",
+                        text: "Please login to continue",
+                        confirmButtonText: "Login",
+                        confirmButtonColor: "#000"
+                    }).then(() => {
+                        window.location.href = "login.html";
+                    });
+                } else {
+                    window.location.href = redirectTo;
+                }
+            }
+
+
+            async function loadCategories() {
+                try {
+                    const res = await fetch("/api/categories");
+                    const categories = await res.json();
+
+                    const container = document.getElementById("categoryContainer");
+                    container.innerHTML = "";
+
+                    if (!categories.length) {
+                        container.innerHTML = `
                 <div class="col-12 text-center text-muted">
                     No categories available
                 </div>
             `;
-            return;
-        }
+                        return;
+                    }
 
-        categories.forEach(cat => {
-            container.innerHTML += `
+                    categories.forEach(cat => {
+                        let catQuery = "limited";
+                        let bgImage = "https://placehold.co/600x400/333/fff?text=Category";
+
+                        if (cat.name.toLowerCase().includes("women")) {
+                            catQuery = "women";
+                            // Route to the new luxury images available in the server's public path
+                            bgImage = "../common/images/category-women.png";
+                        }
+                        else if (cat.name.toLowerCase().includes("men")) {
+                            catQuery = "men";
+                            bgImage = "../common/images/category-men.png";
+                        }
+
+                        container.innerHTML += `
                 <div class="col-md-4">
-                    <div class="category-card"
-                         onclick="window.location.href='product.html?category=${cat._id}'">
-                        <div>
-                            <h5>${cat.name}</h5>
-                            <small class="text-muted">
-                                ${cat.productCount || 0} Products
-                            </small>
+                    <div class="category-card" style="background-image: url('${bgImage}'); background-size: cover; background-position: center;"
+                         onclick="window.location.href='product.html?category=${catQuery}'">
+                        <div class="cat-content">
+                            <div>
+                                <h5>${cat.name}</h5>
+                                <small class="text-muted">
+                                    ${cat.productCount || 0} Products
+                                </small>
+                            </div>
+                            <i class="bi bi-arrow-right"></i>
                         </div>
-                        <i class="bi bi-arrow-right"></i>
                     </div>
                 </div>
             `;
-        });
+                    });
 
-    } catch (err) {
-        console.error("Error loading categories:", err);
-    }
-}
-</script>
+                } catch (err) {
+                    console.error("Error loading categories:", err);
+                }
+            }
+
+            /* =====================
+               LOAD RECOMMENDATIONS
+            ====================== */
+            async function loadRecommendations() {
+                try {
+                    const res = await fetch("/api/products?sort=newest");
+                    const data = await res.json();
+
+                    const container = document.getElementById("recommendationsContainer");
+                    container.innerHTML = "";
+
+                    const activeProducts = data.products.filter(p => p.isActive !== false);
+
+                    // Separate by category to ensure a mix
+                    const menProducts = activeProducts.filter(p => p.category === 'men');
+                    const womenProducts = activeProducts.filter(p => p.category === 'women');
+                    const otherProducts = activeProducts.filter(p => p.category !== 'men' && p.category !== 'women');
+
+                    let productsToDisplay = [];
+
+                    // Try to get 2 men and 2 women products if possible
+                    if (menProducts.length > 0 && womenProducts.length > 0) {
+                        productsToDisplay = [
+                            ...menProducts.slice(0, 2),
+                            ...womenProducts.slice(0, 4 - Math.min(2, menProducts.length))
+                        ];
+                    } else {
+                        // Fallback to just the newest active products
+                        productsToDisplay = activeProducts.slice(0, 4);
+                    }
+
+                    // If we still don't have 4, fill with whatever else is available
+                    if (productsToDisplay.length < 4) {
+                        const remainingNeeded = 4 - productsToDisplay.length;
+                        const unusedProducts = activeProducts.filter(p => !productsToDisplay.includes(p));
+                        productsToDisplay = [...productsToDisplay, ...unusedProducts.slice(0, remainingNeeded)];
+                    }
+
+                    if (!productsToDisplay.length) {
+                        container.innerHTML = `<div class="col-12 text-center text-muted">No recommendations available.</div>`;
+                        return;
+                    }
+
+                    productsToDisplay.forEach(product => {
+                        const image = product.images && product.images.length > 0
+                            ? product.images[0]
+                            : "https://placehold.co/300x300?text=No+Image";
+
+                        container.innerHTML += `
+                <div class="col-6 col-md-3">
+                    <div class="product-card" onclick="window.location.href='single-product.html?id=${product._id}'">
+                        <div class="wishlist-btn" title="Add to Cart" onclick="event.stopPropagation(); addToCartLocal('${product._id}', '${product.name}', ${product.price}, '${image}', ${product.stock})"><i class="bi bi-bag-plus"></i></div>
+                        <div class="product-img-container">
+                            <img src="${image}" alt="${product.name}" class="product-img">
+                        </div>
+                        <div class="product-category">${product.category}</div>
+                        <a href="single-product.html?id=${product._id}" class="product-title">${product.name}</a>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="rating"><i class="bi bi-star-fill"></i> 4.8 <span class="text-muted" style="font-size:0.75rem">(45)</span></div>
+                            <div class="product-price">₹${product.price}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+                    });
+                } catch (error) {
+                    console.error("Error loading recommendations:", error);
+                }
+            }
+
+            /* =====================
+               GLOBAL ADD TO CART
+            ====================== */
+            function addToCartLocal(id, name, price, image, stock) {
+                let cart = JSON.parse(localStorage.getItem("cartItems")) || [];
+                const existingIndex = cart.findIndex(item => item.id === id);
+
+                if (existingIndex > -1) {
+                    const newQty = cart[existingIndex].quantity + 1;
+                    if (newQty > stock) {
+                        Swal.fire({ icon: "error", title: "Oops...", text: "Cannot add more than available stock" });
+                        return;
+                    }
+                    cart[existingIndex].quantity = newQty;
+                } else {
+                    if (1 > stock) {
+                        Swal.fire({ icon: "error", title: "Oops...", text: "Out of stock" });
+                        return;
+                    }
+                    cart.push({
+                        id: id,
+                        title: name,
+                        price: price,
+                        priceStr: `₹${price}`,
+                        image: image,
+                        quantity: 1
+                    });
+                }
+
+                localStorage.setItem("cartItems", JSON.stringify(cart));
+                Swal.fire({
+                    icon: "success",
+                    title: "Added to Cart",
+                    timer: 1200,
+                    showConfirmButton: false
+                });
+            }
+        </script>
 
 
 
-        
+
 
 
 

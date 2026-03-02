@@ -4,11 +4,18 @@ const Product = require("../models/Product");
 /* ================= GET ALL ================= */
 exports.getAllCategories = async (req, res) => {
   try {
-    const categories = await Category.find({ isDeleted: false,status:"Active"});
+    const categories = await Category.find({ isDeleted: false, status: "Active" });
 
     const result = await Promise.all(
       categories.map(async (cat) => {
-        const count = await Product.countDocuments({ category: cat._id });
+        let productCategory = "limited";
+        if (cat.name.toLowerCase().includes("women")) {
+          productCategory = "women";
+        } else if (cat.name.toLowerCase().includes("men")) {
+          productCategory = "men";
+        }
+
+        const count = await Product.countDocuments({ category: productCategory });
         return {
           ...cat.toObject(),
           productCount: count

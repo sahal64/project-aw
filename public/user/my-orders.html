@@ -207,47 +207,7 @@
                                         <th>Action</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>#ORD-001</td>
-                                        <td>Oct 24, 2025</td>
-                                        <td>2 Products</td>
-                                        <td><span class="badge bg-success">Delivered</span></td>
-                                        <td>$120.00</td>
-                                        <td>
-                                            <div class="d-flex gap-2">
-                                                <a href="order-details.html" class="btn btn-sm btn-dark">View</a>
-                                                <a href="return-order.html"
-                                                    class="btn btn-sm btn-outline-danger">Return</a>
-                                                <a href="write-review.html"
-                                                    class="btn btn-sm btn-outline-primary">Review</a>
-                                                <a href="invoice.html"
-                                                    class="btn btn-sm btn-outline-secondary">Invoice</a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>#ORD-002</td>
-                                        <td>Nov 01, 2025</td>
-                                        <td>1 Product</td>
-                                        <td><span class="badge bg-warning text-dark">Processing</span></td>
-                                        <td>$350.50</td>
-                                        <td>
-                                            <div class="d-flex gap-2">
-                                                <a href="order-details.html" class="btn btn-sm btn-dark">View</a>
-                                                <a href="track-order.html"
-                                                    class="btn btn-sm btn-outline-secondary">Track</a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>#ORD-003</td>
-                                        <td>Nov 05, 2025</td>
-                                        <td>5 Products</td>
-                                        <td><span class="badge bg-danger">Cancelled</span></td>
-                                        <td>$80.00</td>
-                                        <td><a href="order-details.html" class="btn btn-sm btn-dark">View</a></td>
-                                    </tr>
+                                <tbody id="ordersTableBody">
                                 </tbody>
                             </table>
                         </div>
@@ -290,6 +250,81 @@
             }
         });
     </script>
+
+    <script>
+        async function loadOrders() {
+            try {
+                let res = await fetch("/api/orders/my-orders", {
+                    credentials: "include"
+                });
+
+                if (res.status === 401) {
+                    const refreshRes = await fetch("/api/auth/refresh", {
+                        method: "POST",
+                        credentials: "include"
+                    });
+
+                    if (!refreshRes.ok) {
+                        window.location.href = "login.html";
+                        return;
+                    }
+
+                    res = await fetch("/api/orders/my-orders", {
+                        credentials: "include"
+                    });
+                }
+
+                if (!res.ok) {
+                    window.location.href = "login.html";
+                    return;
+                }
+
+                const orders = await res.json();
+                const tbody = document.getElementById("ordersTableBody");
+                tbody.innerHTML = "";
+
+                if (orders.length === 0) {
+                    tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center py-4">No orders found</td>
+        </tr>
+      `;
+                    return;
+                }
+
+                orders.forEach(order => {
+                    const date = new Date(order.createdAt).toLocaleDateString("en-IN");
+                    const itemCount = order.items.length;
+
+                    let statusBadge = "secondary";
+                    if (order.orderStatus === "Placed") statusBadge = "primary";
+                    if (order.orderStatus === "Delivered") statusBadge = "success";
+                    if (order.orderStatus === "Cancelled") statusBadge = "danger";
+
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+        <td>#${order._id.slice(-6).toUpperCase()}</td>
+        <td>${date}</td>
+        <td>${itemCount} Product(s)</td>
+        <td><span class="badge bg-${statusBadge}">${order.orderStatus}</span></td>
+        <td>₹${order.totalAmount.toLocaleString("en-IN")}</td>
+       <td>
+             <a href="order-details.html?id=${order._id}" class="btn btn-sm btn-dark">View</a>
+       </td>
+      `;
+
+                    tbody.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        loadOrders();
+    </script>
+
+
 </body>
 
 </html>

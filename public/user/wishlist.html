@@ -276,33 +276,8 @@
 
     <div class="container px-5 mt-5">
         <h3 class="fw-bold mb-4">My Wishlist</h3>
-        <div class="row g-4">
-            <div class="col-md-3">
-                <div class="product-card">
-                    <div class="remove-btn"><i class="bi bi-trash"></i></div>
-                    <div class="product-img-container">
-                        <img src="https://placehold.co/300x300/e9ecef/495057?text=Watch+1" class="product-img">
-                    </div>
-                    <a href="single-product.html" class="product-title">Black Automatic Watch</a>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="product-price">$169.99</div>
-                        <button class="btn btn-sm btn-dark rounded-pill">Add to Cart</button>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="product-card">
-                    <div class="remove-btn"><i class="bi bi-trash"></i></div>
-                    <div class="product-img-container">
-                        <img src="https://placehold.co/300x300/e9ecef/495057?text=Watch+2" class="product-img">
-                    </div>
-                    <a href="single-product.html" class="product-title">Silver Classic</a>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="product-price">$129.50</div>
-                        <button class="btn btn-sm btn-dark rounded-pill">Add to Cart</button>
-                    </div>
-                </div>
-            </div>
+        <div class="row g-4" id="wishlistContainer">
+            <!-- Wishlist items will be loaded here dynamically -->
         </div>
     </div>
 
@@ -421,7 +396,123 @@
                     window.location.href = "home.html";
                 });
             }
+            /* =====================
+               LOAD WISHLIST
+            ====================== */
+            loadWishlist();
+
         });
+
+        /* =====================
+           WISHLIST FUNCTIONS
+        ====================== */
+        function loadWishlist() {
+            const container = document.getElementById('wishlistContainer');
+            const wishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
+
+            container.innerHTML = '';
+
+            if (wishlist.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <div class="mb-4">
+                            <i class="bi bi-heart text-muted" style="font-size: 4rem;"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Your Wishlist is Empty</h4>
+                        <p class="text-muted mb-4">You haven't added any products to your wishlist yet.</p>
+                        <a href="product.html" class="btn btn-dark px-4 py-2 rounded-pill">Shop Now</a>
+                    </div>
+                `;
+                return;
+            }
+
+            wishlist.forEach(item => {
+                container.innerHTML += `
+                    <div class="col-6 col-md-3">
+                        <div class="product-card" onclick="window.location.href='single-product.html?id=${item.id}'">
+                            <div class="remove-btn" onclick="event.stopPropagation(); removeFromWishlist('${item.id}')" title="Remove from Wishlist">
+                                <i class="bi bi-trash"></i>
+                            </div>
+                            <div class="product-img-container">
+                                <img src="${item.image}" alt="${item.title}" class="product-img">
+                            </div>
+                            <a href="single-product.html?id=${item.id}" class="product-title">${item.title}</a>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="product-price">${item.priceStr}</div>
+                                <button class="btn btn-sm btn-dark rounded-pill" onclick="event.stopPropagation(); addToCartLocal('${item.id}', '${item.title}', ${item.price}, '${item.image}')">Add to Cart</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function removeFromWishlist(id) {
+            Swal.fire({
+                title: 'Remove item?',
+                text: "Are you sure you want to remove this item from your wishlist?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, remove it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    let wishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
+                    wishlist = wishlist.filter(item => item.id !== id);
+                    localStorage.setItem('wishlistItems', JSON.stringify(wishlist));
+
+                    loadWishlist();
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Removed!',
+                        text: 'Item has been removed from your wishlist.',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                }
+            });
+        }
+
+        /* =====================
+           GLOBAL ADD TO CART
+        ====================== */
+        // We do not have stock info in wishlist item currently, so we pass stock = 10 as default fallback
+        function addToCartLocal(id, name, price, image, stock = 10) {
+            let cart = JSON.parse(localStorage.getItem("cartItems")) || [];
+            const existingIndex = cart.findIndex(item => item.id === id);
+
+            if (existingIndex > -1) {
+                const newQty = cart[existingIndex].quantity + 1;
+                if (newQty > stock) {
+                    Swal.fire({ icon: "error", title: "Oops...", text: "Cannot add more than available stock" });
+                    return;
+                }
+                cart[existingIndex].quantity = newQty;
+            } else {
+                if (1 > stock) {
+                    Swal.fire({ icon: "error", title: "Oops...", text: "Out of stock" });
+                    return;
+                }
+                cart.push({
+                    id: id,
+                    title: name,
+                    price: price,
+                    priceStr: `₹${price}`,
+                    image: image,
+                    quantity: 1
+                });
+            }
+
+            localStorage.setItem("cartItems", JSON.stringify(cart));
+            Swal.fire({
+                icon: "success",
+                title: "Added to Cart!",
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>

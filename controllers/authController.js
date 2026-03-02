@@ -113,17 +113,19 @@ exports.loginUser = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      sameSite: "lax",
-      maxAge: 15 * 60 * 1000,
-    });
+  res.cookie("accessToken", accessToken, {
+  httpOnly: true,
+  secure: false,      // localhost
+  sameSite: "lax",
+  maxAge: 15 * 60 * 1000
+});
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+res.cookie("refreshToken", refreshToken, {
+  httpOnly: true,
+  secure: false,
+  sameSite: "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
 
     res.json({ message: "Login successful", role: user.role });
   } catch (error) {
@@ -262,6 +264,37 @@ exports.resetPassword = async (req, res) => {
     res.json({ message: "Password reset successful" });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// REFRESH ACCESS TOKEN
+exports.refreshAccessToken = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      return res.status(401).json({ message: "No refresh token" });
+    }
+
+    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+
+    const newAccessToken = jwt.sign(
+      { id: decoded.id, role: decoded.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    res.cookie("accessToken", newAccessToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.json({ message: "Access token refreshed" });
+
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid refresh token" });
   }
 };
 

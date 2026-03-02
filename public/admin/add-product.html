@@ -199,25 +199,19 @@
                         <label class="form-label">Product Category</label>
                         <select id="productCategory" class="form-select mb-3" required>
                             <option value="men">Men</option>
-                             <option value="women">Women</option>
+                            <option value="women">Women</option>
                         </select>
                         <label class="form-label">Tags</label>
                         <input type="text" class="form-control" placeholder="e.g. watch, luxury">
                     </div>
 
                     <div class="form-section">
-    <h5 class="fw-bold mb-4">Media</h5>
+                        <h5 class="fw-bold mb-4">Media</h5>
 
-    <label class="form-label">Upload Product Images (Max 5, 1MB each)</label>
-    <input 
-        type="file" 
-        id="productImages" 
-        class="form-control" 
-        multiple 
-        accept="image/*"
-        required
-    >
-</div>
+                        <label class="form-label">Upload Product Images (Max 5, 1MB each)</label>
+                        <input type="file" id="productImages" class="form-control" multiple accept="image/*">
+
+                    </div>
 
                 </div>
             </div>
@@ -231,76 +225,164 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    // ==========================
-    // ADMIN LOGOUT
-    // ==========================
-    document.getElementById("admin-logout").addEventListener("click", async (e) => {
-        e.preventDefault();
-        try {
-            await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-        } catch (err) {
-            console.error(err);
-        }
-        window.location.href = "../user/login.html";
-    });
-
-
-   // ==========================
-// ADD PRODUCT (WITH IMAGES)
-// ==========================
-document.getElementById("addProductForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
-
-    const formData = new FormData();
-
-    formData.append("name", document.getElementById("productName").value);
-    formData.append("description", document.getElementById("productDescription").value);
-    formData.append("price", document.getElementById("productPrice").value);
-    formData.append("stock", document.getElementById("productStock").value);
-    formData.append("category", document.getElementById("productCategory").value);
-    formData.append("brand", document.getElementById("brand").value);
-
-
-    const files = document.getElementById("productImages").files;
-
-    if (files.length === 0) {
-        alert("Please upload at least 1 image");
-        return;
-    }
-
-    if (files.length > 5) {
-        alert("Maximum 5 images allowed");
-        return;
-    }
-
-    for (let i = 0; i < files.length; i++) {
-        formData.append("images", files[i]);
-    }
-
-    try {
-        const res = await fetch("/api/products", {
-            method: "POST",
-            body: formData,
-            credentials: "include"
+        // ==========================
+        // ADMIN LOGOUT
+        // ==========================
+        document.getElementById("admin-logout").addEventListener("click", async (e) => {
+            e.preventDefault();
+            try {
+                await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+            } catch (err) {
+                console.error(err);
+            }
+            window.location.href = "../user/login.html";
         });
 
-        const data = await res.json();
 
-        if (!res.ok) {
-            alert(data.message || "Error adding product");
-            return;
+
+        // ==========================
+        // CHECK IF EDIT MODE
+        // ==========================
+        const params = new URLSearchParams(window.location.search);
+        const productId = params.get("id");
+
+        if (productId) {
+            loadProductForEdit(productId);
         }
 
-        alert("Product added successfully!");
-        window.location.href = "all-products.html";
+        async function loadProductForEdit(id) {
+            try {
+                let res = await fetch(`/api/products/${id}`, {
+                    credentials: "include"
+                });
 
-    } catch (err) {
-        console.error("Add product error:", err);
-        alert("Something went wrong");
-    }
-});
+                if (res.status === 401) {
+                    const refreshRes = await fetch("/api/auth/refresh", {
+                        method: "POST",
+                        credentials: "include"
+                    });
 
-</script>
+                    if (!refreshRes.ok) {
+                        window.location.href = "../user/login.html";
+                        return;
+                    }
+
+                    res = await fetch(`/api/products/${id}`, {
+                        credentials: "include"
+                    });
+                }
+
+                if (!res.ok) {
+                    alert("Failed to load product");
+                    return;
+                }
+
+                const product = await res.json();
+
+                // Fill form fields
+                document.getElementById("productName").value = product.name;
+                document.getElementById("productDescription").value = product.description;
+                document.getElementById("productPrice").value = product.price;
+                document.getElementById("productStock").value = product.stock;
+                document.getElementById("productCategory").value = product.category;
+                document.getElementById("brand").value = product.brand;
+
+                // Change page title
+                document.querySelector("h4").innerText = "Edit Product";
+                document.querySelector("button[type='submit']").innerText = "Update Product";
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+
+        // ==========================
+        // ADD PRODUCT (WITH IMAGES)
+        // ==========================
+        document.getElementById("addProductForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData();
+
+            formData.append("name", document.getElementById("productName").value);
+            formData.append("description", document.getElementById("productDescription").value);
+            formData.append("price", document.getElementById("productPrice").value);
+            formData.append("stock", document.getElementById("productStock").value);
+            formData.append("category", document.getElementById("productCategory").value);
+            formData.append("brand", document.getElementById("brand").value);
+
+
+            const files = document.getElementById("productImages").files;
+
+            if (!productId && files.length === 0) {
+                alert("Please upload at least 1 image");
+                return;
+            }
+
+            if (files.length > 5) {
+                alert("Maximum 5 images allowed");
+                return;
+            }
+
+            for (let i = 0; i < files.length; i++) {
+                formData.append("images", files[i]);
+            }
+
+            try {
+                let url = "/api/products";
+                let method = "POST";
+
+                if (productId) {
+                    url = `/api/products/${productId}`;
+                    method = "PUT";
+                }
+
+                let res = await fetch(url, {
+                    method: method,
+                    body: formData,
+                    credentials: "include"
+                });
+
+                if (res.status === 401) {
+                    const refreshRes = await fetch("/api/auth/refresh", {
+                        method: "POST",
+                        credentials: "include"
+                    });
+
+                    if (!refreshRes.ok) {
+                        window.location.href = "../user/login.html";
+                        return;
+                    }
+
+                    res = await fetch(url, {
+                        method: method,
+                        body: formData,
+                        credentials: "include"
+                    });
+                }
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.message || "Error adding product");
+                    return;
+                }
+
+                if (productId) {
+                    alert("Product updated successfully!");
+                } else {
+                    alert("Product added successfully!");
+                }
+                window.location.href = "all-products.html";
+
+            } catch (err) {
+                console.error("Add product error:", err);
+                alert("Something went wrong");
+            }
+        });
+
+    </script>
 
 </body>
 

@@ -407,26 +407,22 @@
                 </div>
 
                 <div class="mb-4">
-                    <h5 class="filter-title">Price Range</h5>
-                    <input type="range" class="form-range" min="0" max="1000" id="customRange2">
+                    <h5 class="filter-title">Price: <span id="priceRangeValue" class="text-primary fw-bold">Up to
+                            ₹50,000+</span></h5>
+                    <input type="range" class="form-range" min="0" max="50000" step="500" value="50000"
+                        id="priceRangeInput">
                     <div class="d-flex justify-content-between text-muted small">
-                        <span>$10</span>
-                        <span>$1000</span>
+                        <span>₹0</span>
+                        <span>₹50,000+</span>
                     </div>
                 </div>
 
                 <div class="mb-4">
                     <h5 class="filter-title">Sort Order</h5>
+
+
                     <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" name="sort" id="sort1" checked>
-                        <label class="form-check-label" for="sort1">Most Popular</label>
-                    </div>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" name="sort" id="sort2">
-                        <label class="form-check-label" for="sort2">Best Rating</label>
-                    </div>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" name="sort" id="sort3">
+                        <input class="form-check-input" type="radio" name="sort" id="sort3" checked>
                         <label class="form-check-label" for="sort3">Newest</label>
                     </div>
                     <div class="form-check mb-2">
@@ -442,20 +438,20 @@
 
             <!-- Product Grid -->
             <div class="col-lg-9">
-                
-                    <!-- Product Items (Loop 9 times) -->
-                     <div class="row g-4" id="productContainer">
+
+                <!-- Product Items (Loop 9 times) -->
+                <div class="row g-4" id="productContainer">
                 </div>
 
                 <!-- Pagination -->
-              
 
-                   
-                </div>
 
-                
-                
-            
+
+            </div>
+
+
+
+
         </div>
     </div>
 
@@ -541,7 +537,7 @@
                 });
             }
 
-           
+
 
             /* =====================
                AUTH STATE
@@ -579,33 +575,49 @@
 
 
             // ==========================
-// LOAD PRODUCTS FROM BACKEND
-// ==========================
-async function loadProducts(category = "") {
-    try {
-        let url = "/api/products";
+            // LOAD PRODUCTS FROM BACKEND
+            // ==========================
+            async function loadProducts(category = "", sort = "", maxPrice = "") {
+                try {
+                    let url = "/api/products?";
 
-        if (category) {
-            url += `?category=${category}`;
-        }
+                    if (category) {
+                        url += `category=${category}&`;
+                    }
 
-        const res = await fetch(url);
-        const data = await res.json();
+                    if (sort) {
+                        url += `sort=${sort}&`;
+                    }
 
-        const container = document.getElementById("productContainer");
-        container.innerHTML = "";
+                    if (maxPrice) {
+                        url += `maxPrice=${maxPrice}&`;
+                    }
 
-        data.products.forEach(product => {
+                    const res = await fetch(url);
+                    const data = await res.json();
 
-            const image = product.images && product.images.length > 0
-                ? product.images[0]
-                : "https://placehold.co/300x300?text=No+Image";
+                    const container = document.getElementById("productContainer");
+                    container.innerHTML = "";
 
-            container.innerHTML += `
+                    data.products.forEach(product => {
+
+                        const image = product.images && product.images.length > 0
+                            ? product.images[0]
+                            : "https://placehold.co/300x300?text=No+Image";
+
+                        container.innerHTML += `
                 <div class="col-md-4">
                     <div class="product-card"
                         onclick="window.location.href='single-product.html?id=${product._id}'">
-
+                        <!-- Wishlist Button -->
+                        <div class="wishlist-btn" title="Add to Wishlist" onclick="event.stopPropagation(); addToWishlistLocal('${product._id}', '${product.name}', ${product.price}, '${image}')">
+                            <i class="bi bi-heart"></i>
+                        </div>
+                        
+                        <!-- Add to Cart Button -->
+                        <div class="cart-btn" title="Add to Cart" onclick="event.stopPropagation(); addToCartLocal('${product._id}', '${product.name}', ${product.price}, '${image}', ${product.stock})">
+                            <i class="bi bi-bag-plus"></i>
+                        </div>
                         <div class="product-img-container">
                             <img src="${image}" class="product-img">
                         </div>
@@ -630,44 +642,72 @@ async function loadProducts(category = "") {
                     </div>
                 </div>
             `;
-        });
+                    });
 
-        if (data.products.length === 0) {
-    container.innerHTML = `
-        <div class="col-12 text-center mt-5">
-            <h5>No products found in this category</h5>
-        </div>
-    `;
-}
+                    if (data.products.length === 0) {
+                        container.innerHTML = `
+                <div class="col-12 text-center mt-5">
+                    <h5>No products found</h5>
+                </div>
+            `;
+                    }
+
+                } catch (error) {
+                    console.error("Error loading products:", error);
+                }
+            }
 
 
-    } catch (error) {
-        console.error("Error loading products:", error);
-    }
-}
+            const menCheckbox = document.getElementById("cat1");
+            const womenCheckbox = document.getElementById("cat2");
+            const sortRadios = document.querySelectorAll("input[name='sort']");
+            const priceRangeInput = document.getElementById("priceRangeInput");
+            const priceRangeValue = document.getElementById("priceRangeValue");
 
+            function fetchProducts() {
+                let selectedCategory = "";
+                if (menCheckbox.checked) selectedCategory = "men";
+                if (womenCheckbox.checked) selectedCategory = "women";
 
-const menCheckbox = document.getElementById("cat1");
-const womenCheckbox = document.getElementById("cat2");
+                let selectedSort = "newest";
+                if (document.getElementById("sort3").checked) selectedSort = "newest";
+                else if (document.getElementById("sort4").checked) selectedSort = "priceLow";
+                else if (document.getElementById("sort5").checked) selectedSort = "priceHigh";
 
-menCheckbox.addEventListener("change", () => {
-    if (menCheckbox.checked) {
-        womenCheckbox.checked = false;
-        loadProducts("men");
-    } else {
-        loadProducts();
-    }
-});
+                let maxPrice = priceRangeInput.value;
+                if (Number(maxPrice) >= 50000) maxPrice = ""; // No limit when at max
 
-womenCheckbox.addEventListener("change", () => {
-    if (womenCheckbox.checked) {
-        menCheckbox.checked = false;
-        loadProducts("women");
-    } else {
-        loadProducts();
-    }
-});
+                loadProducts(selectedCategory, selectedSort, maxPrice);
+            }
 
+            priceRangeInput.addEventListener("input", () => {
+                const val = Number(priceRangeInput.value);
+                if (val >= 50000) {
+                    priceRangeValue.textContent = `Up to ₹50,000+`;
+                } else {
+                    priceRangeValue.textContent = `Up to ₹${val.toLocaleString()}`;
+                }
+            });
+
+            priceRangeInput.addEventListener("change", () => {
+                fetchProducts();
+            });
+
+            menCheckbox.addEventListener("change", () => {
+                if (menCheckbox.checked) womenCheckbox.checked = false;
+                fetchProducts();
+            });
+
+            womenCheckbox.addEventListener("change", () => {
+                if (womenCheckbox.checked) menCheckbox.checked = false;
+                fetchProducts();
+            });
+
+            sortRadios.forEach(radio => {
+                radio.addEventListener("change", () => {
+                    fetchProducts();
+                });
+            });
 
 
 
@@ -727,9 +767,92 @@ womenCheckbox.addEventListener("change", () => {
                 });
             }
 
-            loadProducts();
+            const urlParams = new URLSearchParams(window.location.search);
+            const catFromUrl = urlParams.get('category');
+
+            if (catFromUrl === 'men') {
+                menCheckbox.checked = true;
+            } else if (catFromUrl === 'women') {
+                womenCheckbox.checked = true;
+            }
+
+            fetchProducts();
 
         });
+
+        /* =====================
+           GLOBAL ADD TO CART
+        ====================== */
+        function addToCartLocal(id, name, price, image, stock) {
+            let cart = JSON.parse(localStorage.getItem("cartItems")) || [];
+            const existingIndex = cart.findIndex(item => item.id === id);
+
+            if (existingIndex > -1) {
+                const newQty = cart[existingIndex].quantity + 1;
+                if (newQty > stock) {
+                    Swal.fire({ icon: "error", title: "Oops...", text: "Cannot add more than available stock" });
+                    return;
+                }
+                cart[existingIndex].quantity = newQty;
+            } else {
+                if (1 > stock) {
+                    Swal.fire({ icon: "error", title: "Oops...", text: "Out of stock" });
+                    return;
+                }
+                cart.push({
+                    id: id,
+                    title: name,
+                    price: price,
+                    priceStr: `₹${price}`,
+                    image: image,
+                    quantity: 1
+                });
+            }
+
+            localStorage.setItem("cartItems", JSON.stringify(cart));
+            Swal.fire({
+                icon: "success",
+                title: "Added to Cart!",
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
+
+        /* =====================
+           GLOBAL ADD TO WISHLIST
+        ====================== */
+        function addToWishlistLocal(id, name, price, image) {
+            let wishlist = JSON.parse(localStorage.getItem("wishlistItems")) || [];
+            const existingIndex = wishlist.findIndex(item => item.id === id);
+
+            if (existingIndex > -1) {
+                Swal.fire({
+                    icon: "info",
+                    title: "Notice",
+                    text: "Product is already in your wishlist",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                return;
+            }
+
+            wishlist.push({
+                id: id,
+                title: name,
+                price: price,
+                priceStr: `₹${price}`,
+                image: image
+            });
+
+            localStorage.setItem("wishlistItems", JSON.stringify(wishlist));
+
+            Swal.fire({
+                icon: "success",
+                title: "Added to Wishlist!",
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
     </script>
 </body>
 

@@ -9,6 +9,7 @@ const {
   deleteProduct,
   getAllProducts,
   getProductById,
+  toggleProductStatus
 } = require("../controllers/productController");
 
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -41,10 +42,26 @@ router.post(
 
 
 // Update product
-router.put("/:id", authMiddleware, adminMiddleware, updateProduct);
+router.put(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  upload.array("images", 5),
+  updateProduct
+);
+
+
+
+
 
 // Delete product
 router.delete("/:id", authMiddleware, adminMiddleware, deleteProduct);
 
+router.patch(
+  "/:id/toggle",
+  authMiddleware,
+  adminMiddleware,
+  toggleProductStatus
+);
 
 module.exports = router;

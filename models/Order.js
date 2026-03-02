@@ -18,17 +18,26 @@ const orderSchema = new mongoose.Schema(
         quantity: {
           type: Number,
           required: true,
+          min: 1,
         },
         price: {
           type: Number,
           required: true,
+          min: 0,
         },
       },
     ],
 
+    orderNumber: {
+  type: String,
+  unique: true
+},
+
+
     totalAmount: {
       type: Number,
       required: true,
+      min: 0,
     },
 
     paymentStatus: {
@@ -44,9 +53,26 @@ const orderSchema = new mongoose.Schema(
     },
 
     address: {
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  street: { type: String, required: true },
+  city: { type: String, required: true },
+  state: { type: String, required: true },
+  zip: { type: String, required: true },
+  phone: { type: String, required: true }
+},
+
+    // 🧾 Optional future expansion
+    paymentMethod: {
       type: String,
-      required: true,
+      enum: ["COD", "Razorpay", "Stripe"],
+      default: "COD",
     },
+
+    isRefunded: {
+      type: Boolean,
+      default: false,
+    }
   },
   { timestamps: true }
 );

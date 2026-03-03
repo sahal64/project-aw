@@ -513,6 +513,7 @@
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Search Toggle (Inline)
@@ -610,7 +611,7 @@
                     <div class="product-card"
                         onclick="window.location.href='single-product.html?id=${product._id}'">
                         <!-- Wishlist Button -->
-                        <div class="wishlist-btn" title="Add to Wishlist" onclick="event.stopPropagation(); addToWishlistLocal('${product._id}', '${product.name}', ${product.price}, '${image}')">
+                        <div class="wishlist-btn" title="Add to Wishlist" onclick="event.stopPropagation(); addToWishlistApi('${product._id}')">
                             <i class="bi bi-heart"></i>
                         </div>
                         
@@ -819,39 +820,64 @@
         }
 
         /* =====================
-           GLOBAL ADD TO WISHLIST
+           GLOBAL ADD TO WISHLIST (API)
         ====================== */
-        function addToWishlistLocal(id, name, price, image) {
-            let wishlist = JSON.parse(localStorage.getItem("wishlistItems")) || [];
-            const existingIndex = wishlist.findIndex(item => item.id === id);
+        async function addToWishlistApi(productId) {
+            try {
+                const res = await fetch('/api/users/wishlist/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ productId })
+                });
 
-            if (existingIndex > -1) {
+                const data = await res.json();
+
+                if (!res.ok) {
+                    if (res.status === 401 || data.message === "Not authorized, no token" || data.message === "No token provided") {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Login Required',
+                            text: 'Please login to add items to your wishlist.',
+                            confirmButtonText: 'Login',
+                            confirmButtonColor: '#000'
+                        }).then(() => {
+                            window.location.href = 'login.html';
+                        });
+                        return;
+                    }
+
+                    if (data.message === "Product already in wishlist") {
+                        Swal.fire({
+                            icon: "info",
+                            title: "Notice",
+                            text: "Product is already in your wishlist",
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                        return;
+                    }
+
+                    throw new Error(data.message || 'Failed to add to wishlist');
+                }
+
                 Swal.fire({
-                    icon: "info",
-                    title: "Notice",
-                    text: "Product is already in your wishlist",
+                    icon: "success",
+                    title: "Added to Wishlist!",
                     showConfirmButton: false,
                     timer: 1500
                 });
-                return;
+
+            } catch (error) {
+                console.error("Error adding to wishlist:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong while adding to wishlist.'
+                });
             }
-
-            wishlist.push({
-                id: id,
-                title: name,
-                price: price,
-                priceStr: `₹${price}`,
-                image: image
-            });
-
-            localStorage.setItem("wishlistItems", JSON.stringify(wishlist));
-
-            Swal.fire({
-                icon: "success",
-                title: "Added to Wishlist!",
-                showConfirmButton: false,
-                timer: 1500
-            });
         }
     </script>
 </body>

@@ -47,7 +47,13 @@ const userSchema = new mongoose.Schema(
 
     // 🔁 Password reset OTP
     resetOtp: String,
-    resetOtpExpires: Date
+    resetOtpExpires: Date,
+
+    // ❤️ Wishlist referencing products
+    wishlist: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product'
+    }]
   },
   { timestamps: true }
 );

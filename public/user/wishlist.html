@@ -404,15 +404,60 @@
         });
 
         /* =====================
-           WISHLIST FUNCTIONS
+           WISHLIST FUNCTIONS API
         ====================== */
-        function loadWishlist() {
+        async function loadWishlist() {
             const container = document.getElementById('wishlistContainer');
-            const wishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
 
-            container.innerHTML = '';
+            try {
+                const res = await fetch('/api/users/wishlist', {
+                    credentials: 'include'
+                });
+                const data = await res.json();
 
-            if (wishlist.length === 0) {
+                container.innerHTML = '';
+
+                if (!res.ok || !data.success || !data.wishlist || data.wishlist.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <div class="mb-4">
+                                <i class="bi bi-heart text-muted" style="font-size: 4rem;"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Your Wishlist is Empty</h4>
+                            <p class="text-muted mb-4">You haven't added any products to your wishlist yet.</p>
+                            <a href="product.html" class="btn btn-dark px-4 py-2 rounded-pill">Shop Now</a>
+                        </div>
+                    `;
+                    return;
+                }
+
+                data.wishlist.forEach(product => {
+                    const image = product.images && product.images.length > 0
+                        ? product.images[0]
+                        : "https://placehold.co/300x300?text=No+Image";
+
+                    container.innerHTML += `
+                        <div class="col-6 col-md-3">
+                            <div class="product-card" onclick="window.location.href='single-product.html?id=${product._id}'">
+                                <div class="remove-btn" onclick="event.stopPropagation(); removeFromWishlist('${product._id}')" title="Remove from Wishlist">
+                                    <i class="bi bi-trash"></i>
+                                </div>
+                                <div class="product-img-container">
+                                    <img src="${image}" alt="${product.name}" class="product-img">
+                                </div>
+                                <a href="single-product.html?id=${product._id}" class="product-title">${product.name}</a>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="product-price">₹${product.price}</div>
+                                    <button class="btn btn-sm btn-dark rounded-pill" onclick="event.stopPropagation(); addToCartLocal('${product._id}', '${product.name}', ${product.price}, '${image}')">Add to Cart</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error loading wishlist:", error);
+
+                // Show empty state on error as fallback
                 container.innerHTML = `
                     <div class="col-12 text-center py-5">
                         <div class="mb-4">
@@ -423,28 +468,7 @@
                         <a href="product.html" class="btn btn-dark px-4 py-2 rounded-pill">Shop Now</a>
                     </div>
                 `;
-                return;
             }
-
-            wishlist.forEach(item => {
-                container.innerHTML += `
-                    <div class="col-6 col-md-3">
-                        <div class="product-card" onclick="window.location.href='single-product.html?id=${item.id}'">
-                            <div class="remove-btn" onclick="event.stopPropagation(); removeFromWishlist('${item.id}')" title="Remove from Wishlist">
-                                <i class="bi bi-trash"></i>
-                            </div>
-                            <div class="product-img-container">
-                                <img src="${item.image}" alt="${item.title}" class="product-img">
-                            </div>
-                            <a href="single-product.html?id=${item.id}" class="product-title">${item.title}</a>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="product-price">${item.priceStr}</div>
-                                <button class="btn btn-sm btn-dark rounded-pill" onclick="event.stopPropagation(); addToCartLocal('${item.id}', '${item.title}', ${item.price}, '${item.image}')">Add to Cart</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
         }
 
         function removeFromWishlist(id) {
@@ -456,21 +480,37 @@
                 confirmButtonColor: '#dc3545',
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: 'Yes, remove it!'
-            }).then((result) => {
+            }).then(async (result) => {
                 if (result.isConfirmed) {
-                    let wishlist = JSON.parse(localStorage.getItem('wishlistItems')) || [];
-                    wishlist = wishlist.filter(item => item.id !== id);
-                    localStorage.setItem('wishlistItems', JSON.stringify(wishlist));
+                    try {
+                        const res = await fetch(`/api/users/wishlist/remove/${id}`, {
+                            method: 'DELETE',
+                            credentials: 'include'
+                        });
 
-                    loadWishlist();
+                        const data = await res.json();
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Removed!',
-                        text: 'Item has been removed from your wishlist.',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
+                        if (!res.ok) {
+                            throw new Error(data.message || 'Failed to remove from wishlist');
+                        }
+
+                        loadWishlist(); // Reload exactly from backend
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Removed!',
+                            text: 'Item has been removed from your wishlist.',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    } catch (error) {
+                        console.error('Error removing item:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Failed to remove item. Please try again.'
+                        });
+                    }
                 }
             });
         }

@@ -5,7 +5,9 @@ const {
   getMyOrders,
   getSingleOrder,
   getAllOrders,
-  updateOrderStatus
+  updateOrderStatus,
+  getOrderById,
+  cancelOrder
 } = require("../controllers/orderController");
 
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -16,10 +18,16 @@ const router = express.Router();
 // USER ROUTES
 router.post("/", authMiddleware, placeOrder);
 router.get("/my-orders", authMiddleware, getMyOrders);
-router.get("/:id", authMiddleware, getSingleOrder);
-
-// ADMIN ROUTES
-router.get("/", authMiddleware, adminMiddleware, getAllOrders);
-router.put("/:id", authMiddleware, adminMiddleware, updateOrderStatus);
+router.put("/cancel/:id", authMiddleware, cancelOrder);
+router.put("/cancel-item/:orderId/:itemId", authMiddleware, (req, res, next) => {
+  const { cancelOrderItem } = require("../controllers/orderController");
+  return cancelOrderItem(req, res, next);
+});
+router.get("/:id", authMiddleware, (req, res, next) => {
+  if (req.user && req.user.role === "admin") {
+    return getOrderById(req, res, next);
+  }
+  return getSingleOrder(req, res, next);
+}); // Dynamic last
 
 module.exports = router;

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroWatch - Order Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --font-family: 'Outfit', sans-serif;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #fff;
+            border-right: 1px solid #eee;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            display: block;
+            color: #000;
+            text-decoration: none;
+        }
+
+        .nav-label {
+            font-size: 0.8rem;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 10px;
+            margin-top: 20px;
+            display: block;
+        }
+
+        .nav-link {
+            color: #6c757d;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: #000;
+            color: #fff;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+        }
+
+        .order-card {
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            background: #fff;
+        }
+
+        .item-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar">
+        <a href="/admin/dashboard.html" class="sidebar-brand"><img src="../common/images/logo.png" alt="AeroWatch"
+                style="max-height: 50px;"></a>
+
+        <span class="nav-label">Main menu</span>
+        <nav class="nav flex-column">
+            <a href="/admin/dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
+            <a href="/admin/order-management.html" class="nav-link"><i class="bi bi-cart"></i> Order Management</a>
+            <a href="/admin/customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
+            <a href="/admin/coupon.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Coupon Code</a>
+            <a href="/admin/categories.html" class="nav-link"><i class="bi bi-tags"></i> Categories</a>
+            <a href="/admin/transaction.html" class="nav-link"><i class="bi bi-wallet2"></i> Transaction</a>
+            <a href="/admin/brand.html" class="nav-link"><i class="bi bi-award"></i> Brand</a>
+            <a href="/admin/sales-offers.html" class="nav-link"><i class="bi bi-percent"></i> Sales & Offers</a>
+        </nav>
+
+        <span class="nav-label">Product</span>
+        <nav class="nav flex-column">
+            <a href="/admin/add-product.html" class="nav-link"><i class="bi bi-plus-circle"></i> Add Products</a>
+            <a href="/admin/all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
+        </nav>
+
+        <span class="nav-label">Admin</span>
+        <nav class="nav flex-column">
+            <a href="/admin/admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
+            <a href="#" class="nav-link mt-3 text-danger" id="admin-logout"><i class="bi bi-box-arrow-right"></i>
+                Logout</a>
+        </nav>
+
+        <div class="mt-auto pt-4">
+            <div class="d-flex align-items-center p-3 rounded bg-light">
+                <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center"
+                    style="width: 35px; height: 35px;">M</div>
+                <div class="ms-3">
+                    <h6 class="mb-0 fs-6">Mark Bert</h6>
+                    <small class="text-muted" style="font-size: 0.7rem;">Manager</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold m-0">Order Details</h4>
+            <a href="/admin/order-management.html" class="btn btn-dark"><i class="bi bi-arrow-left"></i> Back to
+                Orders</a>
+        </div>
+
+        <div id="orderDetailsContent">
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted">Loading order details...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Admin Validation
+        async function checkAdminAuth() {
+            try {
+                let res = await fetch("/api/auth/me", { credentials: "include" });
+                if (res.status === 401) {
+                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+                    if (!refreshRes.ok) { window.location.href = "/admin/login.html"; return false; }
+                    res = await fetch("/api/auth/me", { credentials: "include" });
+                }
+                if (!res.ok) { window.location.href = "/admin/login.html"; return false; }
+                const user = await res.json();
+                if (user.role !== "admin") { window.location.href = "/admin/login.html"; return false; }
+                return true;
+            } catch (err) {
+                window.location.href = "/admin/login.html";
+                return false;
+            }
+        }
+
+        async function saveOrderStatus(orderId) {
+            const newStatus = document.getElementById('statusSelect').value;
+            try {
+                const response = await fetch(`/api/admin/orders/${orderId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: data.message || 'Error updating status',
+                        confirmButtonColor: "#d33"
+                    });
+                    return;
+                }
+
+                Swal.fire({
+                    icon: "success",
+                    title: "Success",
+                    text: "Order status updated perfectly",
+                    confirmButtonColor: "#000"
+                });
+                loadOrderDetails();
+            } catch (error) {
+                console.error(error);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: 'An error occurred while saving the status.',
+                    confirmButtonColor: "#d33"
+                });
+            }
+        }
+
+        async function loadOrderDetails() {
+            const params = new URLSearchParams(window.location.search);
+            const orderId = params.get("id");
+
+            if (!orderId) {
+                document.getElementById('orderDetailsContent').innerHTML = '<p class="text-danger">No order ID provided.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/orders/${orderId}`, { credentials: "include" });
+                if (!response.ok) throw new Error('Error fetching order details');
+
+                const order = await response.json();
+                const contentDiv = document.getElementById('orderDetailsContent');
+
+                if (!order) {
+                    contentDiv.innerHTML = '<p class="text-danger">Order not found.</p>';
+                    return;
+                }
+
+                const date = new Date(order.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+
+                const itemsHtml = order.items.map(item => `
+                    <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                        <img src="${item.product?.images?.[0] || '../common/images/placeholder.png'}" alt="${item.product?.name || 'Product'}" class="item-img me-3 shadow-sm border">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1 text-dark fw-bold" style="font-size: 0.95rem;">${item.product?.name || 'Unknown Product'}</h6>
+                            <small class="text-muted d-block" style="font-size: 0.85rem;">Qty: ${item.quantity} × ₹${item.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</small>
+                        </div>
+                        <div class="fw-bold text-dark pe-2" style="font-size: 0.95rem;">₹${(item.quantity * item.price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</div>
+                    </div>
+                `).join('');
+
+                const address = order.address || {};
+
+                // Allowable transitions mapping for the inline edit
+                const allowedTransitions = {
+                    Placed: ["Placed", "Processing", "Cancelled"],
+                    Processing: ["Processing", "Delivered", "Cancelled"],
+                    Delivered: ["Delivered"],
+                    Cancelled: ["Cancelled"]
+                };
+
+                const validOptions = allowedTransitions[order.orderStatus] || [order.orderStatus];
+                const isStatusDisabled = ['Delivered', 'Cancelled'].includes(order.orderStatus) ? 'disabled' : '';
+
+                const statusSelectOptions = ['Placed', 'Processing', 'Delivered', 'Cancelled'].map(status => {
+                    const isDisabled = !validOptions.includes(status) ? 'disabled' : '';
+                    return `<option value="${status}" ${order.orderStatus === status ? 'selected' : ''} ${isDisabled}>${status}</option>`;
+                }).join('');
+
+                contentDiv.innerHTML = `
+                    <div class="order-card shadow-sm">
+                        <div class="row g-4 mb-4 pb-4 border-bottom">
+                            <div class="col-md-6">
+                                <h6 class="text-muted fw-bold mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">Order Information</h6>
+                                <p class="mb-2 text-dark" style="font-size: 0.95rem;"><strong>Order ID:</strong> #${order.orderNumber || order._id.substring(0, 8)}</p>
+                                <p class="mb-2 text-dark" style="font-size: 0.95rem;"><strong>Date:</strong> ${date}</p>
+                                <p class="mb-2 text-dark" style="font-size: 0.95rem;"><strong>Total Amount:</strong> <span class="text-success fw-bold">₹${order.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></p>
+                                <p class="mb-0 text-dark" style="font-size: 0.95rem;"><strong>Payment:</strong> <span class="badge ${order.paymentStatus === 'Paid' ? 'bg-success' : 'bg-warning text-dark'}">${order.paymentStatus}</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted fw-bold mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">Customer Details</h6>
+                                <p class="mb-2 text-dark" style="font-size: 0.95rem;"><strong>Name:</strong> ${address.firstName || order.user?.name || 'N/A'} ${address.lastName || ''}</p>
+                                <p class="mb-2 text-dark" style="font-size: 0.95rem;"><strong>Email:</strong> ${order.user?.email || 'N/A'}</p>
+                                <p class="mb-2 text-dark" style="font-size: 0.95rem;"><strong>Phone:</strong> ${address.phone || 'N/A'}</p>
+                                <p class="mb-0 text-dark pe-3" style="font-size: 0.95rem;"><strong>Shipping Address:</strong><br><span class="text-muted">${address.street || ''}, ${address.city || ''}, ${address.state || ''} ${address.zip || ''}</span></p>
+                            </div>
+                        </div>
+                        
+                        <h6 class="text-muted fw-bold mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">Order Items</h6>
+                        <div class="mb-4">
+                            ${itemsHtml}
+                        </div>
+                        
+                        <h6 class="text-muted fw-bold mb-3 mt-4" style="font-size: 0.85rem; letter-spacing: 0.5px;">Order Management</h6>
+                        <div class="d-flex align-items-center bg-light p-3 rounded-3 border">
+                            <span class="me-3 fw-bold">Current Status:</span>
+                            <select id="statusSelect" class="form-select border shadow-sm" style="max-width: 200px; font-weight: 500;" ${isStatusDisabled}>
+                                ${statusSelectOptions}
+                            </select>
+                            <button type="button" class="btn btn-success ms-3 px-4 shadow-sm border-0" onclick="saveOrderStatus('${order._id}')" ${isStatusDisabled}>Save Status</button>
+                        </div>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('orderDetailsContent').innerHTML = '<p class="text-danger">Failed to load order details.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAdminAuth().then((isAuth) => {
+                if (isAuth) loadOrderDetails();
+            });
+        });
+
+        document.getElementById("admin-logout").addEventListener("click", async (e) => {
+            e.preventDefault();
+            try {
+                await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = "/admin/login.html";
+            } catch (err) {
+                console.error("Logout error:", err);
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = "/admin/login.html";
+            }
+        });
+    </script>
+</body>
+
+</html>

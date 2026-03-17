@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
@@ -97,8 +98,7 @@
             background: #fff;
             border: 1px solid #eee;
             border-radius: 10px;
-            padding: 20px;
-            height: 100%;
+            padding: 30px;
         }
 
         footer {
@@ -138,7 +138,7 @@
 
 <body>
 
-    <!-- Navigation -->
+    <!-- Header -->
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container-fluid px-5">
             <a class="navbar-brand" href="home.html"><img src="../common/images/logo.png" alt="AeroWatch"
@@ -159,15 +159,15 @@
                     <input type="text" class="form-control" placeholder="Search...">
                 </form>
                 <a href="#" class="icon-btn" id="search-trigger"><i class="bi bi-search"></i></a>
-                <a href="wishlist.html" class="icon-btn" title="Wishlist"><i class="bi bi-heart"></i></a>
-                <a href="#" class="icon-btn" id="accountBtn" title="Account">
-                    <i class="bi bi-person"></i>
+                <a href="/user/wishlist.html" class="icon-btn" title="Wishlist"><i class="bi bi-heart"></i></a>
+                <a href="/user/account.html" class="icon-btn" id="accountBtn" title="Account">
+                    <i class="bi bi-person-fill"></i>
                 </a>
-                <a href="cart.html" class="icon-btn" title="Cart"><i class="bi bi-bag"></i></a>
+                <a href="/user/cart.html" class="icon-btn" title="Cart"><i class="bi bi-bag"></i></a>
 
                 <!-- GUEST NAV: Shown when NOT logged in -->
                 <div id="guest-nav" class="align-items-center ms-3 d-none">
-                    <a href="signup.html" class="btn btn-dark text-uppercase rounded-pill px-4"
+                    <a href="/user/signup.html" class="btn btn-dark text-uppercase rounded-pill px-4"
                         style="font-size: 0.85rem; padding-top: 8px; padding-bottom: 8px;">Sign Up</a>
                 </div>
 
@@ -188,34 +188,35 @@
                 <div class="account-sidebar">
                     <div class="d-flex align-items-center mb-4 px-3">
                         <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center"
-                            style="width: 50px; height: 50px; font-size: 1.5rem;">
-                            J
+                            style="width: 50px; height: 50px; font-size: 1.5rem;" id="sidebarUserAvatar">
+                            -
                         </div>
                         <div class="ms-3">
-                            <h6 class="mb-0 fw-bold">John Doe</h6>
-                            <small class="text-muted">john@example.com</small>
+                            <h6 class="mb-0 fw-bold" id="sidebarUserName">Loading...</h6>
+                            <small class="text-muted" id="sidebarUserEmail">...</small>
                         </div>
                     </div>
                     <div class="section-title text-muted text-uppercase fw-bold fs-6 mb-2 mt-4 ps-3">Manage My Account
                     </div>
                     <nav class="nav flex-column account-nav mb-2">
-                        <a class="nav-link active" href="profile-details.html"><i class="bi bi-person"></i> My
-                            Profile</a>
-                        <a class="nav-link" href="address-book.html"><i class="bi bi-geo-alt"></i> Address Book</a>
-                        <a class="nav-link" href="my-wallet.html"><i class="bi bi-wallet2"></i> My Payment Options</a>
+                        <a class="nav-link active" href="/user/account.html"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                        <a class="nav-link" href="/user/profile-details.html"><i class="bi bi-person"></i> My Profile</a>
+                        <a class="nav-link" href="/user/address-book.html"><i class="bi bi-geo-alt"></i> Address Book</a>
+                        <a class="nav-link" href="/user/my-wallet.html"><i class="bi bi-wallet2"></i> My Payment Options</a>
                     </nav>
 
                     <div class="section-title text-muted text-uppercase fw-bold fs-6 mb-2 mt-4 ps-3">My Orders</div>
                     <nav class="nav flex-column account-nav mb-4">
-                        <a class="nav-link" href="my-orders.html"><i class="bi bi-box-seam"></i> My Orders</a>
-                        <a class="nav-link" href="my-returns.html"><i class="bi bi-arrow-return-left"></i> My
+                        <a class="nav-link" href="/user/my-orders.html"><i class="bi bi-box-seam"></i> My Orders</a>
+                        <a class="nav-link" href="/user/my-returns.html"><i class="bi bi-arrow-return-left"></i> My
                             Returns</a>
-                        <a class="nav-link" href="my-cancellations.html"><i class="bi bi-x-circle"></i> My
+                        <a class="nav-link" href="/user/my-cancellations.html"><i class="bi bi-x-circle"></i> My
                             Cancellations</a>
                     </nav>
 
                     <nav class="nav flex-column account-nav">
-                        <a class="nav-link" href="signup.html"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                        <a class="nav-link text-danger" href="#" id="sidebarLogoutBtn"><i
+                                class="bi bi-box-arrow-right"></i> Logout</a>
                     </nav>
                 </div>
             </div>
@@ -226,13 +227,13 @@
                 <div class="row g-4">
                     <div class="col-md-4">
                         <div class="dashboard-card text-center">
-                            <h2 class="display-4 fw-bold text-primary">5</h2>
+                            <h2 class="display-4 fw-bold text-primary">0</h2>
                             <p class="text-muted">Total Orders</p>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="dashboard-card text-center">
-                            <h2 class="display-4 fw-bold text-warning">2</h2>
+                            <h2 class="display-4 fw-bold text-warning">0</h2>
                             <p class="text-muted">Pending Delivery</p>
                         </div>
                     </div>
@@ -257,20 +258,9 @@
                                             <th>Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="recentOrdersTable">
                                         <tr>
-                                            <td>#ORD-001</td>
-                                            <td>Oct 24, 2025</td>
-                                            <td><span class="badge bg-success">Delivered</span></td>
-                                            <td>$120.00</td>
-                                            <td><a href="#" class="btn btn-sm btn-outline-dark">View</a></td>
-                                        </tr>
-                                        <tr>
-                                            <td>#ORD-002</td>
-                                            <td>Nov 01, 2025</td>
-                                            <td><span class="badge bg-warning text-dark">Processing</span></td>
-                                            <td>$350.50</td>
-                                            <td><a href="#" class="btn btn-sm btn-outline-dark">View</a></td>
+                                            <td colspan="5" class="text-center">No recent orders found</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -315,51 +305,39 @@
                 });
             }
 
-            const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+            async function loadUserInfo() {
+                try {
+                    let res = await fetch("/api/auth/me", { credentials: "include" });
+                    if (!res.ok) throw new Error("Auth failed");
+                    const user = await res.json();
 
-            // If not logged in, redirect to login (Account page is protected)
-            if (!isLoggedIn) {
-                window.location.replace("login.html");
-                return;
+                    document.getElementById('sidebarUserName').textContent = user.name;
+                    document.getElementById('sidebarUserEmail').textContent = user.email;
+                    document.getElementById('sidebarUserAvatar').textContent = user.name.charAt(0).toUpperCase();
+
+                } catch (err) {
+                    console.error(err);
+                    window.location.href = "login.html";
+                }
             }
 
-            /* =====================
-               NAVBAR VISIBILITY
-            ====================== */
-            const guestNav = document.getElementById("guest-nav");
-            const userNav = document.getElementById("user-nav");
-            const logoutBtn = document.getElementById("logout-btn");
-
-            // Should always be logged in here, but for consistency:
-            if (guestNav && userNav) {
-                guestNav.classList.remove("d-flex");
-                guestNav.classList.add("d-none");
-
-                userNav.classList.remove("d-none");
-                userNav.classList.add("d-flex");
-            }
-
-            /* =====================
-              LOGOUT
-           ====================== */
-            if (logoutBtn) {
-                logoutBtn.addEventListener("click", async function (e) {
+            const sidebarLogoutBtn = document.getElementById("sidebarLogoutBtn");
+            if (sidebarLogoutBtn) {
+                sidebarLogoutBtn.addEventListener("click", async function (e) {
                     e.preventDefault();
-                    try {
-                        const res = await fetch("/api/auth/logout", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" }
-                        });
-                    } catch (error) {
-                        console.error("Logout failed:", error);
-                    }
+                    await fetch("/api/auth/logout", { method: "POST" });
                     localStorage.removeItem("isLoggedIn");
                     window.location.href = "home.html";
                 });
             }
+
+            loadUserInfo();
         });
     </script>
-
+    <script src="/user/js/authGuard.js"></script>
+    <script src="/user/js/userGuard.js"></script>
+<script src="/user/js/userAuth.js"></script>
 </body>
 
 </html>
+

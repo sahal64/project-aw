@@ -9,6 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- jsPDF and AutoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -87,29 +88,30 @@
 <body>
 
     <div class="sidebar">
-        <a href="dashboard.html" class="sidebar-brand"><img src="../common/images/logo.png" alt="AeroWatch"
+        <a href="/admin/dashboard.html" class="sidebar-brand"><img src="../common/images/logo.png" alt="AeroWatch"
                 style="max-height: 50px;"></a>
 
         <span class="nav-label">Main menu</span>
         <nav class="nav flex-column">
-            <a href="dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
-            <a href="order-management.html" class="nav-link"><i class="bi bi-cart"></i> Order Management</a>
-            <a href="customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
-            <a href="coupon.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Coupon Code</a>
-            <a href="categories.html" class="nav-link"><i class="bi bi-tags"></i> Categories</a>
-            <a href="transaction.html" class="nav-link active"><i class="bi bi-wallet2"></i> Transaction</a>
-            <a href="brand.html" class="nav-link"><i class="bi bi-award"></i> Brand</a>
+            <a href="/admin/dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
+            <a href="/admin/order-management.html" class="nav-link"><i class="bi bi-cart"></i> Order Management</a>
+            <a href="/admin/customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
+            <a href="/admin/coupon.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Coupon Code</a>
+            <a href="/admin/categories.html" class="nav-link"><i class="bi bi-tags"></i> Categories</a>
+            <a href="/admin/transaction.html" class="nav-link active"><i class="bi bi-wallet2"></i> Transaction</a>
+            <a href="/admin/brand.html" class="nav-link"><i class="bi bi-award"></i> Brand</a>
+            <a href="/admin/sales-offers.html" class="nav-link"><i class="bi bi-percent"></i> Sales & Offers</a>
         </nav>
 
         <span class="nav-label">Product</span>
         <nav class="nav flex-column">
-            <a href="add-product.html" class="nav-link"><i class="bi bi-plus-circle"></i> Add Products</a>
-            <a href="all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
+            <a href="/admin/add-product.html" class="nav-link"><i class="bi bi-plus-circle"></i> Add Products</a>
+            <a href="/admin/all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
         </nav>
 
         <span class="nav-label">Admin</span>
         <nav class="nav flex-column">
-            <a href="admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
+            <a href="/admin/admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
             <a href="#" class="nav-link mt-3 text-danger" id="admin-logout"><i class="bi bi-box-arrow-right"></i>
                 Logout</a>
         </nav>
@@ -129,9 +131,24 @@
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="fw-bold m-0">Transactions</h4>
-            <div class="d-flex gap-2">
-                <input type="date" id="startDate" class="form-control" placeholder="Start Date">
-                <input type="date" id="endDate" class="form-control" placeholder="End Date">
+            <div class="d-flex gap-2 flex-wrap">
+                <div class="d-flex gap-2">
+                    <input type="date" id="startDate" class="form-control" placeholder="Start Date">
+                    <input type="date" id="endDate" class="form-control" placeholder="End Date">
+                </div>
+                <div class="d-flex gap-2">
+                    <select id="methodFilter" class="form-select" style="width: auto;">
+                        <option value="All Methods">All Methods</option>
+                        <option value="Razorpay">Razorpay</option>
+                        <option value="COD">COD</option>
+                        <option value="Wallet">Wallet</option>
+                    </select>
+                    <select id="statusFilter" class="form-select" style="width: auto;">
+                        <option value="All">All Status</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Refunded">Refunded</option>
+                    </select>
+                </div>
                 <button id="filterBtn" class="btn btn-dark"><i class="bi bi-filter"></i> Filter</button>
                 <button id="resetBtn" class="btn btn-outline-secondary"><i
                         class="bi bi-arrow-counterclockwise"></i></button>
@@ -150,7 +167,7 @@
 
         <div class="card border-0 shadow-sm">
             <div class="card-body">
-                <table class="table align-middle table-hover">
+                <table class="table align-middle table-hover" style="cursor: pointer;">
                     <thead class="table-light">
                         <tr>
                             <th>Transaction ID</th>
@@ -169,17 +186,112 @@
         </div>
     </div>
 
+    <!-- Transaction Details Modal -->
+    <div class="modal fade" id="transactionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="exampleModalLabel">Transaction Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalLoading" class="text-center py-4">
+                        <div class="spinner-border text-dark" role="status"></div>
+                        <p class="mt-2 text-muted">Fetching details...</p>
+                    </div>
+                    <div id="modalContent" style="display: none;">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <p class="mb-1 text-muted small">Transaction ID</p>
+                                <p class="fw-bold text-dark" id="det-transactionId"></p>
+
+                                <p class="mb-1 text-muted small mt-3">Order ID</p>
+                                <p class="fw-bold text-dark" id="det-orderId"></p>
+
+                                <p class="mb-1 text-muted small mt-3">Customer Name</p>
+                                <p class="fw-bold text-dark" id="det-customer"></p>
+
+                                <p class="mb-1 text-muted small mt-3">Date & Time</p>
+                                <p class="fw-bold text-dark" id="det-date"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1 text-muted small">Payment Method</p>
+                                <p class="fw-bold text-dark" id="det-method"></p>
+
+                                <p class="mb-1 text-muted small mt-3">Payment Status</p>
+                                <p id="det-status"></p>
+
+                                <p class="mb-1 text-muted small mt-3">Total Amount</p>
+                                <p class="fw-bold text-success fs-5" id="det-amount"></p>
+                            </div>
+                        </div>
+                        <hr>
+                        <h6 class="fw-bold mb-3">Products</h6>
+                        <div id="det-products" class="list-group list-group-flush border rounded overflow-hidden">
+                            <!-- Product list populated by JS -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // ==========================
+        // ADMIN AUTH CHECK
+        // ==========================
+        async function checkAdminAuth() {
+            try {
+                let res = await fetch("/api/auth/me", { credentials: "include" });
+                if (res.status === 401) {
+                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+                    if (!refreshRes.ok) {
+                        window.location.href = "/admin/login.html";
+                        return false;
+                    }
+                    res = await fetch("/api/auth/me", { credentials: "include" });
+                }
+                if (!res.ok) {
+                    window.location.href = "/admin/login.html";
+                    return false;
+                }
+                const user = await res.json();
+                if (user.role !== "admin") {
+                    window.location.href = "/admin/login.html";
+                    return false;
+                }
+                return true;
+            } catch (err) {
+                window.location.href = "/admin/login.html";
+                return false;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            checkAdminAuth().then(isAuth => {
+                if (isAuth && window.fetchTransactions) {
+                    window.fetchTransactions();
+                }
+            });
+        });
+
         document.getElementById("admin-logout").addEventListener("click", async (e) => {
             e.preventDefault();
             try {
-                await fetch("/api/auth/logout", { method: "POST" });
+                await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = "/admin/login.html";
             } catch (err) {
-                console.error(err);
+                console.error("Logout error:", err);
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = "/admin/login.html";
             }
-            localStorage.removeItem("isLoggedIn");
-            window.location.href = "../user/login.html";
         });
     </script>
     <script src="js/transaction.js"></script>

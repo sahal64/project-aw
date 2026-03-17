@@ -8,6 +8,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     :root {
@@ -83,6 +84,24 @@
       border-radius: 50%;
       object-fit: cover;
     }
+
+    .status-badge {
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+    }
+
+    .pagination .page-link {
+      color: #000;
+      border-color: #eee;
+    }
+
+    .pagination .page-item.active .page-link {
+      background-color: #000;
+      border-color: #000;
+      color: #fff;
+    }
   </style>
 </head>
 
@@ -94,65 +113,142 @@
 
     <span class="nav-label">Main menu</span>
     <nav class="nav flex-column">
-      <a href="dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
-      <a href="order-management.html" class="nav-link"><i class="bi bi-cart"></i> Order Management</a>
-      <a href="customers.html" class="nav-link active"><i class="bi bi-people"></i> Customers</a>
-      <a href="coupon.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Coupon Code</a>
-      <a href="categories.html" class="nav-link"><i class="bi bi-tags"></i> Categories</a>
-      <a href="transaction.html" class="nav-link"><i class="bi bi-wallet2"></i> Transaction</a>
-      <a href="brand.html" class="nav-link"><i class="bi bi-award"></i> Brand</a>
+      <a href="/admin/dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
+      <a href="/admin/order-management.html" class="nav-link"><i class="bi bi-cart"></i> Order Management</a>
+      <a href="/admin/customers.html" class="nav-link active"><i class="bi bi-people"></i> Customers</a>
+      <a href="/admin/coupon.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Coupon Code</a>
+      <a href="/admin/categories.html" class="nav-link"><i class="bi bi-tags"></i> Categories</a>
+      <a href="/admin/transaction.html" class="nav-link"><i class="bi bi-wallet2"></i> Transaction</a>
+      <a href="/admin/brand.html" class="nav-link"><i class="bi bi-award"></i> Brand</a>
+      <a href="/admin/sales-offers.html" class="nav-link"><i class="bi bi-percent"></i> Sales & Offers</a>
     </nav>
 
     <span class="nav-label">Product</span>
     <nav class="nav flex-column">
-      <a href="add-product.html" class="nav-link"><i class="bi bi-plus-circle"></i> Add Products</a>
-      <a href="all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
+      <a href="/admin/add-product.html" class="nav-link"><i class="bi bi-plus-circle"></i> Add Products</a>
+      <a href="/admin/all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
     </nav>
 
     <span class="nav-label">Admin</span>
     <nav class="nav flex-column">
-      <a href="admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
+      <a href="/admin/admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
       <a href="#" class="nav-link mt-3 text-danger" id="admin-logout"><i class="bi bi-box-arrow-right"></i>
         Logout</a>
     </nav>
-
-    <div class="mt-auto pt-4">
-      <div class="d-flex align-items-center p-3 rounded bg-light">
-        <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center"
-          style="width: 35px; height: 35px;">M</div>
-        <div class="ms-3">
-          <h6 class="mb-0 fs-6">Mark Bert</h6>
-          <small class="text-muted" style="font-size: 0.7rem;">Manager</small>
-        </div>
-      </div>
-    </div>
   </div>
 
   <div class="main-content">
-    <h4 class="fw-bold mb-4">Customers</h4>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="fw-bold m-0">Customers</h4>
+      <div class="d-flex gap-2">
+        <div class="input-group" style="width: 300px;">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+          <input type="text" class="form-control border-start-0" id="searchInput" placeholder="Search customers...">
+        </div>
+        <select class="form-select" id="statusFilter" style="width: 151px;">
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="blocked">Blocked</option>
+          <option value="unverified">Unverified</option>
+        </select>
+      </div>
+    </div>
 
     <div class="card border-0 shadow-sm">
-      <div class="card-body">
-        <table class="table align-middle table-hover">
-          <thead class="table-light">
-            <tr>
-              <th>Customer</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Orders</th>
-              <th>Total Spent</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="customersTable">
-          </tbody>
-        </table>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table align-middle table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">Customer Name</th>
+                <th>Email</th>
+                <th>Joined Date</th>
+                <th>Status</th>
+                <th class="pe-4 text-end">Action</th>
+              </tr>
+            </thead>
+            <tbody id="customersTable">
+              <!-- Data will be loaded here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 d-flex justify-content-between align-items-center">
+        <div class="text-muted small">
+            Showing <span id="showingCount">0</span> of <span id="totalCount">0</span> customers
+        </div>
+        <nav aria-label="Page navigation">
+            <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                <!-- Pagination buttons here -->
+            </ul>
+        </nav>
+    </div>
+  </div>
+
+  <!-- Customer Details Modal -->
+  <div class="modal fade" id="customerDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold">Customer Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body py-4">
+          <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+            <img src="https://placehold.co/60x60" class="rounded-circle me-3">
+            <div>
+              <h5 class="mb-0 fw-bold" id="detailName">-</h5>
+              <p class="text-muted mb-0" id="detailEmail">-</p>
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="text-muted small text-uppercase">Phone</label>
+              <p class="fw-medium mb-0" id="detailPhone">-</p>
+            </div>
+            <div class="col-6">
+              <label class="text-muted small text-uppercase">Account Status</label>
+              <div id="detailStatusBadge">-</div>
+            </div>
+            <div class="col-6">
+              <label class="text-muted small text-uppercase">Join Date</label>
+              <p class="fw-medium mb-0" id="detailJoinDate">-</p>
+            </div>
+            <div class="col-6">
+              <label class="text-muted small text-uppercase">Wallet Balance</label>
+              <p class="fw-bold text-success mb-0" id="detailWallet">₹0.00</p>
+            </div>
+            <div class="col-12 border-top pt-3 mt-3">
+              <div class="bg-light p-3 rounded-3 d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 class="mb-0 fw-bold">Order Summary</h6>
+                  <small class="text-muted">Total orders placed until now</small>
+                </div>
+                <h4 class="mb-0 fw-bold" id="detailOrderCount">0</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-dark w-100" data-bs-dismiss="modal">Close</button>
+        </div>
       </div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    /* ==========================
+       GLOBAL STATE
+    ========================== */
+    let currentPage = 1;
+    let currentSearch = "";
+    let currentStatus = "all";
+    const limit = 10;
+
     /* ==========================
        ADMIN AUTH CHECK
     ========================== */
@@ -169,8 +265,8 @@
           });
 
           if (!refreshRes.ok) {
-            window.location.href = "../user/login.html";
-            return;
+            window.location.href = "/admin/login.html";
+            return false;
           }
 
           res = await fetch("/api/auth/me", {
@@ -179,68 +275,206 @@
         }
 
         if (!res.ok) {
-          window.location.href = "../user/login.html";
-          return;
+          window.location.href = "/admin/login.html";
+          return false;
         }
 
         const user = await res.json();
 
         if (user.role !== "admin") {
-          window.location.href = "../user/home.html";
+          window.location.href = "/admin/login.html";
+          return false;
         }
 
+        return true;
       } catch (err) {
-        window.location.href = "../user/login.html";
+        window.location.href = "/admin/login.html";
+        return false;
       }
     }
 
     /* ==========================
        LOAD CUSTOMERS
     ========================== */
-    async function loadCustomers() {
+    async function loadCustomers(page = 1) {
       try {
-        const res = await fetch("/api/users", {
+        currentPage = page;
+        const res = await fetch(`/api/admin/customers?search=${currentSearch}&status=${currentStatus}&page=${currentPage}&limit=${limit}`, {
           credentials: "include"
         });
 
         const data = await res.json();
 
         if (!res.ok) {
-          alert("Failed to load customers");
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Failed to load customers",
+            confirmButtonColor: "#d33"
+          });
           return;
         }
 
         const tbody = document.getElementById("customersTable");
         tbody.innerHTML = "";
 
+        if (data.users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted">No customers found</td></tr>';
+            document.getElementById("showingCount").innerText = 0;
+            document.getElementById("totalCount").innerText = 0;
+            document.getElementById("paginationControls").innerHTML = "";
+            return;
+        }
+
         data.users.forEach(user => {
+          let statusText = "Active";
+          let badgeClass = "bg-success text-white";
+
+          if (user.isBlocked) {
+            statusText = "Blocked";
+            badgeClass = "bg-danger text-white";
+          } else if (!user.isVerified) {
+            statusText = "Unverified";
+            badgeClass = "bg-warning text-dark";
+          }
+
+          const joinedDate = new Date(user.createdAt).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+          });
 
           const row = document.createElement("tr");
+          row.style.cursor = "pointer";
+          row.onclick = (e) => {
+             if (e.target.closest('button')) return;
+             openCustomerDetails(user._id);
+          };
 
           row.innerHTML = `
-        <td>
+        <td class="ps-4">
           <div class="d-flex align-items-center">
             <img src="https://placehold.co/40x40" class="avatar me-3">
             <h6 class="mb-0 fw-bold">${user.name}</h6>
           </div>
         </td>
         <td>${user.email}</td>
-        <td>-</td>
-        <td>${user.totalOrders}</td>
-        <td>₹${user.totalSpent.toLocaleString("en-IN")}</td>
-        <td>
-          <button class="btn btn-sm ${user.isBlocked ? "btn-danger" : "btn-warning"}"
-            onclick="toggleBlock('${user._id}')">
-            ${user.isBlocked ? "Unblock" : "Block"}
-          </button>
+        <td>${joinedDate}</td>
+        <td><span class="status-badge ${badgeClass}">${statusText}</span></td>
+        <td class="pe-4 text-end">
+          <div class="d-flex gap-2 justify-content-end">
+            <button class="btn btn-sm ${user.isBlocked ? "btn-outline-danger" : "btn-outline-warning"}"
+              onclick="toggleBlock('${user._id}')" title="${user.isBlocked ? "Unblock" : "Block"}">
+              <i class="bi bi-${user.isBlocked ? "unlock" : "lock"}"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-dark" onclick="openCustomerDetails('${user._id}')" title="View Details">
+              <i class="bi bi-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer('${user._id}')" title="Delete Customer">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
         </td>
       `;
 
           tbody.appendChild(row);
         });
 
+        // Update Counts
+        document.getElementById("showingCount").innerText = data.users.length;
+        document.getElementById("totalCount").innerText = data.totalUsers;
+
+        // Render Pagination
+        renderPagination(data.totalPages, data.currentPage);
+
       } catch (err) {
         console.error(err);
+      }
+    }
+
+    /* ==========================
+       PAGINATION UI
+    ========================== */
+    function renderPagination(totalPages, currentPage) {
+        const container = document.getElementById("paginationControls");
+        container.innerHTML = "";
+
+        if (totalPages <= 1) return;
+
+        // Prev Button
+        container.innerHTML += `
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="loadCustomers(${currentPage - 1})"><i class="bi bi-chevron-left"></i></a>
+            </li>
+        `;
+
+        // Page Numbers
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                container.innerHTML += `
+                    <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="loadCustomers(${i})">${i}</a>
+                    </li>
+                `;
+            } else if (i === currentPage - 2 || i === currentPage + 2) {
+                container.innerHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+        }
+
+        // Next Button
+        container.innerHTML += `
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="loadCustomers(${currentPage + 1})"><i class="bi bi-chevron-right"></i></a>
+            </li>
+        `;
+    }
+
+    /* ==========================
+       DEBOUNCE SEARCH
+    ========================== */
+    let searchTimeout;
+    document.getElementById("searchInput").addEventListener("input", (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            currentSearch = e.target.value;
+            loadCustomers(1);
+        }, 500);
+    });
+
+    /* ==========================
+       FILTER CHANGE
+    ========================== */
+    document.getElementById("statusFilter").addEventListener("change", (e) => {
+        currentStatus = e.target.value;
+        loadCustomers(1);
+    });
+
+    /* ==========================
+       CUSTOMER DETAILS
+    ========================== */
+    async function openCustomerDetails(userId) {
+      try {
+        const res = await fetch(`/api/admin/customers/${userId}`, { credentials: "include" });
+        const data = await res.json();
+
+        if (!data.success) {
+           return Swal.fire("Error", data.message || "Failed to fetch details", "error");
+        }
+
+        const customer = data.customer;
+        document.getElementById("detailName").innerText = customer.name;
+        document.getElementById("detailEmail").innerText = customer.email;
+        document.getElementById("detailPhone").innerText = customer.phone;
+        document.getElementById("detailOrderCount").innerText = customer.orderCount;
+        document.getElementById("detailWallet").innerText = `₹${customer.walletBalance.toLocaleString("en-IN")}`;
+        document.getElementById("detailJoinDate").innerText = new Date(customer.createdAt).toLocaleDateString();
+
+        const badge = document.getElementById("detailStatusBadge");
+        badge.innerHTML = `<span class="status-badge ${customer.status === 'Active' ? 'bg-success text-white' : (customer.status === 'Blocked' ? 'bg-danger text-white' : 'bg-warning text-dark')}">${customer.status}</span>`;
+
+        new bootstrap.Modal(document.getElementById('customerDetailsModal')).show();
+      } catch (err) {
+        Swal.fire("Error", "Request failed", "error");
       }
     }
 
@@ -248,23 +482,87 @@
        BLOCK / UNBLOCK USER
     ========================== */
     async function toggleBlock(userId) {
-      try {
-        const res = await fetch(`/api/users/${userId}/block`, {
-          method: "PATCH",
-          credentials: "include"
-        });
+      Swal.fire({
+        title: "Are you sure?",
+        text: "User status will be changed.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#000",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Yes, change it"
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const res = await fetch(`/api/admin/users/${userId}/block`, {
+              method: "PATCH",
+              credentials: "include"
+            });
 
-        const data = await res.json();
+            const data = await res.json();
 
-        if (!res.ok) {
-          alert(data.message || "Action failed");
-          return;
+            if (!res.ok) {
+              Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: data.message || "Action failed",
+                confirmButtonColor: "#d33"
+              });
+              return;
+            }
+
+            Swal.fire({
+              icon: "success",
+              title: "Updated",
+              text: "User status changed successfully",
+              confirmButtonColor: "#000"
+            });
+
+            loadCustomers(currentPage);
+
+          } catch (err) {
+            console.error(err);
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: "An error occurred",
+              confirmButtonColor: "#d33"
+            });
+          }
         }
+      });
+    }
 
-        loadCustomers();
+    /* ==========================
+       DELETE CUSTOMER
+    ========================== */
+    async function deleteCustomer(userId) {
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "Are you sure you want to delete this customer? This action cannot be undone.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#000",
+        confirmButtonText: "Yes, delete it!"
+      });
 
-      } catch (err) {
-        console.error(err);
+      if (result.isConfirmed) {
+        try {
+          const res = await fetch(`/api/admin/customers/${userId}`, {
+            method: "DELETE",
+            credentials: "include"
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            Swal.fire("Deleted!", data.message, "success");
+            loadCustomers(currentPage);
+          } else {
+            Swal.fire("Error", data.message, "error");
+          }
+        } catch (err) {
+          Swal.fire("Error", "Server error occurred", "error");
+        }
       }
     }
 
@@ -273,18 +571,24 @@
     ========================== */
     document.getElementById("admin-logout").addEventListener("click", async (e) => {
       e.preventDefault();
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include"
-      });
-      window.location.href = "../user/login.html";
+      try {
+        await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = "/admin/login.html";
+      } catch (err) {
+        console.error("Logout error:", err);
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = "/admin/login.html";
+      }
     });
 
     /* ==========================
        INIT
     ========================== */
-    checkAdminAuth().then(() => {
-      loadCustomers();
+    checkAdminAuth().then((isAuth) => {
+      if (isAuth) loadCustomers(1);
     });
   </script>
 </body>

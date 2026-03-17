@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroWatch - Sales & Offers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --font-family: 'Outfit', sans-serif;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: #fff;
+            border-right: 1px solid #eee;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 40px;
+            display: block;
+            color: #000;
+            text-decoration: none;
+        }
+
+        .nav-label {
+            font-size: 0.8rem;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 10px;
+            margin-top: 20px;
+            display: block;
+        }
+
+        .nav-link {
+            color: #6c757d;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: #000;
+            color: #fff;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+        }
+
+        .sale-banner {
+            width: 100px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="dashboard.html" class="sidebar-brand"><img src="../common/images/logo.png" alt="AeroWatch"
+                style="max-height: 50px;"></a>
+
+        <span class="nav-label">Main menu</span>
+        <nav class="nav flex-column">
+            <a href="/admin/dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
+            <a href="/admin/order-management.html" class="nav-link"><i class="bi bi-cart"></i> Order Management</a>
+            <a href="/admin/customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
+            <a href="/admin/coupon.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Coupon Code</a>
+            <a href="/admin/categories.html" class="nav-link"><i class="bi bi-tags"></i> Categories</a>
+            <a href="/admin/transaction.html" class="nav-link"><i class="bi bi-wallet2"></i> Transaction</a>
+            <a href="/admin/brand.html" class="nav-link"><i class="bi bi-award"></i> Brand</a>
+            <a href="/admin/sales-offers.html" class="nav-link active"><i class="bi bi-percent"></i> Sales & Offers</a>
+        </nav>
+
+        <span class="nav-label">Product</span>
+        <nav class="nav flex-column">
+            <a href="/admin/add-product.html" class="nav-link"><i class="bi bi-plus-circle"></i> Add Products</a>
+            <a href="/admin/all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
+        </nav>
+
+        <span class="nav-label">Admin</span>
+        <nav class="nav flex-column">
+            <a href="/admin/admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
+            <a href="#" class="nav-link mt-3 text-danger" id="admin-logout"><i class="bi bi-box-arrow-right"></i>
+                Logout</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold m-0">Sales & Offers</h4>
+            <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addSaleModal">
+                <i class="bi bi-plus-lg"></i> Add Offer
+            </button>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <table class="table align-middle table-hover text-center">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Banner</th>
+                            <th>Sale Name</th>
+                            <th>Offer</th>
+                            <th>Applies To</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="saleTableBody">
+                        <!-- Dynamic rows here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Sale Modal -->
+    <div class="modal fade" id="addSaleModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Add Sale Campaign</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addSaleForm" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Sale Name</label>
+                            <input type="text" class="form-control" name="name" placeholder="e.g., Summer Sale 2024" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Banner Image (1200x600 recommended)</label>
+                            <input type="file" class="form-control" name="bannerImage" accept="image/*" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Offer Type</label>
+                                <select class="form-select" name="offerType" required>
+                                    <option value="percentage">Percentage Discount</option>
+                                    <option value="flat">Flat Discount</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Discount Unit</label>
+                                <select class="form-select" name="discountUnit" required>
+                                    <option value="percentage">Percentage (%)</option>
+                                    <option value="currency">Currency (₹)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Discount Value</label>
+                            <input type="number" class="form-control" name="value" placeholder="Enter value" min="1" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Applies To</label>
+                                <select class="form-select" name="appliesTo" id="appliesTo" required>
+                                    <option value="all">All Products</option>
+                                    <option value="product">Specific Products</option>
+                                    <option value="brand">Brand</option>
+                                    <option value="category">Category</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3" id="targetIdsContainer" style="display:none;">
+                                <label class="form-label">Select Target(s)</label>
+                                <select class="form-select" name="targetIds" id="targetIds" multiple>
+                                    <!-- Dynamic Options -->
+                                </select>
+                                <small class="text-muted">Hold Ctrl/Cmd to select multiple</small>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Start Date</label>
+                                <input type="date" class="form-control" name="startDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">End Date</label>
+                                <input type="date" class="form-control" name="endDate" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status">
+                                <option value="inactive">Inactive</option>
+                                <option value="active">Active</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-dark w-25">Create Sale</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Sale Modal -->
+    <div class="modal fade" id="editSaleModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Edit Sale Campaign</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editSaleForm" enctype="multipart/form-data">
+                    <input type="hidden" name="id" id="editSaleId">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Sale Name</label>
+                            <input type="text" class="form-control" name="name" id="editName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Banner Image (Leave empty to keep existing)</label>
+                            <input type="file" class="form-control" name="bannerImage" accept="image/*">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Discount Value</label>
+                            <input type="number" class="form-control" name="value" id="editValue" min="1" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Start Date</label>
+                                <input type="date" class="form-control" name="startDate" id="editStartDate" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">End Date</label>
+                                <input type="date" class="form-control" name="endDate" id="editEndDate" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status" id="editStatus">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="expired">Expired</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-dark w-25">Update Sale</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auth check
+        async function checkAdminAuth() {
+            try {
+                let res = await fetch("/api/auth/me", { credentials: "include" });
+                if (res.status === 401) {
+                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+                    if (!refreshRes.ok) return window.location.href = "/admin/login.html";
+                    res = await fetch("/api/auth/me", { credentials: "include" });
+                }
+                if (!res.ok) return window.location.href = "/admin/login.html";
+                const user = await res.json();
+                if (user.role !== "admin") window.location.href = "/admin/login.html";
+            } catch (err) {
+                window.location.href = "/admin/login.html";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            checkAdminAuth();
+            fetchSales();
+        });
+
+        document.getElementById("admin-logout").addEventListener("click", async (e) => {
+            e.preventDefault();
+            await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+            window.location.href = "/admin/login.html";
+        });
+
+        // Toggle Dynamic Target Selection
+        document.getElementById("appliesTo").addEventListener("change", async (e) => {
+            const appliesTo = e.target.value;
+            const container = document.getElementById("targetIdsContainer");
+            const select = document.getElementById("targetIds");
+
+            if (appliesTo === "all") {
+                container.style.display = "none";
+                select.required = false;
+                return;
+            }
+
+            container.style.display = "block";
+            select.required = true;
+            select.innerHTML = '<option disabled>Loading...</option>';
+
+            try {
+                let url = "";
+                if (appliesTo === "product") url = "/api/products/admin-list"; // Need to ensure this exists or use suitable one
+                else if (appliesTo === "brand") url = "/api/admin/brands";
+                else if (appliesTo === "category") url = "/api/categories";
+
+                const res = await fetch(url);
+                const data = await res.json();
+                
+                let list = [];
+                if (appliesTo === "product") list = data.products || [];
+                else if (appliesTo === "brand") list = data || [];
+                else if (appliesTo === "category") list = data || [];
+
+                select.innerHTML = "";
+                list.forEach(item => {
+                    select.innerHTML += `<option value="${item._id}">${item.name}</option>`;
+                });
+            } catch (err) {
+                console.error("Error loading targets:", err);
+                select.innerHTML = '<option disabled>Error loading targets</option>';
+            }
+        });
+
+        // Fetch and Display Sales
+        async function fetchSales() {
+            try {
+                const res = await fetch("/api/admin/sales");
+                const { sales } = await res.json();
+                const tableBody = document.getElementById("saleTableBody");
+                tableBody.innerHTML = "";
+
+                sales.forEach(sale => {
+                    const statusClass = {
+                        active: 'bg-success',
+                        inactive: 'bg-secondary',
+                        scheduled: 'bg-primary',
+                        expired: 'bg-danger'
+                    }[sale.status] || 'bg-dark';
+
+                    const offerText = sale.discountUnit === 'percentage' 
+                        ? `${sale.value}% OFF` 
+                        : `₹${sale.value} OFF`;
+
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td><img src="${sale.bannerImage}" class="sale-banner" onerror="this.src='../common/images/placeholder.jpg'"></td>
+                            <td class="fw-bold">${sale.name}</td>
+                            <td><span class="badge bg-light text-dark border">${offerText}</span></td>
+                            <td class="text-capitalize">${sale.appliesTo}</td>
+                            <td>${new Date(sale.startDate).toLocaleDateString()}</td>
+                            <td>${new Date(sale.endDate).toLocaleDateString()}</td>
+                            <td><span class="badge ${statusClass} cursor-pointer" onclick="toggleStatus('${sale._id}')">${sale.status}</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-dark" onclick="openEditModal('${encodeURIComponent(JSON.stringify(sale))}')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteSale('${sale._id}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error("Fetch sales error:", err);
+            }
+        }
+
+        // Create Sale
+        document.getElementById("addSaleForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+
+            // Validation
+            const name = formData.get("name");
+            const value = formData.get("value");
+            const unit = formData.get("discountUnit");
+            const start = new Date(formData.get("startDate"));
+            const end = new Date(formData.get("endDate"));
+
+            if (!/^[A-Za-z0-9 ]{3,80}$/.test(name)) {
+                return Swal.fire("Invalid Name", "3-80 characters, alphanumeric only", "warning");
+            }
+            if (unit === "percentage" && (value < 1 || value > 90)) {
+                return Swal.fire("Invalid Discount", "Percentage must be between 1 and 90", "warning");
+            }
+            if (end <= start) {
+                return Swal.fire("Invalid Date", "End date must be after start date", "warning");
+            }
+
+            try {
+                const res = await fetch("/api/admin/sales", {
+                    method: "POST",
+                    body: formData // No headers for FormData
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    Swal.fire("Success", "Campaign created successfully", "success");
+                    e.target.reset();
+                    bootstrap.Modal.getInstance(document.getElementById("addSaleModal")).hide();
+                    fetchSales();
+                } else {
+                    Swal.fire("Error", data.message, "error");
+                }
+            } catch (err) {
+                Swal.fire("Error", "Server connection failed", "error");
+            }
+        });
+
+        // Edit Sale
+        function openEditModal(saleStr) {
+            const sale = JSON.parse(decodeURIComponent(saleStr));
+            document.getElementById("editSaleId").value = sale._id;
+            document.getElementById("editName").value = sale.name;
+            document.getElementById("editValue").value = sale.value;
+            document.getElementById("editStartDate").value = sale.startDate.split('T')[0];
+            document.getElementById("editEndDate").value = sale.endDate.split('T')[0];
+            document.getElementById("editStatus").value = sale.status;
+            
+            new bootstrap.Modal(document.getElementById("editSaleModal")).show();
+        }
+
+        document.getElementById("editSaleForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const id = document.getElementById("editSaleId").value;
+            const formData = new FormData(e.target);
+
+            try {
+                const res = await fetch(`/api/admin/sales/${id}`, {
+                    method: "PUT",
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    Swal.fire("Updated", "Campaign updated successfully", "success");
+                    bootstrap.Modal.getInstance(document.getElementById("editSaleModal")).hide();
+                    fetchSales();
+                } else {
+                    Swal.fire("Error", data.message, "error");
+                }
+            } catch (err) {
+                Swal.fire("Error", "Update failed", "error");
+            }
+        });
+
+        async function deleteSale(id) {
+            const result = await Swal.fire({
+                title: "Are you sure?",
+                text: "Inactive sales will be permanently deleted.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#000",
+                confirmButtonText: "Yes, delete"
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const res = await fetch(`/api/admin/sales/${id}`, { method: "DELETE" });
+                    const data = await res.json();
+                    if (data.success) {
+                        Swal.fire("Deleted", data.message, "success");
+                        fetchSales();
+                    } else {
+                        Swal.fire("Denied", data.message, "error");
+                    }
+                } catch (err) {
+                    Swal.fire("Error", "Deletion failed", "error");
+                }
+            }
+        }
+
+        async function toggleStatus(id) {
+            try {
+                const res = await fetch(`/api/admin/sales/${id}/status`, { method: "PATCH" });
+                const data = await res.json();
+                if (data.success) {
+                    fetchSales();
+                } else {
+                    Swal.fire("Error", data.message, "error");
+                }
+            } catch (err) {
+                Swal.fire("Error", "Status toggle failed", "error");
+            }
+        }
+    </script>
+</body>
+
+</html>

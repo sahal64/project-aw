@@ -1,6 +1,8 @@
 const express = require("express");
 const {
-  makePayment,
+  createRazorpayOrder,
+  verifyRazorpayPayment,
+  getRazorpayKey,
   getAllPayments,
 } = require("../controllers/paymentController");
 
@@ -10,7 +12,9 @@ const adminMiddleware = require("../middlewares/adminMiddleware");
 const router = express.Router();
 
 // USER
-router.post("/", authMiddleware, makePayment);
+router.post("/create-order", authMiddleware, createRazorpayOrder);
+router.post("/verify-payment", authMiddleware, verifyRazorpayPayment);
+router.get("/get-razorpay-key", authMiddleware, getRazorpayKey);
 
 // ADMIN
 router.get("/", authMiddleware, adminMiddleware, getAllPayments);

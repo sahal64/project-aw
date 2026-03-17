@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
@@ -85,19 +86,36 @@
             margin-bottom: 20px;
         }
 
-        .image-upload-box {
-            border: 2px dashed #ddd;
+        /* STRUCTURED IMAGE EDITING STYLES */
+        .image-card {
+            border: 1px dashed #ddd;
             border-radius: 10px;
-            padding: 40px;
+            padding: 15px;
             text-align: center;
-            cursor: pointer;
-            color: #999;
+            background: #fff;
             transition: 0.3s;
+            height: 100%;
         }
 
-        .image-upload-box:hover {
+        .image-card:hover {
             border-color: #000;
-            color: #000;
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+        }
+
+        .slot-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+            display: block;
         }
     </style>
 </head>
@@ -110,24 +128,25 @@
 
         <span class="nav-label">Main menu</span>
         <nav class="nav flex-column">
-            <a href="dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
-            <a href="order-management.html" class="nav-link"><i class="bi bi-cart"></i> Order Management</a>
-            <a href="customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
-            <a href="coupon.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Coupon Code</a>
-            <a href="categories.html" class="nav-link"><i class="bi bi-tags"></i> Categories</a>
-            <a href="transaction.html" class="nav-link"><i class="bi bi-wallet2"></i> Transaction</a>
-            <a href="brand.html" class="nav-link"><i class="bi bi-award"></i> Brand</a>
+            <a href="/admin/dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
+            <a href="/admin/order-management.html" class="nav-link"><i class="bi bi-cart"></i> Order Management</a>
+            <a href="/admin/customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
+            <a href="/admin/coupon.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Coupon Code</a>
+            <a href="/admin/categories.html" class="nav-link"><i class="bi bi-tags"></i> Categories</a>
+            <a href="/admin/transaction.html" class="nav-link"><i class="bi bi-wallet2"></i> Transaction</a>
+            <a href="/admin/brand.html" class="nav-link"><i class="bi bi-award"></i> Brand</a>
+            <a href="/admin/sales-offers.html" class="nav-link"><i class="bi bi-percent"></i> Sales & Offers</a>
         </nav>
 
         <span class="nav-label">Product</span>
         <nav class="nav flex-column">
-            <a href="add-product.html" class="nav-link active"><i class="bi bi-plus-circle"></i> Add Products</a>
-            <a href="all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
+            <a href="/admin/add-product.html" class="nav-link active"><i class="bi bi-plus-circle"></i> Add Products</a>
+            <a href="/admin/all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
         </nav>
 
         <span class="nav-label">Admin</span>
         <nav class="nav flex-column">
-            <a href="admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
+            <a href="/admin/admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
             <a href="#" class="nav-link mt-3 text-danger" id="admin-logout"><i class="bi bi-box-arrow-right"></i>
                 Logout</a>
         </nav>
@@ -163,7 +182,6 @@
                             <input type="text" class="form-control" id="brand" placeholder="Enter brand name">
                         </div>
 
-
                         <div class="mb-3">
                             <label class="form-label">Description</label>
                             <textarea id="productDescription" class="form-control" rows="5"></textarea>
@@ -198,6 +216,7 @@
                         <h5 class="fw-bold mb-4">Category</h5>
                         <label class="form-label">Product Category</label>
                         <select id="productCategory" class="form-select mb-3" required>
+                            <option value="">Select Category</option>
                             <option value="men">Men</option>
                             <option value="women">Women</option>
                         </select>
@@ -206,18 +225,50 @@
                     </div>
 
                     <div class="form-section">
-                        <h5 class="fw-bold mb-4">Media</h5>
-
-                        <label class="form-label">Upload Product Images (Max 5, 1MB each)</label>
-                        <input type="file" id="productImages" class="form-control" multiple accept="image/*">
-
+                        <h5 class="fw-bold mb-4">Product Images (Max 3)</h5>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="image-card">
+                                    <span class="slot-label">Main Card Image</span>
+                                    <img id="imagePreview0" class="image-preview" src="/uploads/placeholder.png"
+                                        onerror="this.onerror=null;this.src='/uploads/placeholder.png'">
+                                    <input type="file" id="imageInput0" accept="image/*" hidden
+                                        onchange="previewImage(0)">
+                                    <button type="button" class="btn btn-sm btn-outline-dark w-100"
+                                        onclick="changeImage(0)">Change</button>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="image-card">
+                                    <span class="slot-label">Details Image 1</span>
+                                    <img id="imagePreview1" class="image-preview" src="/uploads/placeholder.png"
+                                        onerror="this.onerror=null;this.src='/uploads/placeholder.png'">
+                                    <input type="file" id="imageInput1" accept="image/*" hidden
+                                        onchange="previewImage(1)">
+                                    <button type="button" class="btn btn-sm btn-outline-dark w-100"
+                                        onclick="changeImage(1)">Change</button>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="image-card">
+                                    <span class="slot-label">Details Image 2</span>
+                                    <img id="imagePreview2" class="image-preview" src="/uploads/placeholder.png"
+                                        onerror="this.onerror=null;this.src='/uploads/placeholder.png'">
+                                    <input type="file" id="imageInput2" accept="image/*" hidden
+                                        onchange="previewImage(2)">
+                                    <button type="button" class="btn btn-sm btn-outline-dark w-100"
+                                        onclick="changeImage(2)">Change</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                 </div>
             </div>
 
             <div class="d-flex justify-content-end mb-5">
-                <button type="button" class="btn btn-light me-2">Cancel</button>
+                <button type="button" class="btn btn-light me-2"
+                    onclick="window.location.href='all-products.html'">Cancel</button>
                 <button type="submit" class="btn btn-dark px-4">Publish Product</button>
             </div>
         </form>
@@ -226,19 +277,64 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // ==========================
+        // IMAGE SLOT MANAGEMENT
+        // ==========================
+        const originalImages = [null, null, null];
+
+        function changeImage(index) {
+            document.getElementById(`imageInput${index}`).click();
+        }
+
+        function previewImage(index) {
+            const fileInput = document.getElementById(`imageInput${index}`);
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById(`imagePreview${index}`).src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // ==========================
+        // ADMIN AUTH CHECK
+        // ==========================
+        async function checkAdminAuth() {
+            try {
+                let res = await fetch("/api/auth/me", { credentials: "include" });
+                if (res.status === 401) {
+                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+                    if (!refreshRes.ok) return window.location.href = "/admin/login.html";
+                    res = await fetch("/api/auth/me", { credentials: "include" });
+                }
+                if (!res.ok) return window.location.href = "/admin/login.html";
+                const user = await res.json();
+                if (user.role !== "admin") window.location.href = "/admin/login.html";
+            } catch (err) {
+                window.location.href = "/admin/login.html";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", checkAdminAuth);
+
+        // ==========================
         // ADMIN LOGOUT
         // ==========================
         document.getElementById("admin-logout").addEventListener("click", async (e) => {
             e.preventDefault();
             try {
                 await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = "/admin/login.html";
             } catch (err) {
-                console.error(err);
+                console.error("Logout error:", err);
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = "/admin/login.html";
             }
-            window.location.href = "../user/login.html";
         });
-
-
 
         // ==========================
         // CHECK IF EDIT MODE
@@ -252,32 +348,21 @@
 
         async function loadProductForEdit(id) {
             try {
-                let res = await fetch(`/api/products/${id}`, {
-                    credentials: "include"
-                });
+                let res = await fetch(`/api/admin/products/${id}`, { credentials: "include" });
 
                 if (res.status === 401) {
-                    const refreshRes = await fetch("/api/auth/refresh", {
-                        method: "POST",
-                        credentials: "include"
-                    });
-
-                    if (!refreshRes.ok) {
-                        window.location.href = "../user/login.html";
-                        return;
-                    }
-
-                    res = await fetch(`/api/products/${id}`, {
-                        credentials: "include"
-                    });
+                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+                    if (!refreshRes.ok) return window.location.href = "/admin/login.html";
+                    res = await fetch(`/api/admin/products/${id}`, { credentials: "include" });
                 }
 
                 if (!res.ok) {
-                    alert("Failed to load product");
+                    Swal.fire({ icon: "error", title: "Error", text: "Failed to load product" });
                     return;
                 }
 
-                const product = await res.json();
+                const data = await res.json();
+                const product = data.product;
 
                 // Fill form fields
                 document.getElementById("productName").value = product.name;
@@ -286,6 +371,19 @@
                 document.getElementById("productStock").value = product.stock;
                 document.getElementById("productCategory").value = product.category;
                 document.getElementById("brand").value = product.brand;
+
+                // Populate Image Slots
+                for (let i = 0; i < 3; i++) {
+                    const img = product.images && product.images[i];
+                    const preview = document.getElementById(`imagePreview${i}`);
+                    if (img) {
+                        preview.src = img;
+                        originalImages[i] = img;
+                    } else {
+                        preview.src = "/uploads/placeholder.png";
+                        originalImages[i] = null;
+                    }
+                }
 
                 // Change page title
                 document.querySelector("h4").innerText = "Edit Product";
@@ -296,45 +394,119 @@
             }
         }
 
-
         // ==========================
-        // ADD PRODUCT (WITH IMAGES)
+        // FORM SUBMISSION (ADD/EDIT)
         // ==========================
         document.getElementById("addProductForm").addEventListener("submit", async function (e) {
             e.preventDefault();
 
+            const submitBtn = document.querySelector("button[type='submit']");
+            const originalBtnText = submitBtn.innerText;
+
+            const name = document.getElementById("productName").value.trim();
+            const brand = document.getElementById("brand").value.trim();
+            const description = document.getElementById("productDescription").value.trim();
+            const price = document.getElementById("productPrice").value;
+            const stock = document.getElementById("productStock").value;
+            const category = document.getElementById("productCategory").value;
+
+            // Collect Files from Slots
+            const fileInputs = [
+                document.getElementById("imageInput0"),
+                document.getElementById("imageInput1"),
+                document.getElementById("imageInput2")
+            ];
+
+            // VALIDATION
+            if (!/^[A-Za-z0-9]+(?:\s[A-Za-z0-9]+)*$/.test(name) || name.length < 3 || name.length > 100) {
+                Swal.fire({ icon: "error", title: "Invalid Product Name", text: "Product name must be 3-100 characters (letters/numbers/single spaces only)." });
+                return;
+            }
+
+            if (!/^[A-Za-z\s]{2,50}$/.test(brand)) {
+                Swal.fire({ icon: "error", title: "Invalid Brand", text: "Brand must be 2-50 characters (letters/spaces only)." });
+                return;
+            }
+
+            if (!category) {
+                Swal.fire({ icon: "error", title: "Category Required", text: "Please select a category." });
+                return;
+            }
+
+            if (description.length < 10 || description.length > 2000) {
+                Swal.fire({ icon: "error", title: "Invalid Description", text: "Description must be 10-2000 characters." });
+                return;
+            }
+
+            if (!price || price <= 0) {
+                Swal.fire({ icon: "error", title: "Invalid Price", text: "Price must be greater than 0." });
+                return;
+            }
+
+            if (stock === "" || stock < 0) {
+                Swal.fire({ icon: "error", title: "Invalid Stock", text: "Stock cannot be negative." });
+                return;
+            }
+
+            // Image Validation
+            if (!productId && fileInputs[0].files.length === 0) {
+                Swal.fire({ icon: "warning", title: "Main Image Required", text: "Please upload at least the Main Card Image." });
+                return;
+            }
+
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+            for (let i = 0; i < 3; i++) {
+                const file = fileInputs[i].files[0];
+                if (file) {
+                    if (!allowedTypes.includes(file.type)) {
+                        Swal.fire({ icon: "error", title: "Invalid File Type", text: `Slot ${i + 1} format not supported.` });
+                        return;
+                    }
+                    if (file.size > 5 * 1024 * 1024) {
+                        Swal.fire({ icon: "error", title: "File Too Large", text: `Slot ${i + 1} exceeds 5MB.` });
+                        return;
+                    }
+                }
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = productId ? "Updating..." : "Publishing...";
+
             const formData = new FormData();
+            formData.append("name", name);
+            formData.append("description", description);
+            formData.append("price", price);
+            formData.append("stock", stock);
+            formData.append("category", category);
+            formData.append("brand", brand);
 
-            formData.append("name", document.getElementById("productName").value);
-            formData.append("description", document.getElementById("productDescription").value);
-            formData.append("price", document.getElementById("productPrice").value);
-            formData.append("stock", document.getElementById("productStock").value);
-            formData.append("category", document.getElementById("productCategory").value);
-            formData.append("brand", document.getElementById("brand").value);
-
-
-            const files = document.getElementById("productImages").files;
-
-            if (!productId && files.length === 0) {
-                alert("Please upload at least 1 image");
+            // Handle Images (Backend compatibility workaround)
+            try {
+                for (let i = 0; i < 3; i++) {
+                    const file = fileInputs[i].files[0];
+                    if (file) {
+                        formData.append("images", file);
+                    } else if (productId && originalImages[i]) {
+                        // Re-fetch existing image and re-upload as blob to preserve order and existence
+                        const response = await fetch(originalImages[i]);
+                        const blob = await response.blob();
+                        const fileName = originalImages[i].split('/').pop();
+                        formData.append("images", blob, fileName);
+                    }
+                }
+            } catch (err) {
+                console.error("Image processing error:", err);
+                Swal.fire({ icon: "error", title: "Image Error", text: "Failed to process images." });
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalBtnText;
                 return;
-            }
-
-            if (files.length > 5) {
-                alert("Maximum 5 images allowed");
-                return;
-            }
-
-            for (let i = 0; i < files.length; i++) {
-                formData.append("images", files[i]);
             }
 
             try {
-                let url = "/api/products";
+                let url = "/api/admin/products";
                 let method = "POST";
-
                 if (productId) {
-                    url = `/api/products/${productId}`;
+                    url = `/api/admin/products/${productId}`;
                     method = "PUT";
                 }
 
@@ -345,45 +517,30 @@
                 });
 
                 if (res.status === 401) {
-                    const refreshRes = await fetch("/api/auth/refresh", {
-                        method: "POST",
-                        credentials: "include"
-                    });
-
-                    if (!refreshRes.ok) {
-                        window.location.href = "../user/login.html";
-                        return;
-                    }
-
-                    res = await fetch(url, {
-                        method: method,
-                        body: formData,
-                        credentials: "include"
-                    });
+                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+                    if (!refreshRes.ok) return window.location.href = "/admin/login.html";
+                    res = await fetch(url, { method: method, body: formData, credentials: "include" });
                 }
 
                 const data = await res.json();
-
                 if (!res.ok) {
-                    alert(data.message || "Error adding product");
+                    Swal.fire({ icon: "error", title: "Error", text: data.message || "Operation failed" });
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = originalBtnText;
                     return;
                 }
 
-                if (productId) {
-                    alert("Product updated successfully!");
-                } else {
-                    alert("Product added successfully!");
-                }
-                window.location.href = "all-products.html";
+                Swal.fire({ icon: "success", title: "Success", text: productId ? "Product updated!" : "Product added!" })
+                    .then(() => window.location.href = "all-products.html");
 
             } catch (err) {
-                console.error("Add product error:", err);
-                alert("Something went wrong");
+                console.error("Submission error:", err);
+                Swal.fire({ icon: "error", title: "Error", text: "Something went wrong." });
+                submitBtn.disabled = false;
+                submitBtn.innerText = originalBtnText;
             }
         });
-
     </script>
-
 </body>
 
 </html>

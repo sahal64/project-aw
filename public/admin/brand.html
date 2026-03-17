@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
@@ -88,24 +89,25 @@
 
         <span class="nav-label">Main menu</span>
         <nav class="nav flex-column">
-            <a href="dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
-            <a href="order-management.html" class="nav-link"><i class="bi bi-cart"></i> Order Management</a>
-            <a href="customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
-            <a href="coupon.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Coupon Code</a>
-            <a href="categories.html" class="nav-link"><i class="bi bi-tags"></i> Categories</a>
-            <a href="transaction.html" class="nav-link"><i class="bi bi-wallet2"></i> Transaction</a>
-            <a href="brand.html" class="nav-link active"><i class="bi bi-award"></i> Brand</a>
+            <a href="/admin/dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
+            <a href="/admin/order-management.html" class="nav-link"><i class="bi bi-cart"></i> Order Management</a>
+            <a href="/admin/customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
+            <a href="/admin/coupon.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Coupon Code</a>
+            <a href="/admin/categories.html" class="nav-link"><i class="bi bi-tags"></i> Categories</a>
+            <a href="/admin/transaction.html" class="nav-link"><i class="bi bi-wallet2"></i> Transaction</a>
+            <a href="/admin/brand.html" class="nav-link active"><i class="bi bi-award"></i> Brand</a>
+            <a href="/admin/sales-offers.html" class="nav-link"><i class="bi bi-percent"></i> Sales & Offers</a>
         </nav>
 
         <span class="nav-label">Product</span>
         <nav class="nav flex-column">
-            <a href="add-product.html" class="nav-link"><i class="bi bi-plus-circle"></i> Add Products</a>
-            <a href="all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
+            <a href="/admin/add-product.html" class="nav-link"><i class="bi bi-plus-circle"></i> Add Products</a>
+            <a href="/admin/all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
         </nav>
 
         <span class="nav-label">Admin</span>
         <nav class="nav flex-column">
-            <a href="admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
+            <a href="/admin/admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
             <a href="#" class="nav-link mt-3 text-danger" id="admin-logout"><i class="bi bi-box-arrow-right"></i>
                 Logout</a>
         </nav>
@@ -125,7 +127,9 @@
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="fw-bold m-0">Brands</h4>
-            <button class="btn btn-dark"><i class="bi bi-plus-lg"></i> Add Brand</button>
+            <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addBrandModal">
+                <i class="bi bi-plus-lg"></i> Add Brand
+            </button>
         </div>
 
         <div class="card border-0 shadow-sm">
@@ -140,46 +144,275 @@
                             <th>Action</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td><img src="https://placehold.co/40" class="rounded p-1 border"></td>
-                            <td class="fw-bold">Rolex</td>
-                            <td>45</td>
-                            <td><span class="badge bg-success">Active</span></td>
-                            <td>
-                                <button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button>
-                                <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><img src="https://placehold.co/40" class="rounded p-1 border"></td>
-                            <td class="fw-bold">Casio</td>
-                            <td>120</td>
-                            <td><span class="badge bg-success">Active</span></td>
-                            <td>
-                                <button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button>
-                                <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
-                            </td>
-                        </tr>
+                    <tbody id="brandTableBody">
+                        <!-- Dynamic rows here -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
+    <!-- Add Brand Modal -->
+    <div class="modal fade" id="addBrandModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Brand</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addBrandForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Brand Name</label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Brand Logo</label>
+                            <input type="file" class="form-control" name="logo" accept="image/*">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-dark">Create Brand</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Brand Modal -->
+    <div class="modal fade" id="editBrandModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Brand</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editBrandForm">
+                    <input type="hidden" name="id">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Brand Name</label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="mb-3 text-center" id="editLogoPreviewContainer">
+                            <img id="editLogoPreview" src="" class="rounded border mb-2" style="max-height: 80px;">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Change Logo</label>
+                            <input type="file" class="form-control" name="logo" accept="image/*">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-dark">Update Brand</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // ==========================
+        // ADMIN AUTH CHECK
+        // ==========================
+        async function checkAdminAuth() {
+            try {
+                let res = await fetch("/api/auth/me", { credentials: "include" });
+                if (res.status === 401) {
+                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+                    if (!refreshRes.ok) return window.location.href = "/admin/login.html";
+                    res = await fetch("/api/auth/me", { credentials: "include" });
+                }
+                if (!res.ok) return window.location.href = "/admin/login.html";
+                const user = await res.json();
+                if (user.role !== "admin") window.location.href = "/admin/login.html";
+            } catch (err) {
+                window.location.href = "/admin/login.html";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            checkAdminAuth();
+            fetchBrands();
+        });
+
         document.getElementById("admin-logout").addEventListener("click", async (e) => {
             e.preventDefault();
             try {
-                await fetch("/api/auth/logout", { method: "POST" });
+                await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = "/admin/login.html";
             } catch (err) {
-                console.error(err);
+                console.error("Logout error:", err);
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = "/admin/login.html";
             }
-            localStorage.removeItem("isLoggedIn");
-            window.location.href = "../user/login.html";
         });
+
+        // ==========================
+        // BRAND MANAGEMENT
+        // ==========================
+        async function fetchBrands() {
+            try {
+                const res = await fetch("/api/admin/brands");
+                const brands = await res.json();
+                const tableBody = document.getElementById("brandTableBody");
+                tableBody.innerHTML = "";
+
+                brands.forEach(brand => {
+                    const logoUrl = brand.logo ? brand.logo : "https://placehold.co/40";
+                    const statusBadge = brand.status 
+                        ? `<span class="badge bg-success" style="cursor:pointer" onclick="toggleStatus('${brand._id}')">Active</span>`
+                        : `<span class="badge bg-danger" style="cursor:pointer" onclick="toggleStatus('${brand._id}')">Inactive</span>`;
+
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td><img src="${logoUrl}" class="rounded p-1 border" style="width: 40px; height: 40px; object-fit: contain;"></td>
+                            <td class="fw-bold">${brand.name}</td>
+                            <td>${brand.productCount || 0}</td>
+                            <td>${statusBadge}</td>
+                            <td>
+                                <button class="btn btn-sm btn-light" onclick="openEditModal('${brand._id}', '${brand.name}', '${brand.logo}')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-light text-danger" onclick="deleteBrand('${brand._id}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error("Fetch brands error:", err);
+            }
+        }
+
+        // Add Brand
+        document.getElementById("addBrandForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const name = formData.get("name").trim().replace(/\s+/g, ' ');
+            const nameRegex = /^[A-Za-z0-9 ]{2,50}$/;
+
+            if (!nameRegex.test(name)) {
+                return Swal.fire("Error", "Brand name must be 2-50 characters and contain only letters, numbers, and spaces", "error");
+            }
+
+            try {
+                const res = await fetch("/api/admin/brands", {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    Swal.fire("Success", data.message, "success");
+                    e.target.reset();
+                    bootstrap.Modal.getInstance(document.getElementById("addBrandModal")).hide();
+                    fetchBrands();
+                } else {
+                    Swal.fire("Error", data.message, "error");
+                }
+            } catch (err) {
+                Swal.fire("Error", "Something went wrong", "error");
+            }
+        });
+
+        // Open Edit Modal
+        function openEditModal(id, name, logo) {
+            const form = document.getElementById("editBrandForm");
+            form.elements["id"].value = id;
+            form.elements["name"].value = name;
+            
+            const preview = document.getElementById("editLogoPreview");
+            if (logo) {
+                preview.src = logo;
+                preview.style.display = "block";
+            } else {
+                preview.style.display = "none";
+            }
+
+            new bootstrap.Modal(document.getElementById("editBrandModal")).show();
+        }
+
+        // Update Brand
+        document.getElementById("editBrandForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const id = e.target.elements["id"].value;
+            const formData = new FormData(e.target);
+            const name = formData.get("name").trim().replace(/\s+/g, ' ');
+            const nameRegex = /^[A-Za-z0-9 ]{2,50}$/;
+
+            if (!nameRegex.test(name)) {
+                return Swal.fire("Error", "Brand name must be 2-50 characters and contain only letters, numbers, and spaces", "error");
+            }
+
+            try {
+                const res = await fetch(`/api/admin/brands/${id}`, {
+                    method: "PUT",
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    Swal.fire("Success", data.message, "success");
+                    bootstrap.Modal.getInstance(document.getElementById("editBrandModal")).hide();
+                    fetchBrands();
+                } else {
+                    Swal.fire("Error", data.message, "error");
+                }
+            } catch (err) {
+                Swal.fire("Error", "Something went wrong", "error");
+            }
+        });
+
+        // Delete Brand
+        async function deleteBrand(id) {
+            const result = await Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!"
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const res = await fetch(`/api/admin/brands/${id}`, { method: "DELETE" });
+                    const data = await res.json();
+                    if (res.ok) {
+                        Swal.fire("Deleted!", data.message, "success");
+                        fetchBrands();
+                    } else {
+                        Swal.fire("Error", data.message, "error");
+                    }
+                } catch (err) {
+                    Swal.fire("Error", "Something went wrong", "error");
+                }
+            }
+        }
+
+        // Toggle Status
+        async function toggleStatus(id) {
+            try {
+                const res = await fetch(`/api/admin/brands/${id}/status`, { method: "PATCH" });
+                const data = await res.json();
+                if (res.ok) {
+                    fetchBrands();
+                } else {
+                    Swal.fire("Error", data.message, "error");
+                }
+            } catch (err) {
+                Swal.fire("Error", "Something went wrong", "error");
+            }
+        }
     </script>
 </body>
 
-</html>
+</html>

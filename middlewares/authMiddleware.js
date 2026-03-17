@@ -11,6 +11,13 @@ const authMiddleware = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = await User.findById(decoded.id).select("-password");
+
+    if (req.user && req.user.isBlocked) {
+      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken");
+      return res.status(403).json({ message: "Your account has been blocked" });
+    }
+
     next();
   } catch (error) {
     res.status(401).json({ message: "Invalid token" });

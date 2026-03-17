@@ -1,7 +1,98 @@
 const Product = require("../models/Product");
+const Offer = require("../models/Offer");
+const Sale = require("../models/Sale");
+const Brand = require("../models/Brand");
+const Category = require("../models/Category");
 const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
+
+// Helper to calculate discounted prices
+const applyOffers = async (products) => {
+  const now = new Date();
+
+  // Fetch active specialized offers
+  const activeOffers = await Offer.find({
+    status: true,
+    startDate: { $lte: now },
+    endDate: { $gte: now }
+  }).populate("referenceId");
+
+  // Fetch active broad sales campaigns
+  const activeSales = await Sale.find({
+    status: "active",
+    startDate: { $lte: now },
+    endDate: { $gte: now }
+  });
+
+  return products.map(product => {
+    let highestDiscount = 0;
+    let saleName = "";
+    const pObj = product.toObject ? product.toObject() : product;
+
+    // 1. Check specialized Offers (Old system)
+    activeOffers.forEach(offer => {
+      let isApplicable = false;
+      if (offer.type === "product" && offer.referenceId._id.toString() === pObj._id.toString()) {
+        isApplicable = true;
+      } else if (offer.type === "brand" && offer.referenceId.name === pObj.brand) {
+        isApplicable = true;
+      } else if (offer.type === "category") {
+          let mappedCat = "limited";
+          const catName = offer.referenceId.name.toLowerCase();
+          if (catName.includes("women")) mappedCat = "women";
+          else if (catName.includes("men")) mappedCat = "men";
+          if (mappedCat === pObj.category) isApplicable = true;
+      }
+
+      if (isApplicable && offer.discountPercentage > highestDiscount) {
+        highestDiscount = offer.discountPercentage;
+        saleName = "Offer"; // Placeholder or from offer if available
+      }
+    });
+
+    // 2. Check broad Sales Campaigns (New system)
+    activeSales.forEach(sale => {
+      let isApplicable = false;
+      if (sale.appliesTo === "all") {
+        isApplicable = true;
+      } else if (sale.appliesTo === "product" && sale.targetIds.some(id => id.toString() === pObj._id.toString())) {
+        isApplicable = true;
+      } else if (sale.appliesTo === "brand" && sale.targetIds.some(id => id.toString() === pObj.brandId?.toString())) {
+        // Assuming brand comparison might need product.brandId or product.brand string
+        // We will try to match by string if brandId is not available, or targetIds are strings
+        // Based on Sale.js, targetIds are ObjectIds.
+        isApplicable = true; // Logic needs refinement based on how brand is stored in Product
+      } else if (sale.appliesTo === "category" && sale.targetIds.some(id => id.toString() === pObj.categoryId?.toString())) {
+        isApplicable = true;
+      }
+
+      let currentSaleDiscount = 0;
+      if (sale.discountUnit === "percentage") {
+        currentSaleDiscount = sale.value;
+      } else {
+        // Flat discount converted to percentage for comparison
+        currentSaleDiscount = (sale.value / pObj.price) * 100;
+      }
+
+      if (isApplicable && currentSaleDiscount > highestDiscount) {
+        highestDiscount = currentSaleDiscount;
+        saleName = sale.name;
+      }
+    });
+
+    const finalPrice = highestDiscount > 0 
+      ? Math.round(pObj.price - (pObj.price * highestDiscount / 100))
+      : pObj.price;
+
+    return {
+      ...pObj,
+      finalPrice,
+      discountPercentage: Math.round(highestDiscount),
+      saleName
+    };
+  });
+};
 
 // ==========================
 // ADMIN – Add Product
@@ -11,60 +102,91 @@ const path = require("path");
 // ==========================
 exports.addProduct = async (req, res) => {
   try {
+    let { name, brand, price, stock, category, description } = req.body;
+
+    // ==========================
+    // SANITIZATION
+    // ==========================
+    name = name?.trim();
+    brand = brand?.trim();
+    description = description?.trim();
 
     // ==========================
     // VALIDATION
     // ==========================
-    const { name, brand, price, stock, category, description } = req.body;
-
-    if (!name || name.trim().length < 3) {
-      return res.status(400).json({ message: "Product name too short" });
+    if (!name || !/^[a-zA-Z0-9\s]{3,100}$/.test(name)) {
+      return res.status(400).json({ success: false, message: "Product name must be 3-100 characters and contain only letters, numbers, and spaces" });
     }
 
-    if (!brand || brand.trim().length < 2) {
-      return res.status(400).json({ message: "Brand required" });
+    if (!brand || brand.length < 2) {
+      return res.status(400).json({ success: false, message: "Brand name is required" });
     }
 
-    if (!price || Number(price) <= 0) {
-      return res.status(400).json({ message: "Price must be positive" });
+    if (!price || isNaN(price) || Number(price) <= 0) {
+      return res.status(400).json({ success: false, message: "Price must be a number greater than 0" });
     }
 
-    if (stock === undefined || Number(stock) < 0) {
-      return res.status(400).json({ message: "Stock cannot be negative" });
+    if (stock === undefined || isNaN(stock) || Number(stock) < 0 || !Number.isInteger(Number(stock))) {
+      return res.status(400).json({ success: false, message: "Stock must be a non-negative integer" });
     }
 
     if (!["men", "women", "limited"].includes(category)) {
-      return res.status(400).json({ message: "Invalid category" });
+      return res.status(400).json({ success: false, message: "Invalid category selected" });
+    }
+
+    if (!description || description.length < 10 || description.length > 2000) {
+      return res.status(400).json({ success: false, message: "Description must be between 10 and 2000 characters" });
     }
 
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ message: "At least one image required" });
+      return res.status(400).json({ success: false, message: "At least one image is required" });
+    }
+
+    if (req.files.length > 5) {
+      return res.status(400).json({ success: false, message: "Maximum 5 images allowed" });
+    }
+
+    // ==========================
+    // DUPLICATE CHECK
+    // ==========================
+    const existingProduct = await Product.findOne({ name: { $regex: new RegExp(`^${name}$`, "i") } });
+    if (existingProduct) {
+      return res.status(400).json({ success: false, message: "A product with this name already exists" });
     }
 
     // ==========================
     // IMAGE HANDLING
     // ==========================
     const uploadDir = path.join(__dirname, "../public/uploads");
-
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
 
-    const imagePaths = [];
+const imagePaths = [];
+for (let i = 0; i < req.files.length; i++) {
 
-    for (let i = 0; i < req.files.length; i++) {
-      const file = req.files[i];
+  const file = req.files[i];
 
-      const fileName = `product-${Date.now()}-${i}.webp`;
-      const filePath = path.join(uploadDir, fileName);
+  // ==========================
+  // SECURITY: CHECK FILE TYPE
+  // ==========================
+  if (!file.mimetype.startsWith("image/")) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid file type. Only image files are allowed."
+    });
+  }
 
-      await sharp(file.buffer)
-        .resize(800, 800, { fit: "cover" })
-        .webp({ quality: 80 })
-        .toFile(filePath);
+  const fileName = `product-${Date.now()}-${i}.webp`;
+  const filePath = path.join(uploadDir, fileName);
 
-      imagePaths.push(`/uploads/${fileName}`);
-    }
+  await sharp(file.buffer)
+    .resize(800, 800, { fit: "cover" })
+    .webp({ quality: 80 })
+    .toFile(filePath);
+
+  imagePaths.push(`/uploads/${fileName}`);
+}
 
     // ==========================
     // SAVE PRODUCT
@@ -72,18 +194,18 @@ exports.addProduct = async (req, res) => {
     const product = await Product.create({
       name,
       brand,
-      price,
-      stock,
+      price: Number(price),
+      stock: Number(stock),
       category,
       description,
       images: imagePaths
     });
 
-    res.status(201).json(product);
+    res.status(201).json({ success: true, product });
 
   } catch (error) {
     console.error("ADD PRODUCT ERROR:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -221,6 +343,66 @@ exports.deleteProduct = async (req, res, next) => {
 
 
 // ==========================
+// ADMIN – Get All Products
+// ==========================
+exports.getAdminProducts = async (req, res) => {
+  try {
+
+    const productsData = await Product.find()
+      .sort({ createdAt: -1 });
+
+    const products = await applyOffers(productsData);
+
+    res.json({
+      success: true,
+      products
+    });
+
+  } catch (error) {
+    console.error("ADMIN GET PRODUCTS ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to load products"
+    });
+  }
+};
+
+// ==========================
+// ADMIN – Get Single Product
+// ==========================
+exports.getAdminProductById = async (req, res) => {
+  try {
+    const productData = await Product.findById(req.params.id);
+
+    if (!productData) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found"
+      });
+    }
+
+    const products = await applyOffers([productData]);
+
+    res.json({
+      success: true,
+      product: products[0]
+    });
+
+  } catch (error) {
+
+    console.error("ADMIN GET PRODUCT ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to load product"
+    });
+
+  }
+};
+
+
+// ==========================
 // USER – Get All Products
 // (WITH CATEGORY FILTER)
 // ==========================
@@ -232,7 +414,7 @@ exports.getAllProducts = async (req, res) => {
     if (req.query.category) {
       filter.category = req.query.category;
     }
-//filter price
+    //filter price
     if (req.query.minPrice !== undefined || req.query.maxPrice !== undefined) {
       filter.price = {};
       if (req.query.minPrice !== undefined) filter.price.$gte = Number(req.query.minPrice);
@@ -247,7 +429,32 @@ exports.getAllProducts = async (req, res) => {
       sortOption = { createdAt: -1 };
     }
 
-    const products = await Product.find(filter).sort(sortOption);
+    const productsData = await Product.find(filter).sort(sortOption);
+    let products = await applyOffers(productsData);
+
+    // Calculate final price based on the new offerPercentage field
+    products = products.map(p => {
+      const pObj = p.toObject ? p.toObject() : p;
+      const basePrice = pObj.price;
+      const offerDiscount = (basePrice * (pObj.offerPercentage || 0)) / 100;
+      
+      // Use the higher discount between existing applyOffers logic and local offerPercentage
+      const currentFinalPrice = pObj.finalPrice || basePrice;
+      const localOfferPrice = basePrice - offerDiscount;
+      
+      const absoluteFinalPrice = Math.min(currentFinalPrice, localOfferPrice);
+      const absoluteDiscountPercentage = Math.max(pObj.discountPercentage || 0, pObj.offerPercentage || 0);
+
+      return {
+        ...pObj,
+        finalPrice: Math.round(absoluteFinalPrice),
+        discountPercentage: Math.round(absoluteDiscountPercentage)
+      };
+    });
+
+    if (req.query.onSale === "true") {
+      products = products.filter(p => p.discountPercentage > 0);
+    }
 
     res.json({ products });
 
@@ -269,7 +476,22 @@ exports.getProductById = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    res.json(product);
+    const productsWithOffers = await applyOffers([product]);
+    const p = productsWithOffers[0];
+    
+    const basePrice = p.price;
+    const offerDiscount = (basePrice * (p.offerPercentage || 0)) / 100;
+    const currentFinalPrice = p.finalPrice || basePrice;
+    const localOfferPrice = basePrice - offerDiscount;
+    
+    const finalPrice = Math.round(Math.min(currentFinalPrice, localOfferPrice));
+    const discountPercentage = Math.round(Math.max(p.discountPercentage || 0, p.offerPercentage || 0));
+
+    res.json({
+      ...p,
+      finalPrice,
+      discountPercentage
+    });
   } catch (error) {
     console.error("GET PRODUCT BY ID ERROR:", error);
     res.status(500).json({ message: "Server error" });
@@ -295,5 +517,150 @@ exports.toggleProductStatus = async (req, res) => {
   } catch (error) {
     console.error("TOGGLE PRODUCT ERROR:", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ==========================
+// USER – Get Deals of the Week
+// (Highest discounts top 3)
+// ==========================
+exports.getDealsOfWeek = async (req, res) => {
+  try {
+    // 1. Fetch all active products
+    const productsData = await Product.find({ isActive: { $ne: false } });
+
+    // 2. Apply discount logic helper
+    const productsWithOffers = await applyOffers(productsData);
+
+    // 3. Filter for discounted products & Sort by percentage descending
+    const deals = productsWithOffers
+      .filter(p => p.discountPercentage > 0)
+      .sort((a, b) => b.discountPercentage - a.discountPercentage)
+      .slice(0, 3); // Top 3
+
+    res.json({ success: true, deals });
+  } catch (error) {
+    console.error("GET DEALS ERROR:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+// ==========================
+// ADMIN – Add Product Offer
+// ==========================
+exports.addProductOffer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { percentage } = req.body;
+
+    if (percentage < 1 || percentage > 90) {
+      return res.status(400).json({ success: false, message: "Offer must be between 1 and 90%" });
+    }
+
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    product.offerPercentage = percentage;
+    await product.save();
+
+    res.json({ success: true, message: "Offer added successfully", offerPercentage: product.offerPercentage });
+  } catch (error) {
+    console.error("ADD OFFER ERROR:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// ==========================
+// ADMIN – Remove Product Offer
+// ==========================
+exports.removeProductOffer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    product.offerPercentage = 0;
+    await product.save();
+
+    res.json({ success: true, message: "Offer removed successfully" });
+  } catch (error) {
+    console.error("REMOVE OFFER ERROR:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// ==========================
+// USER – Get Offer Products
+// ==========================
+exports.getOfferProducts = async (req, res) => {
+  try {
+    const products = await Product.find({ offerPercentage: { $gt: 0 }, isActive: { $ne: false } })
+      .sort({ offerPercentage: -1 })
+      .limit(3);
+
+    const productsWithFinalPrice = products.map(p => {
+      const pObj = p.toObject();
+      const finalPrice = Math.round(pObj.price - (pObj.price * pObj.offerPercentage / 100));
+      return {
+        ...pObj,
+        finalPrice,
+        discountPercentage: pObj.offerPercentage
+      };
+    });
+
+    res.json({ success: true, products: productsWithFinalPrice });
+  } catch (error) {
+    console.error("GET OFFER PRODUCTS ERROR:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// ==========================
+// USER – Get Sale Products
+// (Filtered by active sale)
+// ==========================
+exports.getSaleProducts = async (req, res) => {
+  try {
+    const now = new Date();
+    // 1. Find active sale
+    const activeSale = await Sale.findOne({
+      status: "active",
+      startDate: { $lte: now },
+      endDate: { $gte: now },
+    });
+
+    if (!activeSale) {
+      return res.json({ success: true, products: [] });
+    }
+
+    // 2. Fetch all active products
+    const productsData = await Product.find({ isActive: { $ne: false } });
+
+    // 3. Apply discount logic
+    const productsWithOffers = await applyOffers(productsData);
+
+    // 4. Filter for products matching this specific sale name
+    // (applyOffers identifies the saleName if it's the highest discount)
+    const saleProducts = productsWithOffers
+      .filter(p => p.saleName === activeSale.name)
+      .sort((a, b) => b.discountPercentage - a.discountPercentage)
+      .slice(0, 3)
+      .map(p => ({
+        _id: p._id,
+        name: p.name,
+        image: p.images[0],
+        price: p.price,
+        discount: p.discountPercentage,
+        finalPrice: p.finalPrice
+      }));
+
+    res.json({ success: true, products: saleProducts });
+  } catch (error) {
+    console.error("GET SALE PRODUCTS ERROR:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

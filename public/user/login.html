@@ -99,6 +99,8 @@
             }
         }
     </style>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -110,9 +112,11 @@
         <div class="right-pane">
             <div class="login-box">
                 <h2 class="login-title">Login</h2>
-                <form id="loginForm">
-                    <input type="email" class="form-control" placeholder="Email" required>
-                    <input type="password" class="form-control" placeholder="Password" required>
+                <form id="loginForm" novalidate>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Email" maxlength="100"
+                        required>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Password"
+                        maxlength="50" required>
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div class="form-check">
@@ -124,8 +128,19 @@
                         <a href="forgot-password.html" class="small text-decoration-none fw-bold">Forgot password?</a>
                     </div>
 
-                    <button type="submit" class="btn btn-dark-custom">Email Login <span
+                    <button type="submit" class="btn btn-dark-custom mb-3">Email Login <span
                             class="float-end">&rarr;</span></button>
+
+                    <!-- Google Sign-In Button -->
+                    <div id="g_id_onload"
+                        data-client_id="387563249973-b52mdftfupf603t9pch5k72umt87775i.apps.googleusercontent.com"
+                        data-context="signin" data-ux_mode="popup" data-callback="handleGoogleLogin"
+                        data-auto_prompt="false">
+                    </div>
+
+                    <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline"
+                        data-text="signin_with" data-size="large" data-logo_alignment="left" data-width="400">
+                    </div>
 
                     <div class="mt-4 text-center">
                         <small>Don't have an account? <a href="signup.html"
@@ -136,49 +151,169 @@
         </div>
     </div>
 
-
     <script>
-    const form = document.getElementById("loginForm");
+        async function handleGoogleLogin(response) {
+            try {
+                const res = await fetch("/api/auth/google", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: response.credential })
+                });
 
-    form.addEventListener("submit", async (e) => {
-        e.preventDefault();
+                const data = await res.json();
 
-        const email = form.querySelector("input[type='email']").value;
-        const password = form.querySelector("input[type='password']").value;
+                if (!res.ok) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Login Failed",
+                        text: data.message || "Google login failed",
+                        confirmButtonColor: "#000"
+                    });
+                    return;
+                }
 
-        try {
-            const res = await fetch("/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",   // 🔥 VERY IMPORTANT
-                body: JSON.stringify({ email, password })
-            });
+                localStorage.setItem("isLoggedIn", "true");
+                window.location.href = "home.html";
 
-            const data = await res.json();
+            } catch (err) {
+                console.error("Google login error:", err);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Something went wrong with Google Login",
+                    confirmButtonColor: "#d33"
+                });
+            }
+        }
 
-            if (!res.ok) {
-                alert(data.message || "Login failed");
+        const form = document.getElementById("loginForm");
+        const emailInput = document.getElementById("email");
+        const passwordInput = document.getElementById("password");
+
+        // Proactive Email Input Control
+        emailInput.addEventListener("input", () => {
+            let value = emailInput.value;
+            // Remove leading spaces
+            value = value.replace(/^\s+/, "");
+            // Block all spaces and force lowercase
+            value = value.replace(/\s/g, "").toLowerCase();
+
+            if (emailInput.value !== value) {
+                emailInput.value = value;
+            }
+        });
+
+        // Proactive Password Input Control
+        passwordInput.addEventListener("input", () => {
+            let value = passwordInput.value;
+            // Trim leading spaces only (passwords can have trailing spaces, but user asked to prevent only-space passwords)
+            value = value.replace(/^\s+/, "");
+
+            if (passwordInput.value !== value) {
+                passwordInput.value = value;
+            }
+        });
+
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            // 1. Get values correctly
+            const emailValue = emailInput.value.trim().toLowerCase();
+            const passwordValue = passwordInput.value;
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            // 2. Email Validation Logic
+            if (!emailValue) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Missing Info",
+                    text: "Email is required.",
+                    confirmButtonColor: "#f59e0b"
+                });
                 return;
             }
 
-            // optional local flag (not required for auth)
-            localStorage.setItem("isLoggedIn", "true");
-
-            if (data.role === "admin") {
-                window.location.href = "../admin/dashboard.html";
-            } else {
-                window.location.href = "home.html";
+            if (!emailRegex.test(emailValue)) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Invalid Email",
+                    text: "Please enter a valid email address.",
+                    confirmButtonColor: "#f59e0b"
+                });
+                return;
             }
 
-        } catch (err) {
-            console.error("Login error:", err);
-            alert("Something went wrong");
-        }
-    });
-</script>
+            // 3. Password Validation Logic
+            // Trim password to check if it's only spaces (as requested)
+            if (!passwordValue || passwordValue.trim().length === 0) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Missing Info",
+                    text: "Password is required.",
+                    confirmButtonColor: "#f59e0b"
+                });
+                return;
+            }
+
+            if (passwordValue.length < 6) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Warning",
+                    text: "Password must be at least 6 characters.",
+                    confirmButtonColor: "#f59e0b"
+                });
+                return;
+            }
+
+            // 4. Continue existing fetch request
+            const email = emailValue;
+            const password = passwordValue;
+
+            try {
+                const res = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",   // 🔥 VERY IMPORTANT
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Login Failed",
+                        text: data.message || "Login failed",
+                        confirmButtonColor: "#000"
+                    });
+                    return;
+                }
+
+                // optional local flag (not required for auth)
+                localStorage.setItem("isLoggedIn", "true");
+
+                if (data.role === "admin") {
+                    window.location.href = "/admin/dashboard.html";
+                } else {
+                    window.location.href = "/user/account.html";
+                }
+
+            } catch (err) {
+                console.error("Login error:", err);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "Something went wrong",
+                    confirmButtonColor: "#d33"
+                });
+            }
+        });
+    </script>
 
 
 
-</body>
+`n</body>
 
 </html>
+
+

@@ -2,144 +2,367 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AeroWatch - Sign Up</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroWatch - Sign Up</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <style>
-        :root {
-            --font-family: 'Outfit', sans-serif;
-            --primary-color: #000000;
-        }
+  <style>
+    :root {
+      --font-family: 'Outfit', sans-serif;
+      --primary-color: #000000;
+    }
 
-        body {
-            font-family: var(--font-family);
-            background-color: #f8f9fa;
-        }
+    body {
+      font-family: var(--font-family);
+      background-color: #f8f9fa;
+    }
 
-        .signup-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .signup-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        .login-box {
-            width: 100%;
-            max-width: 450px;
-            background: #fff;
-            padding: 50px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-        }
+    .login-box {
+      width: 100%;
+      max-width: 450px;
+      background: #fff;
+      padding: 50px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
 
-        .login-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 30px;
-            text-align: center;
-        }
+    .login-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 30px;
+      text-align: center;
+    }
 
-        .form-control {
-            padding: 15px;
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
+    .form-control {
+      padding: 15px;
+      background: #f8f9fa;
+      border: 1px solid #ddd;
+      margin-bottom: 5px;
+      border-radius: 5px;
+    }
 
-        .btn-dark-custom {
-            background-color: var(--primary-color);
-            color: #fff;
-            padding: 15px;
-            border-radius: 5px;
-            font-weight: 600;
-            text-transform: uppercase;
-            width: 100%;
-            border: none;
-        }
+    .btn-dark-custom {
+      background-color: var(--primary-color);
+      color: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      width: 100%;
+      border: none;
+      margin-top: 15px;
+    }
 
-        .btn-dark-custom:hover {
-            background: #333;
-        }
-    </style>
+    .btn-dark-custom:hover {
+      background: #333;
+    }
+
+    .error-message {
+      font-size: 0.8rem;
+      color: #dc3545;
+      margin-bottom: 15px;
+      height: 1.2rem;
+      display: block;
+    }
+  </style>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
 
-    <div class="signup-container">
-        <div class="login-box">
-            <h2 class="login-title">Sign Up</h2>
-            <form id="signupForm">
-                <input type="text" class="form-control" placeholder="Full Name" required>
-                <input type="email" class="form-control" placeholder="Email" required>
-                <input type="password" class="form-control" placeholder="Password" required>
-                <input type="password" class="form-control" placeholder="Confirm Password" required>
-
-                <button type="submit" class="btn btn-dark-custom">Create Account</button>
-
-                <div class="mt-4 text-center">
-                    <small>Already have an account? <a href="login.html"
-                            class="fw-bold text-dark text-decoration-none">Login</a></small>
-                </div>
-            </form>
+  <div class="signup-container">
+    <div class="login-box">
+      <h2 class="login-title">Sign Up</h2>
+      <form id="signupForm" novalidate>
+        <div class="form-group">
+          <input type="text" id="name" name="name" class="form-control" placeholder="Full Name" maxlength="30" required>
+          <span id="nameError" class="error-message"></span>
         </div>
+
+        <div class="form-group">
+          <input type="email" id="email" name="email" class="form-control" placeholder="Email" required>
+          <span id="emailError" class="error-message"></span>
+        </div>
+
+        <div class="form-group">
+          <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
+          <span id="passwordError" class="error-message"></span>
+        </div>
+
+        <div class="form-group">
+          <input type="password" id="confirmPassword" name="confirmPassword" class="form-control"
+            placeholder="Confirm Password" required>
+          <span id="confirmPasswordError" class="error-message"></span>
+        </div>
+
+        <button type="submit" class="btn btn-dark-custom mb-3">Create Account</button>
+
+        <!-- Google Sign-In Button -->
+        <div id="g_id_onload" data-client_id="387563249973-b52mdftfupf603t9pch5k72umt87775i.apps.googleusercontent.com"
+          data-context="signup" data-ux_mode="popup" data-callback="handleGoogleLogin" data-auto_prompt="false">
+        </div>
+
+        <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline"
+          data-text="signup_with" data-size="large" data-logo_alignment="left" data-width="350">
+        </div>
+
+        <div class="mt-4 text-center">
+          <small>Already have an account? <a href="login.html"
+              class="fw-bold text-dark text-decoration-none">Login</a></small>
+        </div>
+      </form>
     </div>
+  </div>
 
 
 
-<script>
-const form = document.getElementById("signupForm");
+  <script>
+    async function handleGoogleLogin(response) {
+      try {
+        const res = await fetch("/api/auth/google", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: response.credential })
+        });
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+        const data = await res.json();
 
-  const inputs = form.querySelectorAll("input");
-  const name = inputs[0].value.trim();
-  const email = inputs[1].value.trim();
-  const password = inputs[2].value;
-  const confirmPassword = inputs[3].value;
+        if (!res.ok) {
+          Swal.fire({
+            icon: "error",
+            title: "Signup Failed",
+            text: data.message || "Google signup failed",
+            confirmButtonColor: "#000"
+          });
+          return;
+        }
 
-  if (password !== confirmPassword) {
-    alert("Passwords do not match");
-    return;
-  }
+        localStorage.setItem("isLoggedIn", "true");
+        window.location.href = "home.html";
 
-  try {
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.message);
-      return;
+      } catch (err) {
+        console.error("Google signup error:", err);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Something went wrong with Google Sign-Up",
+          confirmButtonColor: "#d33"
+        });
+      }
     }
 
-    // ✅ STORE EMAIL ONCE
-    localStorage.setItem("pendingEmail", email);
+    const form = document.getElementById("signupForm");
+    const nameInput = document.getElementById("name");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const confirmPasswordInput = document.getElementById("confirmPassword");
 
-    alert("Signup successful. Enter OTP.");
-    window.location.href = "otp-verification.html";
+    const nameError = document.getElementById("nameError");
+    const emailError = document.getElementById("emailError");
+    const passwordError = document.getElementById("passwordError");
+    const confirmPasswordError = document.getElementById("confirmPasswordError");
 
-  } catch (err) {
-    console.error(err);
-    alert("Frontend error");
-  }
-});
-</script>
+    const nameRegex = /^[A-Za-z]+(?: [A-Za-z]+)*$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+
+    const validateName = () => {
+      const value = nameInput.value.trim();
+      const nameRegex = /^[A-Za-z]+(?: [A-Za-z]+)*$/;
+
+      if (!value || value.length < 3 || value.length > 30 || !nameRegex.test(value)) {
+        Swal.fire({
+          icon: "warning",
+          title: "Invalid Name",
+          text: "Name must contain only letters with a single space between words.",
+          confirmButtonColor: "#f59e0b"
+        });
+        return false;
+      }
+      return true;
+    };
+
+    const validateEmail = () => {
+      const value = emailInput.value.trim().toLowerCase();
+      if (!value) {
+        emailError.textContent = "Email is required";
+        return false;
+      }
+      if (/\s/.test(emailInput.value)) {
+        emailError.textContent = "Email cannot contain spaces";
+        return false;
+      }
+      if (!emailRegex.test(value)) {
+        emailError.textContent = "Enter a valid email address";
+        return false;
+      }
+      emailError.textContent = "";
+      return true;
+    };
+
+    const validatePassword = () => {
+      const value = passwordInput.value;
+      if (!value) {
+        passwordError.textContent = "Password is required";
+        return false;
+      }
+      if (!passwordRegex.test(value)) {
+        passwordError.textContent = "Min 8 chars, 1 upper, 1 lower, 1 number, 1 special";
+        return false;
+      }
+      passwordError.textContent = "";
+      return true;
+    };
+
+    const validateConfirmPassword = () => {
+      const value = confirmPasswordInput.value;
+      const passwordValue = passwordInput.value;
+      if (!value) {
+        confirmPasswordError.textContent = "Please confirm your password";
+        return false;
+      }
+      if (value !== passwordValue) {
+        confirmPasswordError.textContent = "Passwords do not match";
+        return false;
+      }
+      confirmPasswordError.textContent = "";
+      return true;
+    };
+
+    // Block invalid typing before it appears
+    nameInput.addEventListener("keydown", (e) => {
+      const char = e.key;
+      const value = nameInput.value;
+
+      // Allow control keys (Backspace, Tab, etc.)
+      if (e.ctrlKey || e.altKey || char.length > 1) return;
+
+      // Allow only letters and space
+      if (!/[A-Za-z ]/.test(char)) {
+        e.preventDefault();
+        return;
+      }
+
+      // Block space if first character
+      if (char === " " && value.length === 0) {
+        e.preventDefault();
+        return;
+      }
+
+      // Block space if previous character is already a space
+      if (char === " " && value.endsWith(" ")) {
+        e.preventDefault();
+        return;
+      }
+    });
+
+    // Real-time Name Sanitization
+    nameInput.addEventListener("input", () => {
+      let value = nameInput.value;
+
+      // Remove any character that is not A-Z or space
+      value = value.replace(/[^A-Za-z ]/g, "");
+
+      // Remove leading spaces
+      value = value.replace(/^\s+/, "");
+
+      // Replace multiple spaces with a single space
+      value = value.replace(/\s{2,}/g, " ");
+
+      if (nameInput.value !== value) {
+        nameInput.value = value;
+      }
+
+      // Clear inline error if any (optional, keeping current structure)
+      if (nameError) nameError.textContent = "";
+    });
+    emailInput.addEventListener("input", validateEmail);
+    passwordInput.addEventListener("input", () => {
+      validatePassword();
+      if (confirmPasswordInput.value) validateConfirmPassword();
+    });
+    confirmPasswordInput.addEventListener("input", validateConfirmPassword);
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const isNameValid = validateName();
+      const isEmailValid = validateEmail();
+      const isPasswordValid = validatePassword();
+      const isConfirmPasswordValid = validateConfirmPassword();
+
+      if (!isNameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid) {
+        return;
+      }
+
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim().toLowerCase();
+      const password = passwordInput.value;
+
+      try {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          if (data.message && data.message.toLowerCase().includes("email")) {
+            emailError.textContent = data.message;
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: data.message,
+              confirmButtonColor: "#000"
+            });
+          }
+          return;
+        }
+
+        localStorage.setItem("pendingEmail", email);
+
+        Swal.fire({
+          icon: "success",
+          title: "Registration Successful",
+          text: "Signup successful. Enter OTP.",
+          confirmButtonColor: "#000"
+        }).then(() => {
+          window.location.href = "otp-verification.html";
+        });
+
+      } catch (err) {
+        console.error(err);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Frontend error",
+          confirmButtonColor: "#d33"
+        });
+      }
+    });
+  </script>
 
 
 
 
 
-</body>
+`n</body>
 
 </html>
+
+

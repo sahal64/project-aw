@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
@@ -76,108 +77,424 @@
             margin-left: var(--sidebar-width);
             padding: 30px;
         }
+
+        .status-badge {
+            font-weight: 500;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+        }
+
+        .pagination .page-link {
+            color: #000;
+            border-color: #eee;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #000;
+            border-color: #000;
+            color: #fff;
+        }
+
+        #customDateRange {
+            display: none;
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-top: 10px;
+        }
     </style>
 </head>
 
 <body>
 
     <div class="sidebar">
-        <a href="dashboard.html" class="sidebar-brand"><img src="../common/images/logo.png" alt="AeroWatch"
+        <a href="/admin/dashboard.html" class="sidebar-brand"><img src="../common/images/logo.png" alt="AeroWatch"
                 style="max-height: 50px;"></a>
 
         <span class="nav-label">Main menu</span>
         <nav class="nav flex-column">
-            <a href="dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
-            <a href="order-management.html" class="nav-link active"><i class="bi bi-cart"></i> Order Management</a>
-            <a href="customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
-            <a href="coupon.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Coupon Code</a>
-            <a href="categories.html" class="nav-link"><i class="bi bi-tags"></i> Categories</a>
-            <a href="transaction.html" class="nav-link"><i class="bi bi-wallet2"></i> Transaction</a>
-            <a href="brand.html" class="nav-link"><i class="bi bi-award"></i> Brand</a>
+            <a href="/admin/dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
+            <a href="/admin/order-management.html" class="nav-link active"><i class="bi bi-cart"></i> Order
+                Management</a>
+            <a href="/admin/customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
+            <a href="/admin/coupon.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Coupon Code</a>
+            <a href="/admin/categories.html" class="nav-link"><i class="bi bi-tags"></i> Categories</a>
+            <a href="/admin/transaction.html" class="nav-link"><i class="bi bi-wallet2"></i> Transaction</a>
+            <a href="/admin/brand.html" class="nav-link"><i class="bi bi-award"></i> Brand</a>
+            <a href="/admin/sales-offers.html" class="nav-link"><i class="bi bi-percent"></i> Sales & Offers</a>
         </nav>
 
         <span class="nav-label">Product</span>
         <nav class="nav flex-column">
-            <a href="add-product.html" class="nav-link"><i class="bi bi-plus-circle"></i> Add Products</a>
-            <a href="all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
+            <a href="/admin/add-product.html" class="nav-link"><i class="bi bi-plus-circle"></i> Add Products</a>
+            <a href="/admin/all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
         </nav>
 
         <span class="nav-label">Admin</span>
         <nav class="nav flex-column">
-            <a href="admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
+            <a href="/admin/admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
             <a href="#" class="nav-link mt-3 text-danger" id="admin-logout"><i class="bi bi-box-arrow-right"></i>
                 Logout</a>
         </nav>
-
-        <div class="mt-auto pt-4">
-            <div class="d-flex align-items-center p-3 rounded bg-light">
-                <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center"
-                    style="width: 35px; height: 35px;">M</div>
-                <div class="ms-3">
-                    <h6 class="mb-0 fs-6">Mark Bert</h6>
-                    <small class="text-muted" style="font-size: 0.7rem;">Manager</small>
-                </div>
-            </div>
-        </div>
     </div>
 
     <div class="main-content">
-        <h4 class="fw-bold mb-4">Order Management</h4>
+        <div class="d-flex flex-column mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold m-0">Order Management</h4>
+                <div class="d-flex gap-2">
+                    <div class="input-group" style="width: 300px;">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" id="searchInput" class="form-control border-start-0 shadow-none"
+                            placeholder="Search order ID or customer...">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-end gap-2 align-items-center">
+                <select id="statusFilter" class="form-select shadow-none" style="width: 151px;">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+
+                <select id="dateFilter" class="form-select shadow-none" style="width: 151px;">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="last7days">Last 7 Days</option>
+                    <option value="last30days">Last 30 Days</option>
+                    <option value="thisMonth">This Month</option>
+                    <option value="lastMonth">Last Month</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+            </div>
+
+            <div id="customDateRange" class="col-md-5 align-self-end mt-2">
+                <div class="d-flex gap-2 align-items-center">
+                    <input type="date" id="customStartDate" class="form-control form-control-sm">
+                    <span class="text-muted small">to</span>
+                    <input type="date" id="customEndDate" class="form-control form-control-sm">
+                    <button class="btn btn-dark btn-sm px-3" onclick="applyCustomDate()">Apply</button>
+                </div>
+            </div>
+        </div>
 
         <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <table class="table align-middle table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Customer Name</th>
-                            <th>Date</th>
-                            <th>Total</th>
-                            <th>Payment</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>#ORD-001</td>
-                            <td>John Doe</td>
-                            <td>Oct 24, 2025</td>
-                            <td>$169.99</td>
-                            <td><span class="badge bg-light text-dark border">Paid</span></td>
-                            <td><span class="badge bg-success">Delivered</span></td>
-                            <td>
-                                <button class="btn btn-sm btn-light"><i class="bi bi-eye"></i></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>#ORD-002</td>
-                            <td>Jane Smith</td>
-                            <td>Nov 01, 2025</td>
-                            <td>$350.50</td>
-                            <td><span class="badge bg-light text-dark border">Pending</span></td>
-                            <td><span class="badge bg-warning text-dark">Processing</span></td>
-                            <td>
-                                <button class="btn btn-sm btn-light"><i class="bi bi-eye"></i></button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table align-middle table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Order ID</th>
+                                <th>Customer Name</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th class="pe-4 text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                            <tr>
+                                <td colspan="6" class="text-center py-5">Loading orders...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-between align-items-center">
+            <div class="text-muted small">
+                Showing <span id="showingCount">0</span> of <span id="totalCount">0</span> orders
+            </div>
+            <nav id="paginationContainer" aria-label="Order pagination">
+                <!-- Pagination buttons will be rendered here -->
+            </nav>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Pagination State
+        let currentPage = 1;
+        const limit = 10;
+        let currentSearch = "";
+        let currentStatus = "all";
+        let currentDateFilter = "all";
+        let customStart = "";
+        let customEnd = "";
+
+        // Admin Validation
+        async function checkAdminAuth() {
+            try {
+                let res = await fetch("/api/auth/me", { credentials: "include" });
+                if (res.status === 401) {
+                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+                    if (!refreshRes.ok) { window.location.href = "/admin/login.html"; return false; }
+                    res = await fetch("/api/auth/me", { credentials: "include" });
+                }
+                if (!res.ok) { window.location.href = "/admin/login.html"; return false; }
+                const user = await res.json();
+                if (user.role !== "admin") { window.location.href = "/admin/login.html"; return false; }
+                return true;
+            } catch (err) {
+                window.location.href = "/admin/login.html";
+                return false;
+            }
+        }
+
+        // Fetch Orders
+        async function fetchOrders(page = 1) {
+            try {
+                currentPage = page;
+                let url = `/api/admin/orders?page=${currentPage}&limit=${limit}&status=${currentStatus}&search=${encodeURIComponent(currentSearch)}&dateFilter=${currentDateFilter}`;
+                
+                if (currentDateFilter === "custom") {
+                    url += `&startDate=${customStart}&endDate=${customEnd}`;
+                }
+
+                const response = await fetch(url, { credentials: 'include' });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to fetch orders');
+                }
+
+                const data = await response.json();
+                renderOrders(data.orders);
+                renderPagination(data.totalPages, data.currentPage);
+                
+                document.getElementById("showingCount").innerText = data.orders.length;
+                document.getElementById("totalCount").innerText = data.totalOrders;
+            } catch (error) {
+                console.error(error);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: error.message || "Error loading orders.",
+                    confirmButtonColor: "#d33"
+                });
+                document.getElementById('ordersTableBody').innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error loading orders.</td></tr>`;
+            }
+        }
+
+        function renderPagination(totalPages, currentPage) {
+            const paginationContainer = document.getElementById('paginationContainer');
+            if (totalPages <= 1) {
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            let html = '<ul class="pagination pagination-sm mb-0">';
+
+            // Prev
+            html += `
+                <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="fetchOrders(${currentPage - 1}); return false;"><i class="bi bi-chevron-left"></i></a>
+                </li>
+            `;
+
+            // Page Numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                    html += `
+                        <li class="page-item ${i === currentPage ? 'active' : ''}">
+                            <a class="page-link" href="#" onclick="fetchOrders(${i}); return false;">${i}</a>
+                        </li>
+                    `;
+                } else if (i === currentPage - 2 || i === currentPage + 2) {
+                    html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+                }
+            }
+
+            // Next
+            html += `
+                <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="fetchOrders(${currentPage + 1}); return false;"><i class="bi bi-chevron-right"></i></a>
+                </li>
+            `;
+
+            html += '</ul>';
+            paginationContainer.innerHTML = html;
+        }
+
+        function renderOrders(orders) {
+            const tbody = document.getElementById('ordersTableBody');
+            tbody.innerHTML = '';
+
+            if (orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-5 text-muted">No orders found.</td></tr>`;
+                return;
+            }
+
+            orders.forEach(order => {
+                const date = new Date(order.createdAt).toLocaleDateString('en-GB', {
+                    day: '2-digit', month: 'short', year: 'numeric'
+                });
+
+                const customerName = order.address ? `${order.address.firstName} ${order.address.lastName}` : (order.user?.name || 'Unknown');
+
+                let statusBadgeClass = 'bg-secondary text-white';
+                if (order.orderStatus === 'Placed') statusBadgeClass = 'bg-info text-dark';
+                else if (order.orderStatus === 'Processing') statusBadgeClass = 'bg-warning text-dark';
+                else if (order.orderStatus === 'Delivered') statusBadgeClass = 'bg-success text-white';
+                else if (order.orderStatus === 'Cancelled') statusBadgeClass = 'bg-danger text-white';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="ps-4 fw-medium">${order.orderNumber || order._id.substring(0, 8)}</td>
+                    <td>${customerName}</td>
+                    <td>${date}</td>
+                    <td class="fw-bold fs-6">₹${order.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                    <td><span class="status-badge ${statusBadgeClass}">${order.orderStatus}</span></td>
+                    <td class="pe-4 text-end">
+                        <a href="/admin/order-details.html?id=${order._id}" class="btn btn-sm btn-outline-dark" title="View Details"><i class="bi bi-eye"></i></a>
+                        <button class="btn btn-sm btn-outline-danger ms-1" onclick="deleteOrder('${order._id}')" title="Delete Order">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Search Validation Regex: Letters, numbers, spaces, @
+        const searchRegex = /^[A-Za-z0-9@ ]*$/;
+
+        // Search Debounce
+        let searchTimeout;
+        document.getElementById("searchInput").addEventListener("input", (e) => {
+            const val = e.target.value.trim();
+            
+            if (val && !searchRegex.test(val)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Input',
+                    text: 'Search input can only contain letters, numbers, spaces, and @',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+                return;
+            }
+
+            if (val.length > 50) {
+                 Swal.fire({
+                    icon: 'error',
+                    title: 'Limit Exceeded',
+                    text: 'Search input cannot exceed 50 characters',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+                return;
+            }
+
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentSearch = val;
+                fetchOrders(1);
+            }, 500);
+        });
+
+        async function deleteOrder(id) {
+            const result = await Swal.fire({
+                title: 'Delete this order?',
+                text: "This action cannot be undone. You can only delete cancelled orders.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`/api/admin/orders/${id}`, {
+                        method: 'DELETE',
+                        credentials: 'include'
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Failed to delete order');
+                    }
+
+                    Swal.fire(
+                        'Deleted!',
+                        'The order has been removed from the list.',
+                        'success'
+                    );
+                    fetchOrders(currentPage);
+                } catch (error) {
+                    Swal.fire(
+                        'Error',
+                        error.message,
+                        'error'
+                    );
+                }
+            }
+        }
+
+        // Status Filter Change
+        document.getElementById("statusFilter").addEventListener("change", (e) => {
+            currentStatus = e.target.value;
+            fetchOrders(1);
+        });
+
+        // Date Filter Change
+        document.getElementById("dateFilter").addEventListener("change", (e) => {
+            currentDateFilter = e.target.value;
+            const customDiv = document.getElementById("customDateRange");
+            if (currentDateFilter === "custom") {
+                customDiv.style.display = "block";
+            } else {
+                customDiv.style.display = "none";
+                fetchOrders(1);
+            }
+        });
+
+        function applyCustomDate() {
+            customStart = document.getElementById("customStartDate").value;
+            customEnd = document.getElementById("customEndDate").value;
+
+            if (!customStart || !customEnd) {
+                return Swal.fire("Error", "Please select both start and end dates", "warning");
+            }
+
+            if (new Date(customStart) > new Date(customEnd)) {
+                return Swal.fire("Error", "Start date cannot be after end date", "warning");
+            }
+
+            fetchOrders(1);
+        }
+
+        // Initialize
+        checkAdminAuth().then((isAuth) => {
+            if (isAuth) fetchOrders(1);
+        });
+
         document.getElementById("admin-logout").addEventListener("click", async (e) => {
             e.preventDefault();
             try {
-                await fetch("/api/auth/logout", { method: "POST" });
+                await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = "/admin/login.html";
             } catch (err) {
-                console.error(err);
+                console.error("Logout error:", err);
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = "/admin/login.html";
             }
-            localStorage.removeItem("isLoggedIn");
-            window.location.href = "../user/login.html";
         });
     </script>
 </body>

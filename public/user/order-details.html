@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
@@ -130,7 +131,7 @@
             </div>
             <div class="d-flex align-items-center">
                 <a href="wishlist.html" class="icon-btn"><i class="bi bi-heart"></i></a>
-                <a href="account.html" class="icon-btn text-dark"><i class="bi bi-person-fill"></i></a>
+                <a href="/user/account.html" class="icon-btn text-dark"><i class="bi bi-person-fill"></i></a>
                 <a href="cart.html" class="icon-btn"><i class="bi bi-bag"></i></a>
             </div>
         </div>
@@ -143,16 +144,35 @@
                 <div class="account-sidebar">
                     <div class="d-flex align-items-center mb-4 px-3">
                         <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center"
-                            style="width: 50px; height: 50px; font-size: 1.5rem;">J</div>
+                            style="width: 50px; height: 50px; font-size: 1.5rem;" id="sidebarUserAvatar">
+                            -
+                        </div>
                         <div class="ms-3">
-                            <h6 class="mb-0 fw-bold">John Doe</h6><small class="text-muted">john@example.com</small>
+                            <h6 class="mb-0 fw-bold" id="sidebarUserName">Loading...</h6>
+                            <small class="text-muted" id="sidebarUserEmail">...</small>
                         </div>
                     </div>
+                    <div class="section-title text-muted text-uppercase fw-bold fs-6 mb-2 mt-4 ps-3">Manage My Account
+                    </div>
+                    <nav class="nav flex-column account-nav mb-2">`n                        <a class="nav-link" href="/user/account.html"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                        
+                        <a class="nav-link" href="/user/account.html"><i class="bi bi-person"></i> My Profile</a>
+                        <a class="nav-link" href="/user/address-book.html"><i class="bi bi-geo-alt"></i> Address Book</a>
+                        <a class="nav-link" href="/user/my-wallet.html"><i class="bi bi-wallet2"></i> My Payment Options</a>
+                    </nav>
+
+                    <div class="section-title text-muted text-uppercase fw-bold fs-6 mb-2 mt-4 ps-3">My Orders</div>
+                    <nav class="nav flex-column account-nav mb-4">
+                        <a class="nav-link active" href="/user/my-orders.html"><i class="bi bi-box-seam"></i> My Orders</a>
+                        <a class="nav-link" href="/user/my-returns.html"><i class="bi bi-arrow-return-left"></i> My
+                            Returns</a>
+                        <a class="nav-link" href="/user/my-cancellations.html"><i class="bi bi-x-circle"></i> My
+                            Cancellations</a>
+                    </nav>
+
                     <nav class="nav flex-column account-nav">
-                        <a class="nav-link" href="account.html"><i class="bi bi-grid-fill"></i> Dashboard</a>
-                        <a class="nav-link" href="profile-details.html"><i class="bi bi-person-fill"></i> My Profile</a>
-                        <a class="nav-link active" href="my-orders.html"><i class="bi bi-box-seam"></i> My Orders</a>
-                        <a class="nav-link" href="home.html"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                        <a class="nav-link text-danger" href="#" id="sidebarLogoutBtn"><i
+                                class="bi bi-box-arrow-right"></i> Logout</a>
                     </nav>
                 </div>
             </div>
@@ -161,7 +181,7 @@
             <div class="col-lg-9">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h3 class="fw-bold mb-0">Order Details</h3>
-                    <a href="my-orders.html" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Back to
+                    <a href="/user/my-orders.html" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Back to
                         Orders</a>
                 </div>
 
@@ -179,6 +199,172 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        async function loadUserInfo() {
+            try {
+                let res = await fetch("/api/auth/me", { credentials: "include" });
+                if (res.status === 401) {
+                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+                    if (!refreshRes.ok) { window.location.href = "login.html"; return; }
+                    res = await fetch("/api/auth/me", { credentials: "include" });
+                }
+                if (res.status === 403) {
+                    const data = await res.json();
+                    if (data.message === "Your account has been blocked") {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Account Blocked",
+                            text: "Your account has been blocked by admin.",
+                            confirmButtonColor: "#d33"
+                        }).then(() => {
+                            localStorage.removeItem("isLoggedIn");
+                            window.location.href = "login.html";
+                        });
+                        return;
+                    }
+                }
+                if (!res.ok) { window.location.href = "login.html"; return; }
+                const user = await res.json();
+                document.getElementById('sidebarUserName').textContent = user.name;
+                document.getElementById('sidebarUserEmail').textContent = user.email;
+                document.getElementById('sidebarUserAvatar').textContent = user.name.charAt(0).toUpperCase();
+            } catch (err) {
+                console.error(err);
+                window.location.href = "login.html";
+            }
+        }
+
+        const logoutBtn = document.getElementById("sidebarLogoutBtn");
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", async function (e) {
+                e.preventDefault();
+                await fetch("/api/auth/logout", { method: "POST" });
+                localStorage.removeItem("isLoggedIn");
+                window.location.href = "home.html";
+            });
+        }
+
+        async function cancelOrder(orderId) {
+            Swal.fire({
+                title: "Cancel this order?",
+                text: "This action cannot be undone",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: "Yes, cancel order"
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const res = await fetch(`/api/orders/cancel/${orderId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify({ reason: "User cancelled order" })
+                        });
+                        if (res.ok) {
+                            Swal.fire({
+                                icon: "success",
+                                title: "Cancelled",
+                                text: "Order cancelled successfully",
+                                confirmButtonColor: "#000"
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            const errorData = await res.json();
+                            Swal.fire({
+                                icon: "error",
+                                title: "Error",
+                                text: errorData.message || 'Failed to cancel order.',
+                                confirmButtonColor: "#d33"
+                            });
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: 'An error occurred while cancelling the order.',
+                            confirmButtonColor: "#d33"
+                        });
+                    }
+                }
+            });
+        }
+
+        async function cancelItem(orderId, itemId) {
+            Swal.fire({
+                title: "Cancel this item?",
+                text: "This action cannot be undone",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: "Yes, cancel item"
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const res = await fetch(`/api/orders/cancel-item/${orderId}/${itemId}`, {
+                            method: 'PUT',
+                            credentials: 'include'
+                        });
+                        if (res.ok) {
+                            Swal.fire({
+                                icon: "success",
+                                title: "Cancelled",
+                                text: "Item cancelled successfully",
+                                confirmButtonColor: "#000"
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            const errorData = await res.json();
+                            Swal.fire({
+                                icon: "error",
+                                title: "Error",
+                                text: errorData.message || 'Failed to cancel item.',
+                                confirmButtonColor: "#d33"
+                            });
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: 'An error occurred while cancelling the item.',
+                            confirmButtonColor: "#d33"
+                        });
+                    }
+                }
+            });
+        }
+
+        function renderTimeline(status) {
+            if (status === 'Cancelled') {
+                return `<div class="alert alert-danger mb-4">This order has been cancelled.</div>`;
+            }
+            const stages = ['Placed', 'Processing', 'Delivered'];
+            let currentIndex = stages.indexOf(status);
+            if (currentIndex === -1) currentIndex = 0;
+
+            let html = '<div class="position-relative mb-5 mt-4 px-3">';
+            html += '<div class="progress position-absolute" style="height: 3px; top: 15px; left: 10%; right: 10%; z-index: 0;"><div class="progress-bar bg-success" role="progressbar" style="width: ' + (currentIndex * 50) + '%"></div></div>';
+            html += '<div class="d-flex justify-content-between position-relative" style="z-index: 1;">';
+            stages.forEach((stage, index) => {
+                let isCompleted = index <= currentIndex;
+                let iconClass = isCompleted ? 'bi-check-circle-fill text-success bg-white' : 'bi-circle-fill text-light border border-2 rounded-circle bg-white';
+                let textClass = isCompleted ? 'text-dark fw-bold' : 'text-muted';
+                html += `
+                    <div class="text-center d-flex flex-column align-items-center bg-white px-2">
+                        <i class="bi ${iconClass} fs-4 mb-1"></i>
+                        <span class="small ${textClass}">${stage === 'Placed' ? 'Order Placed' : stage}</span>
+                    </div>
+                `;
+            });
+            html += '</div></div>';
+            return html;
+        }
+
         async function loadOrderDetails() {
 
             const params = new URLSearchParams(window.location.search);
@@ -211,7 +397,7 @@
                 }
 
                 if (!res.ok) {
-                    window.location.href = "my-orders.html";
+                    document.getElementById("orderDetailsContainer").innerHTML = '<div class="alert alert-danger">Order not found or access denied</div>';
                     return;
                 }
 
@@ -222,14 +408,24 @@
 
                 let itemsHTML = "";
                 order.items.forEach(item => {
+                    const productImage = item.product?.images?.[0] || "../common/images/placeholder.png";
+                    const productName = item.product?.name || "Unknown Product";
+                    const canCancelItem = (order.orderStatus === 'Placed' || order.orderStatus === 'Processing') && item.itemStatus !== 'Cancelled';
+
                     itemsHTML += `
-        <div class="item-row">
-          <img src="${item.product.images[0]}" class="item-img me-3">
+        <div class="item-row border-bottom pb-3 mb-3">
+          <img src="${productImage}" class="item-img me-3" alt="${productName}">
           <div class="flex-grow-1">
-            <h6 class="mb-0">${item.product.name}</h6>
-            <small class="text-muted">Qty: ${item.quantity}</small>
+            <h6 class="mb-0 fw-bold">${productName}</h6>
+            <div class="d-flex align-items-center gap-2 mt-1">
+                <small class="text-muted">Qty: ${item.quantity}</small>
+                <span class="badge ${item.itemStatus === 'Cancelled' ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'} mb-0" style="font-size: 0.7rem;">${item.itemStatus || 'Placed'}</span>
+            </div>
           </div>
-          <div class="fw-bold">₹${item.price.toLocaleString("en-IN")}</div>
+          <div class="text-end">
+            <div class="fw-bold mb-2">₹${item.price.toLocaleString("en-IN")}</div>
+            ${canCancelItem ? `<button class="btn btn-sm btn-outline-danger p-1 px-2" style="font-size: 0.75rem;" onclick="cancelItem('${order._id}', '${item._id}')">Cancel Item</button>` : ''}
+          </div>
         </div>
       `;
                 });
@@ -237,35 +433,77 @@
                 container.innerHTML = `
       <div class="order-header d-flex justify-content-between align-items-center flex-wrap">
         <div>
-          <h5 class="mb-1">Order #${order._id.slice(-6).toUpperCase()}</h5>
+          <h5 class="mb-1">Order #${order.orderNumber || order._id.slice(-6).toUpperCase()}</h5>
           <span class="text-muted small">Placed on ${date}</span>
         </div>
-        <span class="badge bg-primary fs-6">${order.orderStatus}</span>
+        <div class="d-flex align-items-center gap-3 mt-2 mt-md-0">
+          <span class="badge ${order.orderStatus === 'Cancelled' ? 'bg-danger' : 'bg-primary'} fs-6">${order.orderStatus}</span>
+          ${(order.orderStatus === 'Placed' || order.orderStatus === 'Processing') ? `<button class="btn btn-outline-danger btn-sm" onclick="cancelOrder('${order._id}')">Cancel Order</button>` : ''}
+        </div>
       </div>
+
+      ${renderTimeline(order.orderStatus)}
 
       ${itemsHTML}
 
       <hr class="my-4">
 
-      <div>
-        <h6 class="fw-bold">Shipping Address</h6>
-        <p class="text-muted mb-0">${order.address}</p>
+      <div class="row">
+        <div class="col-md-6 mb-4 mb-md-0">
+          <h6 class="fw-bold mb-3">Shipping Address</h6>
+          <div class="text-muted small">
+            <p class="mb-1 text-dark fw-medium">${order.address.firstName} ${order.address.lastName}</p>
+            <p class="mb-1">${order.address.street}</p>
+            <p class="mb-1">${order.address.city}, ${order.address.state} ${order.address.zip}</p>
+            <p class="mb-0">Phone: ${order.address.phone}</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <h6 class="fw-bold mb-3">Payment Information</h6>
+          <div class="text-muted small">
+            <p class="mb-2"><span class="text-dark fw-medium">Method:</span> ${order.paymentMethod || 'COD'}</p>
+            <p class="mb-0"><span class="text-dark fw-medium">Status:</span> 
+              <span class="badge ${order.paymentStatus === 'Paid' ? 'bg-success' : (order.paymentStatus === 'Failed' ? 'bg-danger' : 'bg-warning text-dark')} ms-1">${order.paymentStatus || 'Pending'}</span>
+            </p>
+          </div>
+        </div>
       </div>
 
       <hr class="my-4">
 
-      <div class="d-flex justify-content-end fw-bold fs-5">
-        Total: ₹${order.totalAmount.toLocaleString("en-IN")}
+      <div class="d-flex flex-column align-items-end">
+        <div class="d-flex justify-content-between mb-2" style="width: 250px;">
+          <span class="text-muted">Subtotal:</span>
+          <span class="fw-medium">₹${(order.subtotal || order.totalAmount + (order.discount || 0)).toLocaleString("en-IN")}</span>
+        </div>
+        ${order.discount > 0 ? `
+        <div class="d-flex justify-content-between mb-2" style="width: 250px;">
+          <span class="text-muted">Discount${order.couponCode ? ` (${order.couponCode})` : ''}:</span>
+          <span class="fw-medium text-success">-₹${order.discount.toLocaleString("en-IN")}</span>
+        </div>` : ''}
+        <div class="d-flex justify-content-between mb-3" style="width: 250px;">
+          <span class="text-muted">Shipping:</span>
+          <span class="fw-medium text-success">${order.shipping > 0 ? `₹${order.shipping.toLocaleString("en-IN")}` : 'Free'}</span>
+        </div>
+        <div class="d-flex justify-content-between fw-bold fs-5 border-top pt-2" style="width: 250px;">
+          <span>Total:</span>
+          <span>₹${order.totalAmount.toLocaleString("en-IN")}</span>
+        </div>
       </div>
+      ${order.couponCode ? `<div class="text-end mt-2 small text-success"><i class="bi bi-tag-fill me-1"></i>Coupon Applied: <strong>${order.couponCode}</strong></div>` : ''}
     `;
             } catch (err) {
                 console.error(err);
             }
         }
 
+        loadUserInfo();
         loadOrderDetails();
     </script>
 
-</body>
+    <script src="/user/js/authGuard.js"></script>
+
+<script src="/user/js/userAuth.js"></script>`n</body>
 
 </html>
+

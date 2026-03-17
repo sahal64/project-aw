@@ -32,11 +32,10 @@ exports.getDashboardStats = async (req, res, next) => {
     });
 
     res.json({
-      success: true,
       stats: {
-        totalUsers,
-        totalOrders,
         totalRevenue,
+        totalOrders,
+        totalUsers,
         lowStockProducts
       }
     });
@@ -72,10 +71,7 @@ exports.getRevenueChart = async (req, res, next) => {
       monthlyData[r._id - 1] = r.total;
     });
 
-    res.json({
-      success: true,
-      data: monthlyData
-    });
+    res.json(monthlyData);
 
   } catch (error) {
     next(error);

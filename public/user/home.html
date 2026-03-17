@@ -495,9 +495,37 @@
             transition: 0.3s;
         }
 
-        .search-close:hover {
-            color: var(--primary-color);
-            transform: rotate(90deg);
+        /* Discount Badge */
+        .discount-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #ff4757;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            z-index: 5;
+            box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3);
+        }
+
+        .price-old {
+            text-decoration: line-through;
+            color: var(--muted-color);
+            font-size: 0.9rem;
+            margin-right: 8px;
+            font-weight: 400;
+        }
+
+        .sale-banner-dynamic {
+            border-radius: 20px;
+            min-height: 400px;
+            position: relative;
+            overflow: hidden;
+            background: #000;
+            margin-top: 50px;
+            display: none; /* Hidden by default */
         }
     </style>
 </head>
@@ -602,8 +630,27 @@
             </div>
         </div>
 
+        <!-- Sale Banner -->
+        <div id="saleBanner"></div>
+
+        <!-- Deals of the Week Section (Sales & Offers) -->
+        <div id="saleSection" class="mt-5" style="display: none;">
+            <div class="text-center mb-4">
+                <h3 class="fw-bold">🔥 Deals of the Week</h3>
+                <p class="text-muted">Limited time discounts</p>
+            </div>
+            <div class="row g-4" id="saleProducts">
+                <!-- Sale products will load here -->
+            </div>
+        </div>
+
+        <!-- Dynamic Sale Banner (Previous System - Hidden) -->
+        <div id="saleBannerContainer" class="sale-banner-dynamic" style="display: none;">
+            <!-- Content loaded via JS -->
+        </div>
+
         <!-- Categories -->
-        <div class="mt-4">
+        <div class="mt-5">
             <h4 class="mb-4">
                 Start exploring.
                 <span class="text-muted">Good things are waiting for you</span>
@@ -614,13 +661,30 @@
             </div>
         </div>
 
+        <!-- On Sale Section -->
+        <div id="onSaleSection" class="mt-5" style="display: none;">
+            <h4 class="section-title">On Sale. <span id="activeSaleName">Great deals just for you</span></h4>
+            <div class="row g-4" id="onSaleContainer">
+                <!-- On Sale products load here -->
+            </div>
+        </div>
 
+        <!-- Deals of the Week Section (Legacy - Hidden) -->
+        <div id="dealsSection" class="mt-5" style="display: none;">
+            <div class="mb-4">
+                <h4 class="fw-bold mb-1">Deals of the Week.</h4>
+                <p class="text-muted">Limited time discounts.</p>
+            </div>
+            <div class="row g-4" id="offerProducts">
+                <!-- Top 3 offer products load here -->
+            </div>
+        </div>
 
         <!-- Recommendations (Products) -->
-        <div class="mt-5">
-            <h4 class="section-title">Recommendations. <span>Best matching products for you</span></h4>
+        <div class="mt-5" style="display: none;">
+            <h4 class="section-title">Best Sellers. <span class="text-muted">Top picks from every category</span></h4>
             <div class="row g-4" id="recommendationsContainer">
-                <!-- Products will load here dynamically -->
+                <!-- Recommendations will load here -->
             </div>
         </div>
 
@@ -770,10 +834,58 @@
                     });
                 }
 
+                // Periodic check for blocked status if logged in
+                if (isLoggedIn) {
+                    checkBlockedStatus();
+                }
+
+                async function checkBlockedStatus() {
+                    try {
+                        const res = await fetch("/api/auth/me", { credentials: "include" });
+                        if (res.status === 403) {
+                            const data = await res.json();
+                            if (data.message === "Your account has been blocked") {
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Account Blocked",
+                                    text: "Your account has been blocked by admin.",
+                                    confirmButtonColor: "#d33"
+                                }).then(() => {
+                                    localStorage.removeItem("isLoggedIn");
+                                    window.location.href = "login.html";
+                                });
+                            }
+                        }
+                    } catch (err) {
+                        console.error("Block check error:", err);
+                    }
+                }
+
+                /* =====================
+                   LOAD ACTIVE SALE
+                ====================== */
+                loadActiveSale();
+
                 /* =====================
                    LOAD CATEGORIES
                 ====================== */
                 loadCategories();
+
+                /* =====================
+                   LOAD ON SALE
+                ====================== */
+                loadOnSaleProducts();
+
+                /* =====================
+                   LOAD OFFERS
+                ====================== */
+                loadOfferProducts();
+
+                /* =====================
+                   LOAD SALE SYSTEM
+                ====================== */
+                loadSaleBanner();
+                loadSaleProducts();
 
                 /* =====================
                    LOAD RECOMMENDATIONS
@@ -858,6 +970,171 @@
                 }
             }
 
+            async function loadActiveSale() {
+                try {
+                    const res = await fetch("/api/sales/active");
+                    const data = await res.json();
+
+                    if (data.success && data.sale) {
+                        const sale = data.sale;
+                        const banner = document.getElementById("saleBannerContainer");
+                        const section = document.getElementById("onSaleSection");
+                        const saleNameSpan = document.getElementById("activeSaleName");
+
+                        banner.style.display = "block";
+                        section.style.display = "block";
+                        if (saleNameSpan) saleNameSpan.innerText = sale.name;
+
+                        let discountText = "";
+                        if (sale.discountUnit === "percentage") {
+                            discountText = `${sale.discountValue}% OFF`;
+                        } else {
+                            discountText = `₹${sale.discountValue} OFF`;
+                        }
+
+                        banner.innerHTML = `
+                            <div class="row g-0 align-items-center h-100">
+                                <div class="col-md-6 ps-5 py-5 text-white">
+                                    <div class="promo-content">
+                                        <span class="text-uppercase mb-2 d-block" style="color: #ff4757; font-weight: 700;">Limited Time Offer</span>
+                                        <h2 class="display-4 fw-bold mb-3">${sale.name}</h2>
+                                        <p class="fs-4 mb-4">Enjoy up to <span class="fw-bold" style="color: #ff4757;">${discountText}</span> on selected models</p>
+                                        <a href="product.html" class="btn btn-light rounded-pill px-4 py-2 text-uppercase fw-bold">Shop Sale</a>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 h-100">
+                                    <img src="${sale.bannerImage}" alt="${sale.name}" class="w-100 h-100" style="object-fit: cover; min-height: 400px;">
+                                </div>
+                            </div>
+                        `;
+                    }
+                } catch (err) {
+                    console.error("Error loading active sale:", err);
+                }
+            }
+
+            async function loadOnSaleProducts() {
+                try {
+                    const res = await fetch("/api/products?onSale=true");
+                    const data = await res.json();
+                    const container = document.getElementById("onSaleContainer");
+                    container.innerHTML = "";
+
+                    if (!data.products || data.products.length === 0) {
+                        document.getElementById("onSaleSection").style.display = "none";
+                        return;
+                    }
+
+                    data.products.slice(0, 4).forEach(product => {
+                        container.innerHTML += renderProductCard(product);
+                    });
+                } catch (err) {
+                    console.error("Error loading on-sale products:", err);
+                }
+            }
+
+            async function loadSaleBanner() {
+                try {
+                    const res = await fetch("/api/sales/active");
+                    const data = await res.json();
+                    const container = document.getElementById("saleBanner");
+
+                    if (data.success && data.sale) {
+                        container.innerHTML = `
+                            <div class="mb-5 rounded-4 overflow-hidden position-relative" style="height: 400px;">
+                                <img src="${data.sale.bannerImage}" class="w-100 h-100" style="object-fit: cover;">
+                                <div class="position-absolute top-50 start-0 translate-middle-y ps-5 text-white">
+                                    <h1 class="display-3 fw-bold">${data.sale.name}</h1>
+                                    <p class="fs-4">Enjoy ${data.sale.discountUnit === "percentage" ? data.sale.discountValue + "%" : "₹" + data.sale.discountValue} OFF</p>
+                                    <a href="product.html" class="btn btn-light rounded-pill px-4">Shop Now</a>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        container.innerHTML = "";
+                    }
+                } catch (err) {
+                    console.error("Sale banner error:", err);
+                }
+            }
+
+            async function loadSaleProducts() {
+                try {
+                    const res = await fetch("/api/products/sale");
+                    const data = await res.json();
+                    const container = document.getElementById("saleProducts");
+                    const section = document.getElementById("saleSection");
+
+                    if (data.success && data.products && data.products.length > 0) {
+                        section.style.display = "block";
+                        container.innerHTML = "";
+                        data.products.forEach(p => {
+                            container.innerHTML += `
+                                <div class="col-6 col-md-4">
+                                    <div class="product-card" onclick="window.location.href='single-product.html?id=${p._id}'">
+                                        <div class="discount-badge">${p.discount}% OFF</div>
+                                        <div class="product-img-container">
+                                            <img src="${p.image}" alt="${p.name}" class="product-img">
+                                        </div>
+                                        <div class="p-3">
+                                            <h6 class="product-title mb-1">${p.name}</h6>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="price-old">₹${p.price.toLocaleString()}</span>
+                                                <span class="product-price fw-bold text-danger">₹${p.finalPrice.toLocaleString()}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        section.style.display = "none";
+                    }
+                } catch (err) {
+                    console.error("Sale products error:", err);
+                    document.getElementById("saleSection").style.display = "none";
+                }
+            }
+
+            function renderProductCard(product) {
+                const image = product.images && product.images.length > 0
+                    ? product.images[0]
+                    : "https://placehold.co/300x300?text=No+Image";
+
+                const hasDiscount = product.discountPercentage > 0;
+                
+                let priceHtml = `<div class="product-price">₹${product.price ? product.price.toLocaleString('en-IN') : '0'}</div>`;
+                let badgeHtml = "";
+
+                if (hasDiscount) {
+                    priceHtml = `
+                        <div class="d-flex align-items-center">
+                            <span class="price-old">₹${product.price.toLocaleString('en-IN')}</span>
+                            <span class="product-price">₹${product.finalPrice.toLocaleString('en-IN')}</span>
+                        </div>
+                    `;
+                    badgeHtml = `<div class="discount-badge">${product.discountPercentage}% OFF</div>`;
+                }
+
+                return `
+                    <div class="col-6 col-md-3">
+                        <div class="product-card" onclick="window.location.href='single-product.html?id=${product._id}'">
+                            ${badgeHtml}
+                            <div class="wishlist-btn" title="Add to Cart" onclick="event.stopPropagation(); addToCartLocal('${product._id}', '${product.name}', ${product.finalPrice || product.price}, '${image}', ${product.stock})"><i class="bi bi-bag-plus"></i></div>
+                            <div class="product-img-container">
+                                <img src="${image}" alt="${product.name}" class="product-img">
+                            </div>
+                            <div class="product-category">${product.category}</div>
+                            <a href="single-product.html?id=${product._id}" class="product-title">${product.name}</a>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="rating"><i class="bi bi-star-fill"></i> 4.8 <span class="text-muted" style="font-size:0.75rem">(45)</span></div>
+                                ${priceHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
             /* =====================
                LOAD RECOMMENDATIONS
             ====================== */
@@ -865,63 +1142,12 @@
                 try {
                     const res = await fetch("/api/products?sort=newest");
                     const data = await res.json();
-
                     const container = document.getElementById("recommendationsContainer");
                     container.innerHTML = "";
 
                     const activeProducts = data.products.filter(p => p.isActive !== false);
-
-                    // Separate by category to ensure a mix
-                    const menProducts = activeProducts.filter(p => p.category === 'men');
-                    const womenProducts = activeProducts.filter(p => p.category === 'women');
-                    const otherProducts = activeProducts.filter(p => p.category !== 'men' && p.category !== 'women');
-
-                    let productsToDisplay = [];
-
-                    // Try to get 2 men and 2 women products if possible
-                    if (menProducts.length > 0 && womenProducts.length > 0) {
-                        productsToDisplay = [
-                            ...menProducts.slice(0, 2),
-                            ...womenProducts.slice(0, 4 - Math.min(2, menProducts.length))
-                        ];
-                    } else {
-                        // Fallback to just the newest active products
-                        productsToDisplay = activeProducts.slice(0, 4);
-                    }
-
-                    // If we still don't have 4, fill with whatever else is available
-                    if (productsToDisplay.length < 4) {
-                        const remainingNeeded = 4 - productsToDisplay.length;
-                        const unusedProducts = activeProducts.filter(p => !productsToDisplay.includes(p));
-                        productsToDisplay = [...productsToDisplay, ...unusedProducts.slice(0, remainingNeeded)];
-                    }
-
-                    if (!productsToDisplay.length) {
-                        container.innerHTML = `<div class="col-12 text-center text-muted">No recommendations available.</div>`;
-                        return;
-                    }
-
-                    productsToDisplay.forEach(product => {
-                        const image = product.images && product.images.length > 0
-                            ? product.images[0]
-                            : "https://placehold.co/300x300?text=No+Image";
-
-                        container.innerHTML += `
-                <div class="col-6 col-md-3">
-                    <div class="product-card" onclick="window.location.href='single-product.html?id=${product._id}'">
-                        <div class="wishlist-btn" title="Add to Cart" onclick="event.stopPropagation(); addToCartLocal('${product._id}', '${product.name}', ${product.price}, '${image}', ${product.stock})"><i class="bi bi-bag-plus"></i></div>
-                        <div class="product-img-container">
-                            <img src="${image}" alt="${product.name}" class="product-img">
-                        </div>
-                        <div class="product-category">${product.category}</div>
-                        <a href="single-product.html?id=${product._id}" class="product-title">${product.name}</a>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="rating"><i class="bi bi-star-fill"></i> 4.8 <span class="text-muted" style="font-size:0.75rem">(45)</span></div>
-                            <div class="product-price">₹${product.price}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
+                    activeProducts.slice(0, 8).forEach(product => {
+                        container.innerHTML += renderProductCard(product);
                     });
                 } catch (error) {
                     console.error("Error loading recommendations:", error);
@@ -974,6 +1200,10 @@
 
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</body>
+    <script src="/user/js/authGuard.js"></script>
+
+`n</body>
 
 </html>
+
+

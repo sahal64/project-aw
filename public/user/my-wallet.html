@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
@@ -158,7 +159,7 @@
             </div>
             <div class="d-flex align-items-center">
                 <a href="wishlist.html" class="icon-btn"><i class="bi bi-heart"></i></a>
-                <a href="account.html" class="icon-btn text-dark"><i class="bi bi-person-fill"></i></a>
+                <a href="/user/account.html" class="icon-btn text-dark"><i class="bi bi-person-fill"></i></a>
                 <a href="cart.html" class="icon-btn"><i class="bi bi-bag"></i></a>
             </div>
         </div>
@@ -171,35 +172,36 @@
                 <div class="account-sidebar">
                     <div class="d-flex align-items-center mb-4 px-3">
                         <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center"
-                            style="width: 50px; height: 50px; font-size: 1.5rem;">
-                            J
+                            style="width: 50px; height: 50px; font-size: 1.5rem;" id="sidebarUserAvatar">
+                            -
                         </div>
                         <div class="ms-3">
-                            <h6 class="mb-0 fw-bold">John Doe</h6>
-                            <small class="text-muted">john@example.com</small>
+                            <h6 class="mb-0 fw-bold" id="sidebarUserName">Loading...</h6>
+                            <small class="text-muted" id="sidebarUserEmail">...</small>
                         </div>
                     </div>
                     <div class="section-title text-muted text-uppercase fw-bold fs-6 mb-2 mt-4 ps-3">Manage My Account
                     </div>
-                    <nav class="nav flex-column account-nav mb-2">
-                        <a class="nav-link" href="profile-details.html"><i class="bi bi-person"></i> My
-                            Profile</a>
-                        <a class="nav-link" href="address-book.html"><i class="bi bi-geo-alt"></i> Address Book</a>
-                        <a class="nav-link active" href="my-wallet.html"><i class="bi bi-wallet2"></i> My Payment
+                    <nav class="nav flex-column account-nav mb-2">`n                        <a class="nav-link" href="/user/account.html"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                        
+                        <a class="nav-link" href="/user/account.html"><i class="bi bi-person"></i> My Profile</a>
+                        <a class="nav-link" href="/user/address-book.html"><i class="bi bi-geo-alt"></i> Address Book</a>
+                        <a class="nav-link active" href="/user/my-wallet.html"><i class="bi bi-wallet2"></i> My Payment
                             Options</a>
                     </nav>
 
                     <div class="section-title text-muted text-uppercase fw-bold fs-6 mb-2 mt-4 ps-3">My Orders</div>
                     <nav class="nav flex-column account-nav mb-4">
-                        <a class="nav-link" href="my-orders.html"><i class="bi bi-box-seam"></i> My Orders</a>
-                        <a class="nav-link" href="my-returns.html"><i class="bi bi-arrow-return-left"></i> My
+                        <a class="nav-link" href="/user/my-orders.html"><i class="bi bi-box-seam"></i> My Orders</a>
+                        <a class="nav-link" href="/user/my-returns.html"><i class="bi bi-arrow-return-left"></i> My
                             Returns</a>
-                        <a class="nav-link" href="my-cancellations.html"><i class="bi bi-x-circle"></i> My
+                        <a class="nav-link" href="/user/my-cancellations.html"><i class="bi bi-x-circle"></i> My
                             Cancellations</a>
                     </nav>
 
                     <nav class="nav flex-column account-nav">
-                        <a class="nav-link" href="signup.html"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                        <a class="nav-link text-danger" href="#" id="sidebarLogoutBtn"><i
+                                class="bi bi-box-arrow-right"></i> Logout</a>
                     </nav>
                 </div>
             </div>
@@ -212,9 +214,10 @@
                     <div class="col-md-6">
                         <div class="wallet-card">
                             <div class="wallet-label mb-2">Total Balance</div>
-                            <div class="wallet-balance">$250.00</div>
+                            <div class="wallet-balance" id="walletBalance">₹0.00</div>
                             <div class="mt-4">
-                                <button class="btn btn-light btn-sm fw-bold rounded-pill px-4">Top Up Wallet</button>
+                                <button class="btn btn-light btn-sm fw-bold rounded-pill px-4"
+                                    data-bs-toggle="modal" data-bs-target="#walletTopupModal">Top Up Wallet</button>
                             </div>
                             <i class="bi bi-wallet2 position-absolute"
                                 style="font-size: 8rem; right: -20px; bottom: -30px; opacity: 0.1;"></i>
@@ -253,42 +256,35 @@
                     <div class="card-body p-4">
                         <h5 class="fw-bold mb-3">Recent Transactions</h5>
 
-                        <div class="transaction-item">
-                            <div class="d-flex align-items-center">
-                                <div class="transaction-icon"><i class="bi bi-arrow-down-left text-success"></i></div>
-                                <div>
-                                    <h6 class="mb-0">Wallet Top Up</h6>
-                                    <small class="text-muted">Nov 05, 2025</small>
-                                </div>
-                            </div>
-                            <div class="fw-bold text-success">+$100.00</div>
+                        <div id="transactionsContainer">
+                            <div class="text-muted">Loading transactions...</div>
                         </div>
-
-                        <div class="transaction-item">
-                            <div class="d-flex align-items-center">
-                                <div class="transaction-icon"><i class="bi bi-arrow-up-right text-danger"></i></div>
-                                <div>
-                                    <h6 class="mb-0">Purchase - Order #ORD-001</h6>
-                                    <small class="text-muted">Oct 24, 2025</small>
-                                </div>
-                            </div>
-                            <div class="fw-bold text-danger">-$199.99</div>
-                        </div>
-
-                        <div class="transaction-item">
-                            <div class="d-flex align-items-center">
-                                <div class="transaction-icon"><i class="bi bi-arrow-down-left text-success"></i></div>
-                                <div>
-                                    <h6 class="mb-0">Refund - Order #ORD-003</h6>
-                                    <small class="text-muted">Oct 10, 2025</small>
-                                </div>
-                            </div>
-                            <div class="fw-bold text-success">+$80.00</div>
-                        </div>
-
                     </div>
                 </div>
 
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Up Wallet Modal -->
+    <div class="modal fade" id="walletTopupModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Funds to Wallet</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Amount (₹)</label>
+                        <input type="text" id="walletAmount" class="form-control" placeholder="Enter amount"
+                            inputmode="numeric" maxlength="6">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-dark" id="confirmWalletTopup">Add Funds</button>
+                </div>
             </div>
         </div>
     </div>
@@ -297,6 +293,253 @@
         <div class="container text-center"><small class="text-muted">AeroWatch © 2026</small></div>
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadUserInfo();
+            await loadWalletData();
+        });
+
+        async function loadUserInfo() {
+            try {
+                let res = await fetch('/api/auth/me');
+
+                if (res.status === 401) {
+                    const refreshRes = await fetch("/api/auth/refresh", {
+                        method: "POST",
+                        credentials: "include"
+                    });
+
+                    if (!refreshRes.ok) {
+                        window.location.href = "login.html";
+                        return;
+                    }
+
+                    res = await fetch('/api/auth/me');
+                }
+
+                if (res.status === 403) {
+                    const data = await res.json();
+                    if (data.message === "Your account has been blocked") {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Account Blocked",
+                            text: "Your account has been blocked by admin.",
+                            confirmButtonColor: "#d33"
+                        }).then(() => {
+                            localStorage.removeItem("isLoggedIn");
+                            window.location.href = "login.html";
+                        });
+                        return;
+                    }
+                }
+
+                if (res.ok) {
+                    const user = await res.json();
+                    document.getElementById('sidebarUserName').textContent = user.name;
+                    document.getElementById('sidebarUserEmail').textContent = user.email;
+                    document.getElementById('sidebarUserAvatar').textContent = user.name.charAt(0).toUpperCase();
+                } else {
+                    window.location.href = "login.html";
+                }
+            } catch (err) {
+                console.error("Error loading user info:", err);
+            }
+        }
+
+        const sidebarLogoutBtn = document.getElementById("sidebarLogoutBtn");
+        if (sidebarLogoutBtn) {
+            sidebarLogoutBtn.addEventListener("click", async function (e) {
+                e.preventDefault();
+                await fetch("/api/auth/logout", { method: "POST" });
+                localStorage.removeItem("isLoggedIn");
+                window.location.href = "home.html";
+            });
+        }
+
+        async function loadWalletData() {
+            try {
+                let balanceRes = await fetch('/api/wallet', { credentials: 'include' });
+
+                if (balanceRes.status === 401) {
+                    const refreshRes = await fetch("/api/auth/refresh", {
+                        method: "POST",
+                        credentials: "include"
+                    });
+
+                    if (!refreshRes.ok) {
+                        window.location.href = "login.html";
+                        return;
+                    }
+
+                    balanceRes = await fetch('/api/wallet', { credentials: 'include' });
+                }
+
+                if (balanceRes.ok) {
+                    const wallet = await balanceRes.json();
+                    document.getElementById('walletBalance').textContent = `₹${parseFloat(wallet.balance).toLocaleString("en-IN")}`;
+                }
+
+                const transRes = await fetch('/api/wallet/transactions', { credentials: 'include' });
+                const container = document.getElementById('transactionsContainer');
+
+                if (transRes.ok) {
+                    const data = await transRes.json();
+                    const txList = Array.isArray(data) ? data : (data.transactions || []);
+
+                    if (txList.length === 0) {
+                        container.innerHTML = '<div class="text-muted">No wallet activity yet</div>';
+                        return;
+                    }
+
+                    let html = '';
+                    txList.forEach(t => {
+                        const date = new Date(t.createdAt).toLocaleDateString("en-IN");
+                        let title = t.type; // Credit or Debit usually for general transactions
+
+                        if (t.type === 'Refund' && t.order) {
+                            const orderNum = (typeof t.order === 'object' && t.order.orderNumber) ? t.order.orderNumber : (typeof t.order === 'object' && t.order._id ? t.order._id.slice(-6).toUpperCase() : t.order);
+                            title = `Refund - Order #${orderNum}`;
+                        } else if (t.type === 'Debit' && t.order) {
+                            const orderNum = (typeof t.order === 'object' && t.order.orderNumber) ? t.order.orderNumber : (typeof t.order === 'object' && t.order._id ? t.order._id.slice(-6).toUpperCase() : t.order);
+                            title = `Debit - Order #${orderNum}`;
+                        }
+
+                        // Treat Refund as a credit in terms of coloring and sign
+                        const isCredit = t.type === 'Credit' || t.type === 'Refund';
+                        const amountStr = isCredit ? '+₹' + t.amount : '-₹' + t.amount;
+                        const amountColor = isCredit ? 'text-success' : 'text-danger';
+                        const iconClass = isCredit ? 'bi-arrow-down-left text-success' : 'bi-arrow-up-right text-danger';
+
+                        html += `
+                        <div class="transaction-item">
+                            <div class="d-flex align-items-center">
+                                <div class="transaction-icon"><i class="bi ${iconClass}"></i></div>
+                                <div>
+                                    <h6 class="mb-0">${title}</h6>
+                                    <small class="text-muted">${date}</small>
+                                </div>
+                            </div>
+                            <div class="fw-bold ${amountColor}">${amountStr}</div>
+                        </div>`;
+                    });
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<div class="text-danger">Failed to load transactions</div>';
+                }
+            } catch (err) {
+                console.error("Error loading wallet data:", err);
+                const container = document.getElementById('transactionsContainer');
+                if (container) {
+                    container.innerHTML = '<div class="text-danger">Failed to load transactions</div>';
+                }
+            }
+        }
+
+        const walletInput = document.getElementById("walletAmount");
+
+        walletInput.addEventListener("input", function () {
+            // Allow only numbers
+            this.value = this.value.replace(/[^0-9]/g, "");
+        });
+
+        walletInput.addEventListener("paste", function (e) {
+            const pasted = (e.clipboardData || window.clipboardData).getData("text");
+            if (!/^[0-9]+$/.test(pasted)) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: "error",
+                    title: "Invalid Input",
+                    text: "Only numbers are allowed."
+                });
+            }
+        });
+
+        document.getElementById("confirmWalletTopup").addEventListener("click", async () => {
+            const amountField = document.getElementById("walletAmount");
+            const amount = parseInt(amountField.value);
+
+            if (!amountField.value) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Amount Required",
+                    text: "Please enter an amount."
+                });
+                return;
+            }
+
+            if (isNaN(amount)) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Invalid Amount",
+                    text: "Amount must be a valid number."
+                });
+                return;
+            }
+
+            if (amount < 100) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Minimum Amount",
+                    text: "Minimum wallet top-up is ₹100."
+                });
+                return;
+            }
+
+            if (amount > 50000) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Limit Exceeded",
+                    text: "Maximum wallet top-up is ₹50,000."
+                });
+                return;
+            }
+
+            if (!Number.isInteger(amount)) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Invalid Amount",
+                    text: "Amount must be a whole number."
+                });
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/wallet/topup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ amount })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: data.message || "Failed to add funds"
+                    });
+                    return;
+                }
+
+                Swal.fire({
+                    icon: "success",
+                    title: "Wallet Updated",
+                    text: "Funds added successfully"
+                }).then(() => {
+                    location.reload();
+                });
+            } catch (error) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Server Error"
+                });
+            }
+        });
+    </script>
+    <script src="/user/js/authGuard.js"></script>
+
+<script src="/user/js/userAuth.js"></script>`n</body>
 
 </html>
+

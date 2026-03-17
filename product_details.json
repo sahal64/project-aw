@@ -1,0 +1,16 @@
+{
+  "_id": "6996b5295713e35f28b8b163",
+  "name": "Armani Exchange Rose Gold Classic",
+  "brand": "Armani",
+  "price": 10,
+  "stock": 2,
+  "category": "women",
+  "images": [
+    "/uploads/product-1771484457850-0.webp"
+  ],
+  "description": "Elegant Armani Exchange watch with rose gold casing and leather strap. Designed for timeless sophistication and everyday luxury",
+  "createdAt": "2026-02-19T07:00:57.933Z",
+  "updatedAt": "2026-03-06T09:33:16.806Z",
+  "__v": 0,
+  "isActive": true
+}

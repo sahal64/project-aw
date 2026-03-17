@@ -2,6 +2,94 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sendOtpEmail = require("../utils/sendEmail");
+const { OAuth2Client } = require("google-auth-library");
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// GOOGLE LOGIN
+exports.googleLogin = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ message: "Google token required" });
+    }
+
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture, sub: googleId } = payload;
+
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // If user exists but not a google user, link the account
+      if (!user.isGoogleUser) {
+        user.isGoogleUser = true;
+        user.googleId = googleId;
+        user.profilePicture = picture;
+        user.isVerified = true; // Google users are pre-verified
+        await user.save();
+      }
+    } else {
+      // Create new Google user
+      user = await User.create({
+        name,
+        email,
+        googleId,
+        profilePicture: picture,
+        isGoogleUser: true,
+        isVerified: true,
+      });
+    }
+
+    const accessToken = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "5hr" }
+    );
+
+    const refreshToken = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: false, // localhost
+      sameSite: "lax",
+      path: "/",
+      maxAge: 15 * 60 * 1000
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.json({
+      message: "Google login successful",
+      role: user.role,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        profilePicture: user.profilePicture
+      }
+    });
+
+  } catch (error) {
+    console.error("GOOGLE LOGIN ERROR:", error);
+    res.status(500).json({ message: "Google authentication failed" });
+  }
+};
 
 // REGISTER
 exports.registerUser = async (req, res) => {
@@ -29,14 +117,13 @@ exports.registerUser = async (req, res) => {
       isVerified: false,
     });
 
+
     await sendOtpEmail(email, otp);
-    console.log("OTP for", email, ":", otp);
 
     res.status(201).json({
       message: "Signup successful. OTP sent.",
     });
   } catch (error) {
-    console.error("REGISTER ERROR:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -76,6 +163,12 @@ exports.verifyOtp = async (req, res) => {
 exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.isBlocked) {
+      return res.status(403).json({ message: "Your account has been blocked" });
+    }
     res.json(user);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
@@ -89,6 +182,10 @@ exports.loginUser = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
+
+    if (user.isBlocked) {
+      return res.status(403).json({ message: "Your account has been blocked" });
+    }
 
     if (!user.isVerified) {
       return res
@@ -104,7 +201,7 @@ exports.loginUser = async (req, res) => {
     const accessToken = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "15m" }
+      { expiresIn: "5hr" }
     );
 
     const refreshToken = jwt.sign(
@@ -113,19 +210,21 @@ exports.loginUser = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-  res.cookie("accessToken", accessToken, {
-  httpOnly: true,
-  secure: false,      // localhost
-  sameSite: "lax",
-  maxAge: 15 * 60 * 1000
-});
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: false,      // localhost
+      sameSite: "lax",
+      path: "/",
+      maxAge: 15 * 60 * 1000
+    });
 
-res.cookie("refreshToken", refreshToken, {
-  httpOnly: true,
-  secure: false,
-  sameSite: "lax",
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-});
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     res.json({ message: "Login successful", role: user.role });
   } catch (error) {
@@ -156,8 +255,6 @@ exports.forgotPassword = async (req, res) => {
 
     await sendOtpEmail(email, otp);
 
-    console.log("RESET OTP:", otp);
-
     res.json({ message: "Reset OTP sent to email" });
   } catch (err) {
     console.error(err);
@@ -185,8 +282,6 @@ exports.resendForgotOtp = async (req, res) => {
     await user.save();
 
     await sendOtpEmail(email, otp);
-
-    console.log("RESEND RESET OTP:", otp);
 
     res.json({ message: "OTP resent successfully" });
   } catch (error) {
@@ -224,8 +319,6 @@ exports.resendOtp = async (req, res) => {
     await user.save();
 
     await sendOtpEmail(email, otp);
-
-    console.log("RESEND OTP:", otp);
 
     res.json({ message: "OTP resent successfully" });
   } catch (error) {
@@ -288,6 +381,7 @@ exports.refreshAccessToken = async (req, res) => {
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
       sameSite: "lax",
+      path: "/",
       maxAge: 15 * 60 * 1000,
     });
 
@@ -297,12 +391,19 @@ exports.refreshAccessToken = async (req, res) => {
     return res.status(401).json({ message: "Invalid refresh token" });
   }
 };
-
-
-
 // LOGOUT
 exports.logoutUser = (req, res) => {
-  res.cookie("accessToken", "", { expires: new Date(0) });
-  res.cookie("refreshToken", "", { expires: new Date(0) });
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: false, // localhost
+    sameSite: "lax",
+    path: "/"
+  });
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+    path: "/"
+  });
   res.json({ message: "Logged out successfully" });
 };

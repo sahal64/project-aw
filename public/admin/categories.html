@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
@@ -93,24 +94,25 @@
 
         <span class="nav-label">Main menu</span>
         <nav class="nav flex-column">
-            <a href="dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
-            <a href="order-management.html" class="nav-link"><i class="bi bi-cart"></i> Order Management</a>
-            <a href="customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
-            <a href="coupon.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Coupon Code</a>
-            <a href="categories.html" class="nav-link active"><i class="bi bi-tags"></i> Categories</a>
-            <a href="transaction.html" class="nav-link"><i class="bi bi-wallet2"></i> Transaction</a>
-            <a href="brand.html" class="nav-link"><i class="bi bi-award"></i> Brand</a>
+            <a href="/admin/dashboard.html" class="nav-link"><i class="bi bi-grid-fill"></i> Dashboard</a>
+            <a href="/admin/order-management.html" class="nav-link"><i class="bi bi-cart"></i> Order Management</a>
+            <a href="/admin/customers.html" class="nav-link"><i class="bi bi-people"></i> Customers</a>
+            <a href="/admin/coupon.html" class="nav-link"><i class="bi bi-ticket-perforated"></i> Coupon Code</a>
+            <a href="/admin/categories.html" class="nav-link active"><i class="bi bi-tags"></i> Categories</a>
+            <a href="/admin/transaction.html" class="nav-link"><i class="bi bi-wallet2"></i> Transaction</a>
+            <a href="/admin/brand.html" class="nav-link"><i class="bi bi-award"></i> Brand</a>
+            <a href="/admin/sales-offers.html" class="nav-link"><i class="bi bi-percent"></i> Sales & Offers</a>
         </nav>
 
         <span class="nav-label">Product</span>
         <nav class="nav flex-column">
-            <a href="add-product.html" class="nav-link"><i class="bi bi-plus-circle"></i> Add Products</a>
-            <a href="all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
+            <a href="/admin/add-product.html" class="nav-link"><i class="bi bi-plus-circle"></i> Add Products</a>
+            <a href="/admin/all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
         </nav>
 
         <span class="nav-label">Admin</span>
         <nav class="nav flex-column">
-            <a href="admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
+            <a href="/admin/admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
             <a href="#" class="nav-link mt-3 text-danger" id="admin-logout"><i class="bi bi-box-arrow-right"></i>
                 Logout</a>
         </nav>
@@ -245,15 +247,46 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        async function checkAdminAuth() {
+            try {
+                let res = await fetch("/api/auth/me", { credentials: "include" });
+                if (res.status === 401) {
+                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+                    if (!refreshRes.ok) {
+                        window.location.href = "/admin/login.html";
+                        return false;
+                    }
+                    res = await fetch("/api/auth/me", { credentials: "include" });
+                }
+                if (!res.ok) {
+                    window.location.href = "/admin/login.html";
+                    return false;
+                }
+                const user = await res.json();
+                if (user.role !== "admin") {
+                    window.location.href = "/admin/login.html";
+                    return false;
+                }
+                return true;
+            } catch (err) {
+                window.location.href = "/admin/login.html";
+                return false;
+            }
+        }
+
         document.getElementById("admin-logout").addEventListener("click", async (e) => {
             e.preventDefault();
             try {
-                await fetch("/api/auth/logout", { method: "POST" });
+                await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = "/admin/login.html";
             } catch (err) {
-                console.error(err);
+                console.error("Logout error:", err);
+                localStorage.clear();
+                sessionStorage.clear();
+                window.location.href = "/admin/login.html";
             }
-            localStorage.removeItem("isLoggedIn");
-            window.location.href = "../user/login.html";
         });
     </script>
 
@@ -268,7 +301,7 @@
             /* ================= LOAD FROM DB ================= */
             async function loadCategories() {
                 try {
-                    const res = await fetch("/api/categories");
+                    const res = await fetch("/api/admin/categories");
                     const data = await res.json();
                     categories = data;
                     filterAndSort();
@@ -289,6 +322,8 @@
 
                 data.forEach(category => {
                     const row = document.createElement('tr');
+                    // Shield quote characters for valid HTML data-attributes
+                    const safeNameForData = category.name.replace(/"/g, '&quot;');
                     row.innerHTML = `
                 <td><img src="https://placehold.co/40" class="table-img"></td>
                 <td class="fw-bold">${category.name}</td>
@@ -299,12 +334,14 @@
                     </span>
                 </td>
                 <td>
-                    <button class="btn btn-sm btn-light me-2"
-                        onclick="openEditModal('${category._id}', '${category.name}', '${category.status}')">
+                    <button class="btn btn-sm btn-light me-2 btn-edit-category" 
+                        data-id="${category._id}" 
+                        data-name="${safeNameForData}" 
+                        data-status="${category.status}">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button class="btn btn-sm btn-light text-danger"
-                        onclick="deleteCategory('${category._id}')">
+                    <button class="btn btn-sm btn-light text-danger btn-delete-category" 
+                        data-id="${category._id}">
                         <i class="bi bi-trash"></i>
                     </button>
                 </td>
@@ -335,57 +372,141 @@
             searchInput.addEventListener('input', filterAndSort);
             sortSelect.addEventListener('change', filterAndSort);
 
+            /* ================= EVENT DELEGATION ================= */
+            tableBody.addEventListener('click', (e) => {
+                const editBtn = e.target.closest('.btn-edit-category');
+                if (editBtn) {
+                    const id = editBtn.getAttribute('data-id');
+                    const name = editBtn.getAttribute('data-name');
+                    const status = editBtn.getAttribute('data-status');
+
+                    document.getElementById("editCategoryId").value = id;
+                    document.getElementById("editCategoryName").value = name;
+                    document.getElementById("editCategoryStatus").value = status;
+
+                    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("editCategoryModal"));
+                    modal.show();
+                    return;
+                }
+
+                const deleteBtn = e.target.closest('.btn-delete-category');
+                if (deleteBtn) {
+                    const id = deleteBtn.getAttribute('data-id');
+                    window.deleteCategory(id);
+                    return;
+                }
+            });
+
             /* ================= ADD ================= */
             window.addCategory = async function () {
                 const nameInput = document.getElementById('categoryName');
                 const statusInput = document.getElementById('categoryStatus');
 
                 if (!nameInput.value.trim()) {
-                    alert('Please enter a category name');
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Warning",
+                        text: "Please enter a category name",
+                        confirmButtonColor: "#f59e0b"
+                    });
                     return;
                 }
 
-                const res = await fetch("/api/categories", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        name: nameInput.value,
-                        status: statusInput.value
-                    })
-                });
+                try {
+                    const res = await fetch("/api/admin/categories", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            name: nameInput.value,
+                            status: statusInput.value
+                        })
+                    });
 
-                const data = await res.json();
+                    const data = await res.json();
 
-                if (!res.ok) {
-                    alert(data.message);
-                    return;
+                    if (!res.ok) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: data.message || "Error adding category",
+                            confirmButtonColor: "#d33"
+                        });
+                        return;
+                    }
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Success",
+                        text: "Category added successfully!",
+                        confirmButtonColor: "#000"
+                    });
+
+                    bootstrap.Modal.getInstance(
+                        document.getElementById('addCategoryModal')
+                    ).hide();
+
+                    document.getElementById('addCategoryForm').reset();
+
+                    loadCategories();
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Something went wrong",
+                        confirmButtonColor: "#d33"
+                    });
                 }
-
-                bootstrap.Modal.getInstance(
-                    document.getElementById('addCategoryModal')
-                ).hide();
-
-                document.getElementById('addCategoryForm').reset();
-
-                loadCategories();
             };
 
             /* ================= DELETE ================= */
             window.deleteCategory = async function (id) {
-                if (!confirm("Delete this category?")) return;
+                Swal.fire({
+                    title: "Delete this category?",
+                    text: "This action cannot be undone.",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#6c757d",
+                    confirmButtonText: "Yes, delete it"
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            const res = await fetch(`/api/admin/categories/${id}`, {
+                                method: "DELETE"
+                            });
 
-                const res = await fetch(`/api/categories/${id}`, {
-                    method: "DELETE"
+                            const data = await res.json();
+
+                            if (!res.ok) {
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Error",
+                                    text: data.message || "Delete failed",
+                                    confirmButtonColor: "#d33"
+                                });
+                                return;
+                            }
+
+                            Swal.fire({
+                                icon: "success",
+                                title: "Deleted!",
+                                text: "Category has been deleted.",
+                                confirmButtonColor: "#000"
+                            });
+
+                            loadCategories();
+                        } catch (err) {
+                            console.error(err);
+                            Swal.fire({
+                                icon: "error",
+                                title: "Error",
+                                text: "An error occurred",
+                                confirmButtonColor: "#d33"
+                            });
+                        }
+                    }
                 });
-
-                const data = await res.json();
-
-                if (!res.ok) {
-                    alert(data.message);
-                    return;
-                }
-
-                loadCategories();
             };
 
             /* ================= OPEN EDIT ================= */
@@ -394,9 +515,8 @@
                 document.getElementById("editCategoryName").value = name;
                 document.getElementById("editCategoryStatus").value = status;
 
-                new bootstrap.Modal(
-                    document.getElementById("editCategoryModal")
-                ).show();
+                const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("editCategoryModal"));
+                modal.show();
             };
 
             /* ================= UPDATE ================= */
@@ -405,27 +525,50 @@
                 const name = document.getElementById("editCategoryName").value;
                 const status = document.getElementById("editCategoryStatus").value;
 
-                const res = await fetch(`/api/categories/${id}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name, status })
-                });
+                try {
+                    const res = await fetch(`/api/admin/categories/${id}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ name, status })
+                    });
 
-                const data = await res.json();
+                    const data = await res.json();
 
-                if (!res.ok) {
-                    alert(data.message);
-                    return;
+                    if (!res.ok) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: data.message || "Update failed",
+                            confirmButtonColor: "#d33"
+                        });
+                        return;
+                    }
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Updated",
+                        text: "Category updated successfully!",
+                        confirmButtonColor: "#000"
+                    });
+
+                    const modal = bootstrap.Modal.getInstance(document.getElementById("editCategoryModal"));
+                    if (modal) modal.hide();
+
+                    loadCategories();
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Something went wrong",
+                        confirmButtonColor: "#d33"
+                    });
                 }
-
-                bootstrap.Modal.getInstance(
-                    document.getElementById("editCategoryModal")
-                ).hide();
-
-                loadCategories();
             };
 
-            loadCategories();
+            checkAdminAuth().then((isAuth) => {
+                if (isAuth) loadCategories();
+            });
         });
     </script>
 

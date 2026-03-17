@@ -1,35 +1,61 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Mock Data
-    const transactions = [
-        { id: '#TRX-987654321', orderId: '#ORD-001', date: '2025-10-24', amount: 169.99, method: 'Visa **** 4242', status: 'Success' },
-        { id: '#TRX-123456789', orderId: '#ORD-002', date: '2025-11-01', amount: 350.50, method: 'PayPal', status: 'Pending' },
-        { id: '#TRX-456789123', orderId: '#ORD-003', date: '2025-11-02', amount: 75.00, method: 'MasterCard **** 8888', status: 'Success' },
-        { id: '#TRX-789123456', orderId: '#ORD-004', date: '2025-11-03', amount: 120.00, method: 'Visa **** 1234', status: 'Failed' },
-        { id: '#TRX-321654987', orderId: '#ORD-005', date: '2025-11-05', amount: 210.25, method: 'PayPal', status: 'Success' },
-        { id: '#TRX-654987321', orderId: '#ORD-006', date: '2025-11-07', amount: 89.99, method: 'Visa **** 5678', status: 'Success' },
-        { id: '#TRX-147258369', orderId: '#ORD-007', date: '2025-11-10', amount: 450.00, method: 'MasterCard **** 9999', status: 'Pending' },
-        { id: '#TRX-369258147', orderId: '#ORD-008', date: '2025-11-12', amount: 25.50, method: 'PayPal', status: 'Success' },
-        { id: '#TRX-258369147', orderId: '#ORD-009', date: '2025-11-15', amount: 199.99, method: 'Visa **** 0000', status: 'Success' },
-        { id: '#TRX-951753852', orderId: '#ORD-010', date: '2025-11-18', amount: 299.00, method: 'MasterCard **** 1111', status: 'Failed' },
-    ];
+    let transactions = [];
 
     const tableBody = document.querySelector('tbody');
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
+    const methodFilter = document.getElementById('methodFilter');
+    const statusFilter = document.getElementById('statusFilter');
     const filterBtn = document.getElementById('filterBtn');
     const resetBtn = document.getElementById('resetBtn');
     const downloadCsvBtn = document.getElementById('downloadCsv');
     const downloadPdfBtn = document.getElementById('downloadPdf');
 
+    // Modal elements
+    const transactionModal = new bootstrap.Modal(document.getElementById('transactionModal'));
+    const modalLoading = document.getElementById('modalLoading');
+    const modalContent = document.getElementById('modalContent');
+
     // Helper to format currency
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
     };
 
     // Helper to format date for display
-    const formatDate = (dateString) => {
+    const formatDate = (dateString, showTime = false) => {
         const options = { year: 'numeric', month: 'short', day: 'numeric' };
-        return new Date(dateString).toLocaleDateString('en-US', options);
+        if (showTime) {
+            options.hour = '2-digit';
+            options.minute = '2-digit';
+        }
+        return new Date(dateString).toLocaleDateString('en-IN', options);
+    };
+
+    // Fetch transactions from API
+    const fetchTransactions = async (startDate = '', endDate = '', method = '', status = '') => {
+        try {
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">Loading transactions...</td></tr>';
+
+            let url = '/api/admin/transactions';
+            const params = new URLSearchParams();
+            if (startDate) params.append('startDate', startDate);
+            if (endDate) params.append('endDate', endDate);
+            if (method && method !== 'All Methods') params.append('method', method);
+            if (status && status !== 'All') params.append('status', status);
+
+            if (params.toString()) {
+                url += `?${params.toString()}`;
+            }
+
+            const res = await fetch(url, { credentials: 'include' });
+            if (!res.ok) throw new Error('Failed to fetch transactions');
+
+            transactions = await res.json();
+            renderTable(transactions);
+        } catch (err) {
+            console.error(err);
+            tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">Error loading transactions</td></tr>';
+        }
     };
 
     // Render Table
@@ -42,46 +68,86 @@ document.addEventListener('DOMContentLoaded', function () {
 
         data.forEach(trx => {
             let badgeClass = 'bg-secondary';
-            if (trx.status === 'Success') badgeClass = 'bg-success';
-            else if (trx.status === 'Pending') badgeClass = 'bg-warning text-dark';
-            else if (trx.status === 'Failed') badgeClass = 'bg-danger';
+            if (trx.status === 'Paid') badgeClass = 'bg-success';
+            else if (trx.status === 'Refunded') badgeClass = 'bg-info';
 
-            let icon = '';
-            if (trx.method.includes('Visa') || trx.method.includes('MasterCard')) icon = '<i class="bi bi-credit-card"></i>';
-            else if (trx.method.includes('PayPal')) icon = '<i class="bi bi-paypal"></i>';
+            let icon = '<i class="bi bi-wallet2"></i>';
+            if (trx.paymentMethod === 'Razorpay') icon = '<i class="bi bi-credit-card"></i>';
+            else if (trx.paymentMethod === 'COD') icon = '<i class="bi bi-cash"></i>';
+            else if (trx.paymentMethod === 'Wallet') icon = '<i class="bi bi-wallet2"></i>';
 
-            const row = `
-                <tr>
-                    <td class="text-muted">${trx.id}</td>
-                    <td><a href="#" class="text-dark">${trx.orderId}</a></td>
-                    <td>${formatDate(trx.date)}</td>
-                    <td class="fw-bold">${formatCurrency(trx.amount)}</td>
-                    <td>${icon} ${trx.method}</td>
-                    <td><span class="badge ${badgeClass}">${trx.status}</span></td>
-                </tr>
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="text-muted small">${trx.transactionId}</td>
+                <td><span class="text-dark fw-medium">${trx.orderId}</span></td>
+                <td>${formatDate(trx.date)}</td>
+                <td class="fw-bold">${formatCurrency(trx.amount)}</td>
+                <td>${icon} ${trx.paymentMethod}</td>
+                <td><span class="badge ${badgeClass}">${trx.status}</span></td>
             `;
-            tableBody.innerHTML += row;
+
+            tr.addEventListener('click', () => showTransactionDetails(trx.orderMongoId, trx.transactionId));
+            tableBody.appendChild(tr);
         });
+    };
+
+    // Show Transaction Details
+    const showTransactionDetails = async (orderId, transactionId) => {
+        transactionModal.show();
+        modalLoading.style.display = 'block';
+        modalContent.style.display = 'none';
+
+        try {
+            const res = await fetch(`/api/admin/orders/${orderId}`, { credentials: 'include' });
+            if (!res.ok) throw new Error('Failed to fetch order details');
+            const order = await res.json();
+
+            // Populate Modal
+            document.getElementById('det-transactionId').innerText = transactionId;
+            document.getElementById('det-orderId').innerText = order.orderNumber;
+            document.getElementById('det-customer').innerText = order.user?.name || 'N/A';
+            document.getElementById('det-date').innerText = formatDate(order.createdAt, true);
+            document.getElementById('det-method').innerText = order.paymentMethod;
+            document.getElementById('det-amount').innerText = formatCurrency(order.totalAmount);
+
+            const statusBadge = document.getElementById('det-status');
+            statusBadge.innerText = order.paymentStatus;
+            statusBadge.className = 'badge ' + (order.paymentStatus === 'Paid' ? 'bg-success' : 'bg-info');
+
+            // Populate Products
+            const productList = document.getElementById('det-products');
+            productList.innerHTML = '';
+            order.items.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'list-group-item d-flex justify-content-between align-items-center py-3';
+                itemDiv.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <img src="${item.product?.images?.[0] || 'https://placehold.co/40'}" class="rounded me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                        <div>
+                            <h6 class="mb-0 fw-bold">${item.product?.name || 'Unknown Product'}</h6>
+                            <small class="text-muted">Qty: ${item.quantity} × ${formatCurrency(item.price)}</small>
+                        </div>
+                    </div>
+                `;
+                productList.appendChild(itemDiv);
+            });
+
+            modalLoading.style.display = 'none';
+            modalContent.style.display = 'block';
+        } catch (err) {
+            console.error(err);
+            modalLoading.innerHTML = '<p class="text-danger">Error loading details</p>';
+        }
     };
 
     // Filter Logic
     const filterTransactions = () => {
-        const start = startDateInput.value ? new Date(startDateInput.value) : null;
-        const end = endDateInput.value ? new Date(endDateInput.value) : null;
-
-        const filtered = transactions.filter(trx => {
-            const trxDate = new Date(trx.date);
-            if (start && trxDate < start) return false;
-            // Set end date to end of day to include transactions on that day
-            if (end) {
-                const endOfDay = new Date(end);
-                endOfDay.setHours(23, 59, 59, 999);
-                if (trxDate > endOfDay) return false;
-            }
-            return true;
-        });
-
-        renderTable(filtered);
+        fetchTransactions(
+            startDateInput.value,
+            endDateInput.value,
+            methodFilter.value,
+            statusFilter.value
+        );
     };
 
     // Event Listeners
@@ -90,43 +156,38 @@ document.addEventListener('DOMContentLoaded', function () {
     resetBtn.addEventListener('click', () => {
         startDateInput.value = '';
         endDateInput.value = '';
-        renderTable(transactions);
+        methodFilter.value = 'All Methods';
+        statusFilter.value = 'All';
+        fetchTransactions();
     });
 
-    // CSV Download
-    downloadCsvBtn.addEventListener('click', () => {
-        // Get current displayed data (filtered)
-        // For simplicity, we can re-run filter logic or just use global filtered state if we maintained it. 
-        // Let's just re-filter to be safe or use all data if no filter. 
-        // Actually, let's grab the data from the DOM or better yet, re-apply filter to source of truth.
-
-        let dataToExport = transactions;
-        const start = startDateInput.value ? new Date(startDateInput.value) : null;
-        const end = endDateInput.value ? new Date(endDateInput.value) : null;
-
-        if (start || end) {
-            dataToExport = transactions.filter(trx => {
-                const trxDate = new Date(trx.date);
-                if (start && trxDate < start) return false;
-                if (end) {
-                    const endOfDay = new Date(end);
-                    endOfDay.setHours(23, 59, 59, 999);
-                    if (trxDate > endOfDay) return false;
-                }
-                return true;
+    downloadCsvBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (transactions.length === 0) {
+            return Swal.fire({
+                icon: "warning",
+                title: "No Data",
+                text: "No data to export",
+                confirmButtonColor: "#f59e0b"
             });
         }
 
-        const csvContent = [
-            ['Transaction ID', 'Order ID', 'Date', 'Amount', 'Payment Method', 'Status'],
-            ...dataToExport.map(t => [t.id, t.orderId, t.date, t.amount, t.method, t.status])
-        ].map(e => e.join(",")).join("\n");
+        const headers = ['Transaction ID', 'Order ID', 'Date', 'Amount', 'Payment Method', 'Status'];
+        const rows = transactions.map(t => [
+            t.transactionId,
+            t.orderId,
+            new Date(t.date).toLocaleDateString(),
+            t.amount,
+            t.paymentMethod,
+            t.status
+        ]);
 
+        const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
         link.setAttribute("href", url);
-        link.setAttribute("download", "sales_report.csv");
+        link.setAttribute("download", `transactions_${new Date().toISOString().split('T')[0]}.csv`);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
@@ -134,21 +195,14 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // PDF Download
-    downloadPdfBtn.addEventListener('click', () => {
-        let dataToExport = transactions;
-        const start = startDateInput.value ? new Date(startDateInput.value) : null;
-        const end = endDateInput.value ? new Date(endDateInput.value) : null;
-
-        if (start || end) {
-            dataToExport = transactions.filter(trx => {
-                const trxDate = new Date(trx.date);
-                if (start && trxDate < start) return false;
-                if (end) {
-                    const endOfDay = new Date(end);
-                    endOfDay.setHours(23, 59, 59, 999);
-                    if (trxDate > endOfDay) return false;
-                }
-                return true;
+    downloadPdfBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (transactions.length === 0) {
+            return Swal.fire({
+                icon: "warning",
+                title: "No Data",
+                text: "No data to export",
+                confirmButtonColor: "#f59e0b"
             });
         }
 
@@ -156,41 +210,35 @@ document.addEventListener('DOMContentLoaded', function () {
         const doc = new jsPDF();
 
         doc.setFontSize(18);
-        doc.text("Sales Report", 14, 22);
+        doc.text("AeroWatch Transactions Report", 14, 22);
 
         doc.setFontSize(11);
-        const dateStr = `Date: ${new Date().toLocaleDateString()}`;
-        doc.text(dateStr, 14, 30);
+        doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
 
-        if (start || end) {
-            const rangeStr = `Range: ${startDateInput.value || 'Start'} to ${endDateInput.value || 'End'}`;
-            doc.text(rangeStr, 14, 36);
-        }
+        const rangeStr = `Filters: ${statusFilter.value} | ${methodFilter.value} | ${startDateInput.value || 'Start'} to ${endDateInput.value || 'End'}`;
+        doc.text(rangeStr, 14, 36);
 
         const tableColumn = ["Transaction ID", "Order ID", "Date", "Amount", "Method", "Status"];
-        const tableRows = [];
-
-        dataToExport.forEach(trx => {
-            const trxData = [
-                trx.id,
-                trx.orderId,
-                trx.date,
-                formatCurrency(trx.amount),
-                trx.method,
-                trx.status
-            ];
-            tableRows.push(trxData);
-        });
+        const tableRows = transactions.map(trx => [
+            trx.transactionId,
+            trx.orderId,
+            new Date(trx.date).toLocaleDateString(),
+            formatCurrency(trx.amount),
+            trx.paymentMethod,
+            trx.status
+        ]);
 
         doc.autoTable({
             head: [tableColumn],
             body: tableRows,
             startY: 40,
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [0, 0, 0] }
         });
 
-        doc.save("sales_report.pdf");
+        doc.save(`transactions_${new Date().toISOString().split('T')[0]}.pdf`);
     });
 
-    // Initial Render
-    renderTable(transactions);
+    // Expose for global use
+    window.fetchTransactions = fetchTransactions;
 });

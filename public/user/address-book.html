@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
@@ -168,7 +169,7 @@
                 </form>
                 <a href="#" class="icon-btn" id="search-trigger"><i class="bi bi-search"></i></a>
                 <a href="wishlist.html" class="icon-btn"><i class="bi bi-heart"></i></a>
-                <a href="account.html" class="icon-btn text-dark"><i class="bi bi-person-fill"></i></a>
+                <a href="/user/account.html" class="icon-btn text-dark"><i class="bi bi-person-fill"></i></a>
                 <a href="cart.html" class="icon-btn"><i class="bi bi-bag"></i></a>
             </div>
         </div>
@@ -181,36 +182,36 @@
                 <div class="account-sidebar">
                     <div class="d-flex align-items-center mb-4 px-3">
                         <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center"
-                            style="width: 50px; height: 50px; font-size: 1.5rem;">
-                            J
+                            style="width: 50px; height: 50px; font-size: 1.5rem;" id="sidebarUserAvatar">
+                            -
                         </div>
                         <div class="ms-3">
-                            <h6 class="mb-0 fw-bold">John Doe</h6>
-                            <small class="text-muted">john@example.com</small>
+                            <h6 class="mb-0 fw-bold" id="sidebarUserName">Loading...</h6>
+                            <small class="text-muted" id="sidebarUserEmail">...</small>
                         </div>
                     </div>
                     <div class="section-title text-muted text-uppercase fw-bold fs-6 mb-2 mt-4 ps-3">Manage My Account
                     </div>
-                    <nav class="nav flex-column account-nav mb-2">
-                        <a class="nav-link" href="profile-details.html"><i class="bi bi-person"></i> My
-                            Profile</a>
-                        <a class="nav-link active" href="address-book.html"><i class="bi bi-geo-alt"></i> Address
+                    <nav class="nav flex-column account-nav mb-2">`n                        <a class="nav-link" href="/user/account.html"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                        
+                        <a class="nav-link" href="/user/account.html"><i class="bi bi-person"></i> My Profile</a>
+                        <a class="nav-link active" href="/user/address-book.html"><i class="bi bi-geo-alt"></i> Address
                             Book</a>
-                        <a class="nav-link" href="my-wallet.html"><i class="bi bi-wallet2"></i> My Payment Options</a>
+                        <a class="nav-link" href="/user/my-wallet.html"><i class="bi bi-wallet2"></i> My Payment Options</a>
                     </nav>
 
                     <div class="section-title text-muted text-uppercase fw-bold fs-6 mb-2 mt-4 ps-3">My Orders</div>
                     <nav class="nav flex-column account-nav mb-4">
-                        <a class="nav-link" href="my-orders.html"><i class="bi bi-box-seam"></i> My Orders</a>
-                        <a class="nav-link" href="my-returns.html"><i class="bi bi-arrow-return-left"></i> My
+                        <a class="nav-link" href="/user/my-orders.html"><i class="bi bi-box-seam"></i> My Orders</a>
+                        <a class="nav-link" href="/user/my-returns.html"><i class="bi bi-arrow-return-left"></i> My
                             Returns</a>
-                        <a class="nav-link" href="my-cancellations.html"><i class="bi bi-x-circle"></i> My
+                        <a class="nav-link" href="/user/my-cancellations.html"><i class="bi bi-x-circle"></i> My
                             Cancellations</a>
                     </nav>
 
                     <nav class="nav flex-column account-nav">
-                        <a class="nav-link" href="#" id="sidebar-logout"><i class="bi bi-box-arrow-right"></i>
-                            Logout</a>
+                        <a class="nav-link text-danger" href="#" id="sidebarLogoutBtn"><i
+                                class="bi bi-box-arrow-right"></i> Logout</a>
                     </nav>
                 </div>
             </div>
@@ -222,40 +223,11 @@
                         data-bs-target="#addAddressModal">+ Add New Address</button>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="address-card">
-                            <span class="badge bg-light text-dark mb-2">Default</span>
-                            <h6 class="fw-bold">Home</h6>
-                            <p class="text-muted small mb-2">
-                                John Doe<br>
-                                1234 Main Street, Apt 4B<br>
-                                New York, NY 10001<br>
-                                United States
-                            </p>
-                            <p class="small text-muted">Phone: +1 234 567 8900</p>
-                            <div class="mt-3">
-                                <a href="#" class="text-primary small text-decoration-none me-3">Edit</a>
-                                <a href="#" class="text-danger small text-decoration-none">Remove</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="address-card">
-                            <h6 class="fw-bold">Office</h6>
-                            <p class="text-muted small mb-2">
-                                John Doe (Work)<br>
-                                5678 Office Park, Suite 300<br>
-                                San Francisco, CA 94105<br>
-                                United States
-                            </p>
-                            <p class="small text-muted">Phone: +1 987 654 3210</p>
-                            <div class="mt-3">
-                                <a href="#" class="text-primary small text-decoration-none me-3">Edit</a>
-                                <a href="#" class="text-danger small text-decoration-none">Remove</a>
-                                <a href="#" class="text-dark small text-decoration-none ms-3">Set as Default</a>
-                            </div>
-                        </div>
+                <div class="row" id="addressListContainer">
+                    <!-- Dynamic addresses will load here -->
+                    <div class="col-12 text-center py-5 text-muted" id="emptyAddressState">
+                        <i class="bi bi-geo-alt fs-1 mb-2 d-block"></i>
+                        <p>No addresses found. Add one to get started.</p>
                     </div>
                 </div>
             </div>
@@ -339,19 +311,57 @@
             }
 
             // Handle Logout from Sidebar
-            const sidebarLogout = document.getElementById("sidebar-logout");
-            if (sidebarLogout) {
-                sidebarLogout.addEventListener("click", async (e) => {
-                    e.preventDefault();
-                    try {
-                        await fetch("/api/auth/logout", { method: "POST" });
-                    } catch (err) {
-                        console.error(err);
+            const handleLogout = async (e) => {
+                e.preventDefault();
+                try {
+                    await fetch("/api/auth/logout", { method: "POST" });
+                } catch (err) {
+                    console.error(err);
+                }
+                localStorage.removeItem("isLoggedIn");
+                window.location.href = "home.html";
+            };
+
+            const logoutBtn = document.getElementById("sidebarLogoutBtn");
+            if (logoutBtn) logoutBtn.addEventListener("click", handleLogout);
+
+            async function loadUserInfo() {
+                try {
+                    let res = await fetch("/api/auth/me", { credentials: "include" });
+                    if (res.status === 401) {
+                        const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+                        if (!refreshRes.ok) throw new Error("Session expired");
+                        res = await fetch("/api/auth/me", { credentials: "include" });
                     }
-                    localStorage.removeItem("isLoggedIn");
+                    if (res.status === 403) {
+                        const data = await res.json();
+                        if (data.message === "Your account has been blocked") {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Account Blocked",
+                                text: "Your account has been blocked by admin.",
+                                confirmButtonColor: "#d33"
+                            }).then(() => {
+                                localStorage.removeItem("isLoggedIn");
+                                window.location.href = "login.html";
+                            });
+                            return;
+                        }
+                    }
+
+                    if (!res.ok) throw new Error("Auth failed");
+                    const user = await res.json();
+
+                    document.getElementById('sidebarUserName').textContent = user.name;
+                    document.getElementById('sidebarUserEmail').textContent = user.email;
+                    document.getElementById('sidebarUserAvatar').textContent = user.name.charAt(0).toUpperCase();
+
+                } catch (err) {
+                    console.error(err);
                     window.location.href = "login.html";
-                });
+                }
             }
+            loadUserInfo();
         });
     </script>
 
@@ -383,6 +393,206 @@
             }
         });
     </script>
-</body>
+
+    <script>
+        // Address Book Logic
+        document.addEventListener("DOMContentLoaded", () => {
+            const addressListContainer = document.getElementById("addressListContainer");
+            const emptyAddressState = document.getElementById("emptyAddressState");
+            const addAddressForm = document.querySelector("#addAddressModal form");
+
+            let addresses = [];
+
+            async function fetchAddresses() {
+                try {
+                    const res = await fetch('/api/users/addresses', { credentials: 'include' });
+                    if (res.status === 403) {
+                        const data = await res.json();
+                        if (data.message === "Your account has been blocked") {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Account Blocked",
+                                text: "Your account has been blocked by admin.",
+                                confirmButtonColor: "#d33"
+                            }).then(() => {
+                                localStorage.removeItem("isLoggedIn");
+                                window.location.href = "login.html";
+                            });
+                            return;
+                        }
+                    }
+
+                    if (!res.ok) {
+                        if (res.status === 401) {
+                            window.location.href = "login.html";
+                        }
+                        throw new Error("Failed to load addresses");
+                    }
+                    const data = await res.json();
+                    addresses = data.addresses || [];
+                    renderAddresses();
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            function renderAddresses() {
+                addressListContainer.innerHTML = "";
+
+                if (addresses.length === 0) {
+                    addressListContainer.appendChild(emptyAddressState);
+                    emptyAddressState.classList.remove("d-none");
+                    return;
+                }
+
+                emptyAddressState.classList.add("d-none");
+
+                addresses.forEach((addr, index) => {
+                    const isDefault = addr.isDefault || (index === 0 && !addresses.some(a => a.isDefault));
+
+                    const col = document.createElement("div");
+                    col.className = "col-md-6";
+
+                    col.innerHTML = `
+                        <div class="address-card h-100 position-relative ${isDefault ? 'border-dark shadow-sm' : ''}">
+                            ${isDefault ? '<span class="badge bg-dark text-white mb-2">Default</span>' : ''}
+                            <h6 class="fw-bold">${addr.firstName} ${addr.lastName}</h6>
+                            <p class="text-muted small mb-2 lh-base">
+                                ${addr.street}<br>
+                                ${addr.city}, ${addr.state} ${addr.zip}<br>
+                            </p>
+                            <p class="small text-muted fw-medium border-bottom pb-3 mb-3">Phone: ${addr.phone}</p>
+                            
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-sm btn-outline-danger me-auto px-3 rounded-pill" onclick="deleteAddress('${addr._id}')">Remove</button>
+                                ${!isDefault ? `<button class="btn btn-sm btn-link text-dark text-decoration-none fw-medium" onclick="setDefaultAddress('${addr._id}')">Set as Default</button>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    addressListContainer.appendChild(col);
+                });
+            }
+
+            window.deleteAddress = async (id) => {
+                const result = await Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#000",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete it!"
+                });
+
+                if (result.isConfirmed) {
+                    try {
+                        const res = await fetch(`/api/users/addresses/${id}`, {
+                            method: 'DELETE',
+                            credentials: 'include'
+                        });
+                        if (res.ok) {
+                            Swal.fire({
+                                icon: "success",
+                                title: "Deleted!",
+                                text: "Address removed successfully.",
+                                confirmButtonColor: "#000"
+                            });
+                            fetchAddresses();
+                        }
+                    } catch (err) {
+                        console.error("Delete err:", err);
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: "Failed to delete address.",
+                            confirmButtonColor: "#d33"
+                        });
+                    }
+                }
+            };
+
+            window.setDefaultAddress = async (id) => {
+                try {
+                    const res = await fetch(`/api/users/addresses/${id}/default`, {
+                        method: 'PUT',
+                        credentials: 'include'
+                    });
+                    if (res.ok) fetchAddresses();
+                } catch (err) {
+                    console.error("Default err:", err);
+                }
+            };
+
+            addAddressForm.addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                const submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.disabled = true;
+                submitBtn.innerText = 'Saving...';
+
+                const inputs = this.querySelectorAll('input, select');
+                // The placeholder HTML had no IDs, so grab by position/type for simplicity since we wrote it
+                const newAddr = {
+                    firstName: inputs[0].value.split(' ')[0] || '',
+                    lastName: inputs[0].value.split(' ').slice(1).join(' ') || ' ', // fallback if user only put one name
+                    phone: inputs[1].value,
+                    street: inputs[2].value + (inputs[3].value ? ', ' + inputs[3].value : ''),
+                    city: inputs[4].value,
+                    state: inputs[5].value,
+                    zip: inputs[6].value
+                };
+
+                // Quick fallback validation
+                if (!newAddr.firstName || !newAddr.phone || newAddr.state === "Choose...") {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Warning",
+                        text: 'Please fill out all fields.',
+                        confirmButtonColor: "#f59e0b"
+                    });
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'Save Address';
+                    return;
+                }
+
+                try {
+                    const res = await fetch('/api/users/addresses', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify(newAddr)
+                    });
+
+                    if (res.ok) {
+                        const modalEl = document.getElementById('addAddressModal');
+                        const modalObj = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                        modalObj.hide();
+                        addAddressForm.reset();
+                        fetchAddresses();
+                    } else {
+                        const data = await res.json();
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: data.message || 'Error saving address',
+                            confirmButtonColor: "#d33"
+                        });
+                    }
+                } catch (error) {
+                    console.error(error);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'Save Address';
+                }
+            });
+
+            // Initial fetch
+            fetchAddresses();
+        });
+    </script>
+    <script src="/user/js/authGuard.js"></script>
+
+<script src="/user/js/userAuth.js"></script>`n</body>
 
 </html>
+

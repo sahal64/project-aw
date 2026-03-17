@@ -239,14 +239,8 @@
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center container-actions d-none"
                     id="cartActionsRow">
                     <a href="product.html" class="btn btn-outline-dark-custom mb-4 mb-md-0">Return To Shop</a>
-
-                    <div class="d-flex w-100 style-coupon" style="max-width: 400px;">
-                        <input type="text" class="form-control rounded-0 border-dark border-end-0 shadow-none"
-                            placeholder="Coupon Code">
-                        <button class="btn btn-dark-custom ms-0" style="width: auto; white-space: nowrap;">Apply
-                            Coupon</button>
-                    </div>
                 </div>
+
             </div>
 
             <!-- Right Side: Order Summary -->
@@ -296,6 +290,22 @@
                 credentials: "include"
             });
 
+            if (res.status === 403) {
+                const data = await res.json();
+                if (data.message === "Your account has been blocked") {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Account Blocked",
+                        text: "Your account has been blocked by admin.",
+                        confirmButtonColor: "#d33"
+                    }).then(() => {
+                        localStorage.removeItem("isLoggedIn");
+                        window.location.href = "login.html";
+                    });
+                    return;
+                }
+            }
+
             if (res.status === 401) {
                 const refreshRes = await fetch("/api/auth/refresh", {
                     method: "POST",
@@ -310,6 +320,12 @@
                 res = await fetch("/api/auth/me", {
                     credentials: "include"
                 });
+
+                if (res.status === 403) {
+                    localStorage.removeItem("isLoggedIn");
+                    window.location.href = "login.html";
+                    return;
+                }
             }
 
             if (!res.ok) {
@@ -430,7 +446,7 @@
             renderCart();
         });
 
-        function renderCart() {
+        async function renderCart() {
             const cart = JSON.parse(localStorage.getItem('cartItems')) || [];
             const tbody = document.getElementById('cartTableBody');
             const emptyMsg = document.getElementById('emptyCartMessage');
@@ -443,26 +459,57 @@
             if (cart.length === 0) {
                 document.querySelector('.cart-table').classList.add('d-none');
                 emptyMsg.classList.remove('d-none');
-                if (subtotalEl) subtotalEl.textContent = '$0.00';
-                if (totalEl) totalEl.textContent = '$0.00';
+                if (subtotalEl) subtotalEl.textContent = '₹0';
+                if (totalEl) totalEl.textContent = '₹0';
                 return;
             }
 
             document.querySelector('.cart-table').classList.remove('d-none');
             emptyMsg.classList.add('d-none');
 
+            // Batch check stock for all items
+            let adjusted = false;
+            try {
+                const stockRes = await fetch("/api/cart/batch-check-stock", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ items: cart.map(item => ({ id: item.id, quantity: item.quantity })) })
+                });
+                const stockData = await stockRes.json();
+
+                if (stockData.success) {
+                    stockData.results.forEach((res, idx) => {
+                        if (cart[idx].quantity > res.availableStock) {
+                            cart[idx].quantity = res.availableStock;
+                            adjusted = true;
+                        }
+                        cart[idx].availableStock = res.availableStock; // Store for UI
+                    });
+
+                    if (adjusted) {
+                        localStorage.setItem('cartItems', JSON.stringify(cart));
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Stock Updated',
+                            text: 'Some quantities were adjusted based on available stock.',
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("Stock check failed:", err);
+            }
+
             cart.forEach((item, index) => {
                 const itemTotal = item.price * item.quantity;
                 total += itemTotal;
 
-                // Format price for display (simple heuristic based on currency symbol in priceStr)
-                const isRupee = item.priceStr && item.priceStr.includes('₹');
-                const currency = isRupee ? '₹' : '$';
-                const itemTotalStr = isRupee ? itemTotal.toLocaleString('en-IN') : itemTotal.toFixed(2);
-
-                // Construct a fake original price 10% higher for visual flair
-                const fakeOriginal = (item.price * 1.1).toFixed(2);
-                const fakeOriginalStr = isRupee ? (item.price * 1.1).toLocaleString('en-IN') : fakeOriginal;
+                const currency = '₹';
+                const itemTotalStr = itemTotal.toLocaleString('en-IN');
+                const priceStr = item.price.toLocaleString('en-IN');
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -471,42 +518,71 @@
                             <img src="${item.image}" class="cart-img">
                             <div>
                                 <h6 class="mb-1 fw-bold fs-6">${item.title}</h6>
-                                <small class="text-danger d-block mt-1" style="font-size: 0.75rem;">Only 2 left!</small>
+                                <small class="${item.availableStock <= 5 ? 'text-danger' : 'text-muted'} d-block mt-1" style="font-size: 0.75rem;">
+                                    ${item.availableStock > 0 ? `Stock: ${item.availableStock} available` : 'Out of stock'}
+                                </small>
                             </div>
                         </div>
                     </td>
                     <td>
-                        <span class="text-muted text-decoration-line-through me-1 small">${currency}${fakeOriginalStr}</span>
-                        <span class="fw-medium">${item.priceStr}</span>
+                        <span class="fw-medium">${currency}${priceStr}</span>
                     </td>
                     <td>
-                        <input type="number" value="${item.quantity}" class="form-control text-center rounded-0 shadow-none border-dark" style="width: 70px;" min="1" onchange="updateQuantity(${index}, this.value)">
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm btn-outline-dark rounded-0 px-2" onclick="updateQuantity(${index}, ${item.quantity - 1})">-</button>
+                            <input type="text" value="${item.quantity}" class="form-control text-center rounded-0 shadow-none border-dark mx-1" style="width: 50px; height: 31px; padding: 0;" readonly>
+                            <button class="btn btn-sm btn-outline-dark rounded-0 px-2" 
+                                ${item.quantity >= item.availableStock ? 'disabled' : ''} 
+                                onclick="updateQuantity(${index}, ${item.quantity + 1})">+</button>
+                        </div>
                     </td>
                     <td class="fw-medium">${currency}${itemTotalStr}</td>
                     <td class="text-end text-nowrap">
-                        <button class="btn btn-sm btn-outline-dark rounded-0 py-1 px-2 border-secondary me-1" style="font-size: 0.75rem;" onclick="event.preventDefault()">Save for Later</button>
-                        <button class="btn btn-sm btn-outline-danger rounded-0 py-1 px-2" onclick="removeFromCart(${index}); return false;"><i class="bi bi-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-danger rounded-0 py-1 px-2" onclick="removeFromCart(${index})"><i class="bi bi-trash"></i></button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
 
             document.getElementById('cartActionsRow').classList.remove('d-none');
-
-            // Update Summary
-            // Assume mixed currency isn't handled perfectly, just show raw sum if mixed or default to first detected. 
-            // For simplicity, showing raw number or generic formatting.
-            const hasRupee = cart.some(i => i.priceStr.includes('₹'));
-            const finalSymbol = hasRupee ? '₹' : '$';
-            const finalTotalStr = hasRupee ? total.toLocaleString('en-IN') : total.toFixed(2);
-
-            if (subtotalEl) subtotalEl.textContent = `${finalSymbol}${finalTotalStr}`;
-            if (totalEl) totalEl.textContent = `${finalSymbol}${finalTotalStr}`;
+            const finalTotalStr = total.toLocaleString('en-IN');
+            if (subtotalEl) subtotalEl.textContent = `₹${finalTotalStr}`;
+            if (totalEl) totalEl.textContent = `₹${finalTotalStr}`;
         }
 
-        function updateQuantity(index, newQty) {
+        async function updateQuantity(index, newQty) {
             let cart = JSON.parse(localStorage.getItem('cartItems')) || [];
-            if (newQty < 1) newQty = 1;
+            const item = cart[index];
+
+            if (newQty <= 0) {
+                removeFromCart(index);
+                return;
+            }
+
+            // Check stock before increasing
+            if (newQty > item.quantity) {
+                try {
+                    const res = await fetch(`/api/cart/check-stock/${item.id}`);
+                    const data = await res.json();
+
+                    if (data.success && newQty > data.stock) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Stock Limit',
+                            text: 'Cannot add more than available stock.',
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                        renderCart();
+                        return;
+                    }
+                } catch (err) {
+                    console.error("Stock check failed:", err);
+                }
+            }
+
             cart[index].quantity = parseInt(newQty);
             localStorage.setItem('cartItems', JSON.stringify(cart));
             renderCart();
@@ -519,6 +595,9 @@
             renderCart();
         }
     </script>
-</body>
+    <script src="/user/js/authGuard.js"></script>
+
+<script src="/user/js/userAuth.js"></script>`n</body>
 
 </html>
+

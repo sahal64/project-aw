@@ -2,161 +2,174 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AeroWatch - OTP Verification</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroWatch - OTP Verification</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <style>
-        :root {
-            --font-family: 'Outfit', sans-serif;
-            --primary-color: #000000;
-        }
+  <style>
+    :root {
+      --font-family: 'Outfit', sans-serif;
+      --primary-color: #000000;
+    }
 
-        body {
-            font-family: var(--font-family);
-            background-color: #f8f9fa;
-        }
+    body {
+      font-family: var(--font-family);
+      background-color: #f8f9fa;
+    }
 
-        .signup-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .signup-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        .login-box {
-            width: 100%;
-            max-width: 450px;
-            background: #fff;
-            padding: 50px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            text-align: center;
-        }
+    .login-box {
+      width: 100%;
+      max-width: 450px;
+      background: #fff;
+      padding: 50px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      text-align: center;
+    }
 
-        .login-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
+    .login-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
 
-        .login-subtitle {
-            font-size: 0.9rem;
-            color: #6c757d;
-            margin-bottom: 30px;
-        }
+    .login-subtitle {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-bottom: 30px;
+    }
 
-        .form-control {
-            padding: 15px;
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            text-align: center;
-            letter-spacing: 5px;
-            font-size: 1.2rem;
-        }
+    .form-control {
+      padding: 15px;
+      background: #f8f9fa;
+      border: 1px solid #ddd;
+      margin-bottom: 20px;
+      border-radius: 5px;
+      text-align: center;
+      letter-spacing: 5px;
+      font-size: 1.2rem;
+    }
 
-        .btn-dark-custom {
-            background-color: var(--primary-color);
-            color: #fff;
-            padding: 15px;
-            border-radius: 5px;
-            font-weight: 600;
-            text-transform: uppercase;
-            width: 100%;
-            border: none;
-        }
+    .btn-dark-custom {
+      background-color: var(--primary-color);
+      color: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      width: 100%;
+      border: none;
+    }
 
-        .btn-dark-custom:hover {
-            background: #333;
-        }
-    </style>
+    .btn-dark-custom:hover {
+      background: #333;
+    }
+  </style>
 </head>
 
 <body>
 
-    <div class="signup-container">
-        <div class="login-box">
-            <h2 class="login-title">Verification</h2>
-            <p class="login-subtitle">We have sent a verification code to your email.</p>
-            
-            <form id="otpForm">
-  <input
-    type="text"
-    id="otp"
-    class="form-control"
-    placeholder="1 2 3 4"
-    maxlength="4"
-    required
-  />
+  <div class="signup-container">
+    <div class="login-box">
+      <h2 class="login-title">Verification</h2>
+      <p class="login-subtitle">We have sent a verification code to your email.</p>
 
-  <button type="submit" class="btn btn-dark-custom">
-    Verify & Login
-  </button>
+      <form id="otpForm">
+        <input type="text" id="otp" class="form-control" placeholder="1 2 3 4" maxlength="4" required />
 
-  <div class="mt-4">
-    <small>
-      Didn't receive code?
-      <a href="#" id="resendOtp" class="fw-bold text-dark text-decoration-none">
-        Resend
-      </a>
-    </small>
-  </div>
-</form>
+        <button type="submit" class="btn btn-dark-custom">
+          Verify & Login
+        </button>
 
+        <div class="mt-4">
+          <small>
+            Didn't receive code?
+            <a href="#" id="resendOtp" class="fw-bold text-dark text-decoration-none">
+              Resend
+            </a>
+          </small>
         </div>
+      </form>
+
     </div>
+  </div>
 
 
 
 
-    <script>
-console.log("Pending Email:", localStorage.getItem("pendingEmail"));
+  <script>
+    console.log("Pending Email:", localStorage.getItem("pendingEmail"));
 
-const form = document.getElementById("otpForm");
+    const form = document.getElementById("otpForm");
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-  const otp = document.getElementById("otp").value.trim();
-  const email = localStorage.getItem("pendingEmail");
+      const otp = document.getElementById("otp").value.trim();
+      const email = localStorage.getItem("pendingEmail");
 
-  console.log("EMAIL:", email);
-  console.log("OTP:", otp);
+      console.log("EMAIL:", email);
+      console.log("OTP:", otp);
 
-  if (!email) {
-    alert("Invalid access");
-    window.location.href = "signup.html";
-    return;
-  }
+      if (!email) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Invalid access",
+          confirmButtonColor: "#d33"
+        }).then(() => {
+          window.location.href = "signup.html";
+        });
+        return;
+      }
 
-  const res = await fetch("/api/auth/verify-otp", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, otp })
-  });
+      const res = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp })
+      });
 
-  const data = await res.json();
+      const data = await res.json();
 
-  if (!res.ok) {
-    alert(data.message);
-    return;
-  }
+      if (!res.ok) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: data.message,
+          confirmButtonColor: "#d33"
+        });
+        return;
+      }
 
-  localStorage.removeItem("pendingEmail");
-  alert("Account verified successfully. Please login.");
-  window.location.href = "login.html";
-});
-</script>
+      localStorage.removeItem("pendingEmail");
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Account verified successfully. Please login.",
+        confirmButtonColor: "#000"
+      }).then(() => {
+        window.location.href = "login.html";
+      });
+    });
+  </script>
 
 
 
 
-</body>
+`n</body>
 
 </html>
+
+

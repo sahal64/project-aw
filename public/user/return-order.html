@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
@@ -62,7 +63,7 @@
         <div class="container px-5">
             <a class="navbar-brand" href="home.html"><img src="../common/images/logo.png" alt="AeroWatch"
                     style="height: 55px;"></a>
-            <a href="my-orders.html" class="btn btn-outline-dark btn-sm">Close</a>
+            <a href="/user/my-orders.html" class="btn btn-outline-dark btn-sm">Close</a>
         </div>
     </nav>
 
@@ -105,11 +106,14 @@
                     </div>
 
                     <button type="submit" class="btn btn-dark w-100 py-3 fw-bold">Submit Return Request</button>
-                    <a href="my-orders.html" class="btn btn-link w-100 mt-2 text-decoration-none text-muted">Cancel</a>
+                    <a href="/user/my-orders.html" class="btn btn-link w-100 mt-2 text-decoration-none text-muted">Cancel</a>
                 </form>
             </div>
         </div>
     </div>
-</body>
+    <script src="/user/js/authGuard.js"></script>
+
+<script src="/user/js/userAuth.js"></script>`n</body>
 
 </html>
+

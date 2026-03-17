@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
@@ -185,7 +186,7 @@
                 </form>
                 <a href="#" class="icon-btn" id="search-trigger"><i class="bi bi-search"></i></a>
                 <a href="wishlist.html" class="icon-btn"><i class="bi bi-heart"></i></a>
-                <a href="account.html" class="icon-btn text-dark"><i class="bi bi-person-fill"></i></a>
+                <a href="/user/account.html" class="icon-btn text-dark"><i class="bi bi-person-fill"></i></a>
                 <a href="cart.html" class="icon-btn"><i class="bi bi-bag"></i></a>
             </div>
         </div>
@@ -199,34 +200,35 @@
                 <div class="account-sidebar">
                     <div class="d-flex align-items-center mb-4 px-3">
                         <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center"
-                            style="width: 50px; height: 50px; font-size: 1.5rem;">
-                            J
+                            style="width: 50px; height: 50px; font-size: 1.5rem;" id="sidebarUserAvatar">
+                            -
                         </div>
                         <div class="ms-3">
-                            <h6 class="mb-0 fw-bold">John Doe</h6>
-                            <small class="text-muted">john@example.com</small>
+                            <h6 class="mb-0 fw-bold" id="sidebarUserName">Loading...</h6>
+                            <small class="text-muted" id="sidebarUserEmail">...</small>
                         </div>
                     </div>
                     <div class="section-title text-muted text-uppercase fw-bold fs-6 mb-2 mt-4 ps-3">Manage My Account
                     </div>
                     <nav class="nav flex-column account-nav mb-2">
-                        <a class="nav-link active" href="profile-details.html"><i class="bi bi-person"></i> My
-                            Profile</a>
-                        <a class="nav-link" href="address-book.html"><i class="bi bi-geo-alt"></i> Address Book</a>
-                        <a class="nav-link" href="my-wallet.html"><i class="bi bi-wallet2"></i> My Payment Options</a>
+                        <a class="nav-link" href="/user/account.html"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                        <a class="nav-link active" href="/user/profile-details.html"><i class="bi bi-person"></i> My Profile</a>
+                        <a class="nav-link" href="/user/address-book.html"><i class="bi bi-geo-alt"></i> Address Book</a>
+                        <a class="nav-link" href="/user/my-wallet.html"><i class="bi bi-wallet2"></i> My Payment Options</a>
                     </nav>
 
                     <div class="section-title text-muted text-uppercase fw-bold fs-6 mb-2 mt-4 ps-3">My Orders</div>
                     <nav class="nav flex-column account-nav mb-4">
-                        <a class="nav-link" href="my-orders.html"><i class="bi bi-box-seam"></i> My Orders</a>
-                        <a class="nav-link" href="my-returns.html"><i class="bi bi-arrow-return-left"></i> My
+                        <a class="nav-link" href="/user/my-orders.html"><i class="bi bi-box-seam"></i> My Orders</a>
+                        <a class="nav-link" href="/user/my-returns.html"><i class="bi bi-arrow-return-left"></i> My
                             Returns</a>
-                        <a class="nav-link" href="my-cancellations.html"><i class="bi bi-x-circle"></i> My
+                        <a class="nav-link" href="/user/my-cancellations.html"><i class="bi bi-x-circle"></i> My
                             Cancellations</a>
                     </nav>
 
                     <nav class="nav flex-column account-nav">
-                        <a class="nav-link" href="signup.html"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                        <a class="nav-link text-danger" href="#" id="sidebarLogoutBtn"><i
+                                class="bi bi-box-arrow-right"></i> Logout</a>
                     </nav>
                 </div>
             </div>
@@ -235,24 +237,26 @@
             <div class="col-lg-9">
                 <h3 class="fw-bold mb-4">My Profile</h3>
                 <div class="dashboard-card">
-                    <form>
+                    <form id="profileForm">
                         <h5 class="fw-bold mb-4">Personal Information</h5>
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">First Name</label>
-                                <input type="text" class="form-control" value="John">
+                                <input type="text" id="firstName" class="form-control" maxlength="30"
+                                    pattern="[A-Za-z ]+" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Last Name</label>
-                                <input type="text" class="form-control" value="Doe">
+                                <input type="text" id="lastName" class="form-control" maxlength="30"
+                                    pattern="[A-Za-z ]+">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Email Address</label>
-                                <input type="email" class="form-control" value="john@example.com">
+                                <input type="email" id="email" class="form-control" readonly disabled>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" value="+1 234 567 8900">
+                                <input type="tel" id="phone" class="form-control" readonly disabled>
                             </div>
                         </div>
 
@@ -260,15 +264,15 @@
                         <div class="row g-3 mb-4">
                             <div class="col-12">
                                 <label class="form-label">Current Password</label>
-                                <input type="password" class="form-control">
+                                <input type="password" id="currentPassword" class="form-control">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">New Password</label>
-                                <input type="password" class="form-control">
+                                <input type="password" id="newPassword" class="form-control">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Confirm New Password</label>
-                                <input type="password" class="form-control">
+                                <input type="password" id="confirmPassword" class="form-control">
                             </div>
                         </div>
 
@@ -312,8 +316,205 @@
                     }
                 });
             }
+
+            async function loadUserInfo() {
+                try {
+                    let res = await fetch("/api/auth/me", { credentials: "include" });
+                    if (res.status === 401) {
+                        const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+                        if (!refreshRes.ok) throw new Error("Session expired");
+                        res = await fetch("/api/auth/me", { credentials: "include" });
+                    }
+                    if (res.status === 403) {
+                        const data = await res.json();
+                        if (data.message === "Your account has been blocked") {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Account Blocked",
+                                text: "Your account has been blocked by admin.",
+                                confirmButtonColor: "#d33"
+                            }).then(() => {
+                                localStorage.removeItem("isLoggedIn");
+                                window.location.href = "login.html";
+                            });
+                            return;
+                        }
+                    }
+                    if (!res.ok) throw new Error("Auth failed");
+                    const user = await res.json();
+
+                    document.getElementById('sidebarUserName').textContent = user.name;
+                    document.getElementById('sidebarUserEmail').textContent = user.email;
+                    document.getElementById('sidebarUserAvatar').textContent = user.name.charAt(0).toUpperCase();
+
+                    // Pre-fill form
+                    const nameParts = user.name.split(" ");
+                    document.getElementById('firstName').value = nameParts[0] || "";
+                    document.getElementById('lastName').value = nameParts.slice(1).join(" ") || "";
+                    document.getElementById('email').value = user.email || "";
+                    // document.getElementById('phone').value = user.phone || "";
+
+                } catch (err) {
+                    console.error(err);
+                    window.location.href = "login.html";
+                }
+            }
+
+            const sidebarLogoutBtn = document.getElementById("sidebarLogoutBtn");
+            if (sidebarLogoutBtn) {
+                sidebarLogoutBtn.addEventListener("click", async function (e) {
+                    e.preventDefault();
+                    await fetch("/api/auth/logout", { method: "POST" });
+                    localStorage.removeItem("isLoggedIn");
+                    window.location.href = "home.html";
+                });
+            }
+
+            loadUserInfo();
+
+            // Real-time name filtering
+            function restrictNameInput(input) {
+                input.value = input.value.replace(/[^A-Za-z\s]/g, '');
+            }
+
+            document.getElementById("firstName").addEventListener("input", function () {
+                restrictNameInput(this);
+            });
+
+            document.getElementById("lastName").addEventListener("input", function () {
+                restrictNameInput(this);
+            });
+
+            // Password security validation
+            function validatePassword(password) {
+                const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+                return strongPassword.test(password);
+            }
+
+            // Prevent Copy/Paste on password fields
+            document.querySelectorAll("#newPassword,#confirmPassword").forEach(field => {
+                field.addEventListener("paste", e => {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Paste Disabled",
+                        text: "Please type the password manually"
+                    });
+                });
+            });
+
+            // Profile Form Submission
+            document.getElementById("profileForm").addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                const firstName = document.getElementById("firstName").value.trim();
+                const lastName = document.getElementById("lastName").value.trim();
+                const currentPassword = document.getElementById("currentPassword").value;
+                const newPassword = document.getElementById("newPassword").value;
+                const confirmPassword = document.getElementById("confirmPassword").value;
+
+                // Name validation
+                if (firstName.length < 2) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Invalid Name",
+                        text: "First name must be at least 2 characters"
+                    });
+                    return;
+                }
+
+                if (lastName && lastName.length < 2) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Invalid Name",
+                        text: "Last name must be at least 2 characters"
+                    });
+                    return;
+                }
+
+                const bodyData = { firstName, lastName };
+
+                // Password change validation
+                if (newPassword || confirmPassword || currentPassword) {
+                    if (!currentPassword) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Current Password Required"
+                        });
+                        return;
+                    }
+
+                    if (!newPassword) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "New Password Required"
+                        });
+                        return;
+                    }
+
+                    if (!validatePassword(newPassword)) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Weak Password",
+                            text: "Password must be at least 8 characters and contain uppercase, lowercase, number and special character (@$!%*?&)"
+                        });
+                        return;
+                    }
+
+                    if (newPassword !== confirmPassword) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Password Mismatch"
+                        });
+                        return;
+                    }
+
+                    bodyData.currentPassword = currentPassword;
+                    bodyData.newPassword = newPassword;
+                }
+
+                try {
+                    const res = await fetch("/api/users/profile", {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        credentials: "include",
+                        body: JSON.stringify(bodyData)
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Update Failed",
+                            text: data.message || "Something went wrong"
+                        });
+                        return;
+                    }
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Profile Updated",
+                        text: "Your changes have been saved successfully"
+                    }).then(() => {
+                        location.reload();
+                    });
+
+                } catch (err) {
+                    console.error("Profile Update Error:", err);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Server Error",
+                        text: "Unable to update profile"
+                    });
+                }
+            });
         });
     </script>
+    <script src="/user/js/authGuard.js"></script>
+
+<script src="/user/js/userAuth.js"></script>
 </body>
 
 </html>
+

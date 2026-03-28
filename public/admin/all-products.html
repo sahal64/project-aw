@@ -141,91 +141,71 @@
 
     <div class="card border-0 shadow-sm">
       <div class="card-body">
-        <table class="table align-middle table-hover">
-          <thead class="table-light">
-            <tr>
-              <th>Product Name</th>
-              <th>Category</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="adminProductsTable">
-          </tbody>
-        </table>
+        <div class="row mb-4">
+          <div class="col-md-4">
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+              <input type="text" id="productSearchInput" class="form-control border-start-0 ps-0"
+                placeholder="Search by name, SKU or category...">
+            </div>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table align-middle table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="adminProductsTable">
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-footer bg-white border-top-0 pb-4">
+        <nav aria-label="Product pagination">
+          <ul class="pagination justify-content-center mb-0" id="productPagination">
+          </ul>
+        </nav>
       </div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/auth.js"></script>
 
   <script>
+    let currentPage = 1;
+    let currentSearch = "";
+
+    function debounce(func, delay) {
+      let timeout;
+      return function (...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), delay);
+      };
+    }
+
     async function checkAdminAuth() {
-      try {
-        let res = await fetch("/api/auth/me", {
-          credentials: "include"
-        });
-
-        if (res.status === 401) {
-          const refreshRes = await fetch("/api/auth/refresh", {
-            method: "POST",
-            credentials: "include"
-          });
-
-          if (!refreshRes.ok) {
-            window.location.href = "/admin/login.html";
-            return false;
-          }
-
-          res = await fetch("/api/auth/me", {
-            credentials: "include"
-          });
-        }
-
-        if (!res.ok) {
-          window.location.href = "/admin/login.html";
-          return false;
-        }
-
-        const user = await res.json();
-
-        if (user.role !== "admin") {
-          window.location.href = "/admin/login.html";
-          return false;
-        }
-
-        return true;
-      } catch (err) {
-        window.location.href = "/admin/login.html";
-        return false;
-      }
+      return await Auth.checkBackendAccess("admin");
     }
 
     document.getElementById("admin-logout").addEventListener("click", async (e) => {
       e.preventDefault();
-      try {
-        await fetch("/api/auth/logout", {
-          method: "POST",
-          credentials: "include"
-        });
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.href = "/admin/login.html";
-      } catch (err) {
-        console.error("Logout error:", err);
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.href = "/admin/login.html";
-      }
+      Auth.logout();
     });
 
-    async function loadAdminProducts() {
+    async function loadAdminProducts(page = 1, search = "") {
+      currentPage = page;
+      currentSearch = search;
       try {
-        const res = await fetch("/api/admin/products", {
-          credentials: "include"
-        });
+        const res = await Auth.fetch(`/api/admin/products?page=${page}&search=${encodeURIComponent(search)}`);
 
         if (!res.ok) {
           Swal.fire({
@@ -242,71 +222,100 @@
         const tbody = document.getElementById("adminProductsTable");
         tbody.innerHTML = "";
 
+        if (products.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-muted">No products found</td></tr>`;
+          renderPagination(0, 0);
+          return;
+        }
+
         products.forEach(product => {
-
-          let statusBadge = product.isActive === false ? "danger" : "success";
-          let statusLabel = product.isActive === false ? "Inactive" : "Active";
-
-          let stockBadge = "success";
-          let stockLabel = "In Stock";
-
-          if (product.stock <= 5) {
-            stockBadge = "danger";
-            stockLabel = "Critical Stock";
-          } else if (product.stock <= 15) {
-            stockBadge = "warning";
-            stockLabel = "Low Stock";
-          }
-
           const image = product.images?.[0] || "/uploads/default.png";
-
           const row = document.createElement("tr");
 
           row.innerHTML = `
-  <td>
-    <div class="d-flex align-items-center">
-      <img src="${image}" class="table-img me-3">
-      <div>
-        <h6 class="mb-0 fw-bold">${product.name}</h6>
-        <small class="text-muted">ID: ${product._id.slice(-6)}</small>
-      </div>
-    </div>
-  </td>
-
-  <td>${product.category}</td>
-  <td>₹${product.price.toLocaleString("en-IN")}</td>
-  <td>${product.stock}</td>
-
-  <td>
-    <span class="badge bg-${product.isActive === false ? 'danger' : 'success'}">
-      ${product.isActive === false ? 'Inactive' : 'Active'}
-    </span>
-  </td>
-
-  <td>
-    <button class="btn btn-sm btn-light"
-      onclick="editProduct('${product._id}')">
-      <i class="bi bi-pencil"></i>
-    </button>
-
-    <button class="btn btn-sm btn-light text-warning"
-      onclick="toggleProduct('${product._id}')">
-      <i class="bi bi-power"></i>
-    </button>
-
-    <button class="btn btn-sm btn-light text-danger"
-      onclick="deleteProduct('${product._id}')">
-      <i class="bi bi-trash"></i>
-    </button>
-  </td>
-`;
+            <td>
+              <div class="d-flex align-items-center">
+                <img src="${image}" class="table-img me-3">
+                <div>
+                  <h6 class="mb-0 fw-bold">${product.name}</h6>
+                  <small class="text-muted">SKU: ${product.sku || 'N/A'}</small>
+                </div>
+              </div>
+            </td>
+            <td>${product.category}</td>
+            <td>₹${product.price.toLocaleString("en-IN")}</td>
+            <td>${product.stock}</td>
+            <td>
+              <span class="badge bg-${product.isActive === false ? 'danger' : 'success'}">
+                ${product.isActive === false ? 'Inactive' : 'Active'}
+              </span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-light" onclick="editProduct('${product._id}')">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-sm btn-light text-warning" onclick="toggleProduct('${product._id}')">
+                <i class="bi bi-power"></i>
+              </button>
+              <button class="btn btn-sm btn-light text-danger" onclick="deleteProduct('${product._id}')">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          `;
           tbody.appendChild(row);
         });
+
+        renderPagination(data.pages, data.page);
 
       } catch (err) {
         console.error(err);
       }
     }
+
+    function renderPagination(totalPages, activePage) {
+      const pagination = document.getElementById("productPagination");
+      pagination.innerHTML = "";
+
+      if (totalPages <= 1) return;
+
+      // Previous button
+      const prevLi = document.createElement("li");
+      prevLi.className = `page-item ${activePage === 1 ? 'disabled' : ''}`;
+      prevLi.innerHTML = `<a class="page-link" href="#">Previous</a>`;
+      prevLi.onclick = (e) => {
+        e.preventDefault();
+        if (activePage > 1) loadAdminProducts(activePage - 1, currentSearch);
+      };
+      pagination.appendChild(prevLi);
+
+      // Page numbers
+      for (let i = 1; i <= totalPages; i++) {
+        const li = document.createElement("li");
+        li.className = `page-item ${i === activePage ? 'active' : ''}`;
+        li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+        li.onclick = (e) => {
+          e.preventDefault();
+          loadAdminProducts(i, currentSearch);
+        };
+        pagination.appendChild(li);
+      }
+
+      // Next button
+      const nextLi = document.createElement("li");
+      nextLi.className = `page-item ${activePage === totalPages ? 'disabled' : ''}`;
+      nextLi.innerHTML = `<a class="page-link" href="#">Next</a>`;
+      nextLi.onclick = (e) => {
+        e.preventDefault();
+        if (activePage < totalPages) loadAdminProducts(activePage + 1, currentSearch);
+      };
+      pagination.appendChild(nextLi);
+    }
+
+    const handleSearch = debounce((e) => {
+      loadAdminProducts(1, e.target.value);
+    }, 400);
+
+    document.getElementById("productSearchInput").addEventListener("input", handleSearch);
 
     async function deleteProduct(id) {
       Swal.fire({
@@ -320,84 +329,27 @@
       }).then(async (result) => {
         if (result.isConfirmed) {
           try {
-            const res = await fetch(`/api/admin/products/${id}`, {
-              method: "DELETE",
-              credentials: "include"
-            });
-
-            if (!res.ok) {
-              const data = await res.json();
-              Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: data.message || "Delete failed",
-                confirmButtonColor: "#d33"
-              });
-              return;
-            }
-
-            Swal.fire({
-              icon: "success",
-              title: "Deleted!",
-              text: "Product has been deleted.",
-              confirmButtonColor: "#000"
-            });
-
-            loadAdminProducts();
-
+            const res = await Auth.fetch(`/api/admin/products/${id}`, { method: "DELETE" });
+            if (!res.ok) throw new Error("Delete failed");
+            Swal.fire("Deleted!", "Product has been deleted.", "success");
+            loadAdminProducts(currentPage, currentSearch);
           } catch (err) {
-            console.error(err);
-            Swal.fire({
-              icon: "error",
-              title: "Error",
-              text: "An error occurred during deletion",
-              confirmButtonColor: "#d33"
-            });
+            Swal.fire("Error", err.message, "error");
           }
         }
       });
     }
 
-
     async function toggleProduct(id) {
       try {
-        const res = await fetch(`/api/admin/products/${id}/toggle`, {
-          method: "PATCH",
-          credentials: "include"
-        });
-
-        if (!res.ok) {
-          const data = await res.json();
-          Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: data.message || "Failed to update status",
-            confirmButtonColor: "#d33"
-          });
-          return;
-        }
-
-        Swal.fire({
-          icon: "success",
-          title: "Updated",
-          text: "Product status updated successfully",
-          confirmButtonColor: "#000"
-        });
-
-        loadAdminProducts();
-
+        const res = await Auth.fetch(`/api/admin/products/${id}/toggle`, { method: "PATCH" });
+        if (!res.ok) throw new Error("Failed to update status");
+        Swal.fire("Updated", "Product status updated successfully", "success");
+        loadAdminProducts(currentPage, currentSearch);
       } catch (err) {
-        console.error(err);
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "An error occurred",
-          confirmButtonColor: "#d33"
-        });
+        Swal.fire("Error", err.message, "error");
       }
     }
-
-
 
     function editProduct(id) {
       window.location.href = `/admin/add-product.html?id=${id}`;
@@ -406,6 +358,7 @@
     checkAdminAuth().then((isAuth) => {
       if (isAuth) loadAdminProducts();
     });
+  </script>
   </script>
 
 </body>

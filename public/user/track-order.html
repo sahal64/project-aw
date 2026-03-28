@@ -5,8 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AeroWatch - Track Order</title>
+    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -14,10 +17,24 @@
         :root {
             --font-family: 'Outfit', sans-serif;
             --primary-color: #000000;
+            --text-color: #333333;
+            --muted-color: #6c757d;
         }
 
         body {
             font-family: var(--font-family);
+            color: var(--text-color);
+        }
+
+        .navbar {
+            padding-top: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
         }
 
         .timeline {
@@ -62,18 +79,83 @@
         .timeline-item.completed {
             border-left-color: #198754;
         }
+
+        footer {
+            margin-top: 80px;
+            padding-top: 50px;
+            padding-bottom: 30px;
+            border-top: 1px solid #eee;
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: block;
+            text-decoration: none;
+            color: var(--primary-color);
+        }
+
+        .footer-links h6 {
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .footer-links ul {
+            padding: 0;
+            list-style: none;
+        }
+
+        .footer-links ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links ul li a {
+            color: var(--muted-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .footer-links ul li a:hover {
+            color: var(--primary-color);
+        }
+
+        .social-link {
+            color: var(--muted-color);
+            margin-right: 15px;
+            transition: 0.2s;
+        }
+
+        .social-link:hover {
+            color: var(--primary-color);
+        }
+
+        .newsletter-form .form-control {
+            border-radius: 50px;
+            padding-left: 20px;
+            border: 1px solid #eee;
+        }
+
+        .newsletter-form .btn {
+            border-radius: 50px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
     </style>
 </head>
 
 <body>
-    <nav class="navbar navbar-light bg-light">
-        <div class="container px-5">
-            <a class="navbar-brand" href="home.html"><img src="../common/images/logo.png" alt="AeroWatch"
+    <!-- Header -->
+    <nav class="navbar navbar-light bg-light sticky-top">
+        <div class="container-fluid px-5">
+            <a class="navbar-brand" href="/user/home.html"><img src="../common/images/logo.png" alt="AeroWatch"
                     style="height: 55px;"></a>
             <a href="/user/my-orders.html" class="btn btn-outline-dark btn-sm">Back to Orders</a>
         </div>
     </nav>
 
+    <!-- Content -->
     <div class="container px-5 mt-5">
         <div class="row justify-content-center">
             <div class="col-lg-8">
@@ -110,10 +192,83 @@
             </div>
         </div>
     </div>
-    <script src="/user/js/authGuard.js"></script>
 
-`n</body>
+    <!-- Footer -->
+    <footer>
+        <div class="container-fluid px-5">
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <a href="/user/home.html" class="footer-logo">
+                        <img src="../common/images/logo.png" alt="AeroWatch" style="height: 55px;">
+                    </a>
+                    <p class="text-muted small mt-3">Elevate your style with our curated collection of premium timepieces. Quality and elegance in every second.</p>
+                    <div class="d-flex mt-3">
+                        <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="bi bi-youtube"></i></a>
+                        <a href="#" class="social-link"><i class="bi bi-telegram"></i></a>
+                        <a href="#" class="social-link"><i class="bi bi-twitter-x"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-4 footer-links">
+                    <h6>Shop</h6>
+                    <ul>
+                        <li><a href="/user/product.html?category=men">Men's Watches</a></li>
+                        <li><a href="/user/product.html?category=women">Women's Watches</a></li>
+                        <li><a href="/user/product.html?offer=true">Offers</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-4 footer-links">
+                    <h6>Customer Support</h6>
+                    <ul>
+                        <li><a href="/user/contact.html">Contact Us</a></li>
+                        <li><a href="/user/faq.html">FAQ</a></li>
+                        <li><a href="#">Shipping Policy</a></li>
+                        <li><a href="#">Return Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-4 footer-links">
+                    <h6>Account</h6>
+                    <ul>
+                        <li><a href="/user/account.html">My Account</a></li>
+                        <li><a href="/user/account.html#orders">Orders</a></li>
+                        <li><a href="/user/wishlist.html">Wishlist</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h6>Newsletter</h6>
+                    <p class="text-muted small">Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.</p>
+                    <form class="newsletter-form d-flex gap-2">
+                        <input type="email" class="form-control form-control-sm" placeholder="Enter your email" required>
+                        <button class="btn btn-dark btn-sm text-uppercase" type="submit">Subscribe</button>
+                    </form>
+                    <div class="footer-links mt-3">
+                        <h6>Company</h6>
+                        <ul class="mb-0">
+                            <li><a href="/user/about.html">About Us</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                            <li><a href="#">Terms & Conditions</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4 pt-3 border-top">
+                <div class="col-md-6">
+                    <small class="text-muted">AeroWatch © 2026. All rights reserved.</small>
+                </div>
+                <div class="col-md-6 text-end">
+                    <i class="bi bi-credit-card-2-front fs-4 mx-1"></i>
+                    <i class="bi bi-paypal fs-4 mx-1"></i>
+                    <i class="bi bi-stripe fs-4 mx-1"></i>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        Auth.checkAccess("user");
+    </script>
+</body>
 
 </html>
-
-

@@ -240,6 +240,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/auth.js"></script>
   <script>
     /* ==========================
        GLOBAL STATE
@@ -253,44 +254,7 @@
        ADMIN AUTH CHECK
     ========================== */
     async function checkAdminAuth() {
-      try {
-        let res = await fetch("/api/auth/me", {
-          credentials: "include"
-        });
-
-        if (res.status === 401) {
-          const refreshRes = await fetch("/api/auth/refresh", {
-            method: "POST",
-            credentials: "include"
-          });
-
-          if (!refreshRes.ok) {
-            window.location.href = "/admin/login.html";
-            return false;
-          }
-
-          res = await fetch("/api/auth/me", {
-            credentials: "include"
-          });
-        }
-
-        if (!res.ok) {
-          window.location.href = "/admin/login.html";
-          return false;
-        }
-
-        const user = await res.json();
-
-        if (user.role !== "admin") {
-          window.location.href = "/admin/login.html";
-          return false;
-        }
-
-        return true;
-      } catch (err) {
-        window.location.href = "/admin/login.html";
-        return false;
-      }
+        return await Auth.checkBackendAccess("admin");
     }
 
     /* ==========================
@@ -299,9 +263,7 @@
     async function loadCustomers(page = 1) {
       try {
         currentPage = page;
-        const res = await fetch(`/api/admin/customers?search=${currentSearch}&status=${currentStatus}&page=${currentPage}&limit=${limit}`, {
-          credentials: "include"
-        });
+        const res = await Auth.fetch(`/api/admin/customers?search=${currentSearch}&status=${currentStatus}&page=${currentPage}&limit=${limit}`);
 
         const data = await res.json();
 
@@ -454,7 +416,7 @@
     ========================== */
     async function openCustomerDetails(userId) {
       try {
-        const res = await fetch(`/api/admin/customers/${userId}`, { credentials: "include" });
+        const res = await Auth.fetch(`/api/admin/customers/${userId}`);
         const data = await res.json();
 
         if (!data.success) {
@@ -493,9 +455,8 @@
       }).then(async (result) => {
         if (result.isConfirmed) {
           try {
-            const res = await fetch(`/api/admin/users/${userId}/block`, {
-              method: "PATCH",
-              credentials: "include"
+            const res = await Auth.fetch(`/api/admin/users/${userId}/block`, {
+              method: "PATCH"
             });
 
             const data = await res.json();
@@ -548,9 +509,8 @@
 
       if (result.isConfirmed) {
         try {
-          const res = await fetch(`/api/admin/customers/${userId}`, {
-            method: "DELETE",
-            credentials: "include"
+          const res = await Auth.fetch(`/api/admin/customers/${userId}`, {
+            method: "DELETE"
           });
           const data = await res.json();
 
@@ -571,17 +531,7 @@
     ========================== */
     document.getElementById("admin-logout").addEventListener("click", async (e) => {
       e.preventDefault();
-      try {
-        await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.href = "/admin/login.html";
-      } catch (err) {
-        console.error("Logout error:", err);
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.href = "/admin/login.html";
-      }
+      Auth.logout();
     });
 
     /* ==========================

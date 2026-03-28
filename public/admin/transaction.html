@@ -240,58 +240,20 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js"></script>
     <script>
         // ==========================
         // ADMIN AUTH CHECK
         // ==========================
-        async function checkAdminAuth() {
-            try {
-                let res = await fetch("/api/auth/me", { credentials: "include" });
-                if (res.status === 401) {
-                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
-                    if (!refreshRes.ok) {
-                        window.location.href = "/admin/login.html";
-                        return false;
-                    }
-                    res = await fetch("/api/auth/me", { credentials: "include" });
-                }
-                if (!res.ok) {
-                    window.location.href = "/admin/login.html";
-                    return false;
-                }
-                const user = await res.json();
-                if (user.role !== "admin") {
-                    window.location.href = "/admin/login.html";
-                    return false;
-                }
-                return true;
-            } catch (err) {
-                window.location.href = "/admin/login.html";
-                return false;
+        Auth.checkBackendAccess("admin").then(isAuth => {
+            if (isAuth && window.fetchTransactions) {
+                window.fetchTransactions();
             }
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            checkAdminAuth().then(isAuth => {
-                if (isAuth && window.fetchTransactions) {
-                    window.fetchTransactions();
-                }
-            });
         });
 
-        document.getElementById("admin-logout").addEventListener("click", async (e) => {
+        document.getElementById("admin-logout").addEventListener("click", (e) => {
             e.preventDefault();
-            try {
-                await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.href = "/admin/login.html";
-            } catch (err) {
-                console.error("Logout error:", err);
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.href = "/admin/login.html";
-            }
+            Auth.logout();
         });
     </script>
     <script src="js/transaction.js"></script>

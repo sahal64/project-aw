@@ -57,10 +57,23 @@ const productSchema = new mongoose.Schema(
       default: 0,
       min: 0,
       max: 90
+    },
+    sku: {
+      type: String,
+      unique: true,
+      required: true,
+      trim: true
     }
 
   },
   { timestamps: true }
 );
+
+// Indexes for optimized searching and sorting
+productSchema.index({ name: 'text', sku: 'text' }); // Text index for broader name/sku search if needed, but we'll use individual for regex
+productSchema.index({ name: 1 });
+productSchema.index({ sku: 1 });
+productSchema.index({ category: 1 });
+productSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model("Product", productSchema);

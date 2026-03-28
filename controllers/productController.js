@@ -11,31 +11,38 @@ const path = require("path");
 const applyOffers = async (products) => {
   const now = new Date();
 
-  // Fetch active specialized offers
+  // Fetch active specialized offers (Old system)
   const activeOffers = await Offer.find({
     status: true,
     startDate: { $lte: now },
     endDate: { $gte: now }
   }).populate("referenceId");
 
-  // Fetch active broad sales campaigns
+  // Fetch active broad sales campaigns (New system)
+  // We populate targetIds to get names for Brand/Category matching
   const activeSales = await Sale.find({
     status: "active",
     startDate: { $lte: now },
     endDate: { $gte: now }
-  });
+  }).populate("targetIds");
 
   return products.map(product => {
     let highestDiscount = 0;
     let saleName = "";
     const pObj = product.toObject ? product.toObject() : product;
 
-    // 1. Check specialized Offers (Old system)
+    // A. Start with Product's internal offerPercentage
+    highestDiscount = pObj.offerPercentage || 0;
+    if (highestDiscount > 0) saleName = "Product Offer";
+
+    // B. Check specialized Offers (Old system)
     activeOffers.forEach(offer => {
       let isApplicable = false;
+      if (!offer.referenceId) return;
+
       if (offer.type === "product" && offer.referenceId._id.toString() === pObj._id.toString()) {
         isApplicable = true;
-      } else if (offer.type === "brand" && offer.referenceId.name === pObj.brand) {
+      } else if (offer.type === "brand" && offer.referenceId.name.toLowerCase() === pObj.brand.toLowerCase()) {
         isApplicable = true;
       } else if (offer.type === "category") {
           let mappedCat = "limited";
@@ -47,37 +54,44 @@ const applyOffers = async (products) => {
 
       if (isApplicable && offer.discountPercentage > highestDiscount) {
         highestDiscount = offer.discountPercentage;
-        saleName = "Offer"; // Placeholder or from offer if available
+        saleName = "Offer"; 
       }
     });
 
-    // 2. Check broad Sales Campaigns (New system)
+    // C. Check broad Sales Campaigns (New system)
     activeSales.forEach(sale => {
       let isApplicable = false;
       if (sale.appliesTo === "all") {
         isApplicable = true;
-      } else if (sale.appliesTo === "product" && sale.targetIds.some(id => id.toString() === pObj._id.toString())) {
-        isApplicable = true;
-      } else if (sale.appliesTo === "brand" && sale.targetIds.some(id => id.toString() === pObj.brandId?.toString())) {
-        // Assuming brand comparison might need product.brandId or product.brand string
-        // We will try to match by string if brandId is not available, or targetIds are strings
-        // Based on Sale.js, targetIds are ObjectIds.
-        isApplicable = true; // Logic needs refinement based on how brand is stored in Product
-      } else if (sale.appliesTo === "category" && sale.targetIds.some(id => id.toString() === pObj.categoryId?.toString())) {
-        isApplicable = true;
+      } else if (sale.appliesTo === "product") {
+        isApplicable = sale.targetIds.some(t => t._id.toString() === pObj._id.toString());
+      } else if (sale.appliesTo === "brand") {
+        // Match product.brand (string) against sale target names
+        isApplicable = sale.targetIds.some(t => t.name.toLowerCase() === pObj.brand.toLowerCase());
+      } else if (sale.appliesTo === "category") {
+        // Match product.category (enum string) against sale target names
+        isApplicable = sale.targetIds.some(t => {
+           const targetName = t.name.toLowerCase();
+           let mappedCat = "limited";
+           if (targetName.includes("women")) mappedCat = "women";
+           else if (targetName.includes("men")) mappedCat = "men";
+           return mappedCat === pObj.category;
+        });
       }
 
-      let currentSaleDiscount = 0;
-      if (sale.discountUnit === "percentage") {
-        currentSaleDiscount = sale.value;
-      } else {
-        // Flat discount converted to percentage for comparison
-        currentSaleDiscount = (sale.value / pObj.price) * 100;
-      }
+      if (isApplicable) {
+        let currentSaleDiscount = 0;
+        if (sale.discountUnit === "percentage") {
+          currentSaleDiscount = sale.value;
+        } else {
+          // Flat discount converted to percentage for comparison
+          currentSaleDiscount = (sale.value / pObj.price) * 100;
+        }
 
-      if (isApplicable && currentSaleDiscount > highestDiscount) {
-        highestDiscount = currentSaleDiscount;
-        saleName = sale.name;
+        if (currentSaleDiscount > highestDiscount) {
+          highestDiscount = currentSaleDiscount;
+          saleName = sale.name;
+        }
       }
     });
 
@@ -87,8 +101,8 @@ const applyOffers = async (products) => {
 
     return {
       ...pObj,
-      finalPrice,
-      discountPercentage: Math.round(highestDiscount),
+      finalPrice: Math.max(0, finalPrice),
+      discountPercentage: Math.min(100, Math.round(highestDiscount)),
       saleName
     };
   });
@@ -100,9 +114,23 @@ const applyOffers = async (products) => {
 // ==========================
 // ADMIN – Add Product (FINAL)
 // ==========================
+const generateUniqueSKU = async (brand) => {
+  const sanitizedBrand = brand.toUpperCase().replace(/\s/g, '');
+  let sku;
+  let exists = true;
+
+  while (exists) {
+    const random = Math.floor(1000 + Math.random() * 9000); // 4 digit random
+    sku = `AW-${sanitizedBrand}-${random}`;
+    const product = await Product.findOne({ sku });
+    if (!product) exists = false;
+  }
+  return sku;
+};
+
 exports.addProduct = async (req, res) => {
   try {
-    let { name, brand, price, stock, category, description } = req.body;
+    let { name, brand, price, stock, category, description, offerPercentage } = req.body;
 
     // ==========================
     // SANITIZATION
@@ -114,8 +142,8 @@ exports.addProduct = async (req, res) => {
     // ==========================
     // VALIDATION
     // ==========================
-    if (!name || !/^[a-zA-Z0-9\s]{3,100}$/.test(name)) {
-      return res.status(400).json({ success: false, message: "Product name must be 3-100 characters and contain only letters, numbers, and spaces" });
+    if (!name || !/^[A-Za-z0-9\s-']{3,100}$/.test(name)) {
+      return res.status(400).json({ success: false, message: "Product name must be 3–100 characters and can include letters, numbers, spaces, hyphens, and apostrophes." });
     }
 
     if (!brand || brand.length < 2) {
@@ -132,6 +160,12 @@ exports.addProduct = async (req, res) => {
 
     if (!["men", "women", "limited"].includes(category)) {
       return res.status(400).json({ success: false, message: "Invalid category selected" });
+    }
+
+    if (offerPercentage !== undefined) {
+      if (isNaN(offerPercentage) || Number(offerPercentage) < 0 || Number(offerPercentage) > 90) {
+        return res.status(400).json({ success: false, message: "Offer percentage must be between 0 and 90" });
+      }
     }
 
     if (!description || description.length < 10 || description.length > 2000) {
@@ -189,6 +223,11 @@ for (let i = 0; i < req.files.length; i++) {
 }
 
     // ==========================
+    // GENERATE UNIQUE SKU
+    // ==========================
+    const sku = await generateUniqueSKU(brand);
+
+    // ==========================
     // SAVE PRODUCT
     // ==========================
     const product = await Product.create({
@@ -198,7 +237,9 @@ for (let i = 0; i < req.files.length; i++) {
       stock: Number(stock),
       category,
       description,
-      images: imagePaths
+      images: imagePaths,
+      offerPercentage: Number(offerPercentage) || 0,
+      sku
     });
 
     res.status(201).json({ success: true, product });
@@ -225,13 +266,13 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    const { name, brand, price, stock, category, description } = req.body;
+    const { name, brand, price, stock, category, description, offerPercentage, isActive } = req.body;
 
     // ==========================
     // VALIDATION
     // ==========================
-    if (!name || name.trim().length < 3) {
-      return res.status(400).json({ message: "Product name too short" });
+    if (!name || !/^[A-Za-z0-9\s-']{3,100}$/.test(name)) {
+      return res.status(400).json({ message: "Product name must be 3–100 characters and can include letters, numbers, spaces, hyphens, and apostrophes." });
     }
 
     if (!brand || brand.trim().length < 2) {
@@ -250,6 +291,12 @@ exports.updateProduct = async (req, res) => {
       return res.status(400).json({ message: "Invalid category" });
     }
 
+    if (offerPercentage !== undefined) {
+      if (isNaN(offerPercentage) || Number(offerPercentage) < 0 || Number(offerPercentage) > 90) {
+        return res.status(400).json({ message: "Offer must be 0-90%" });
+      }
+    }
+
     // ==========================
     // UPDATE FIELDS
     // ==========================
@@ -259,6 +306,8 @@ exports.updateProduct = async (req, res) => {
     product.stock = stock;
     product.category = category;
     product.description = description;
+    if (offerPercentage !== undefined) product.offerPercentage = Number(offerPercentage);
+    if (isActive !== undefined) product.isActive = isActive === "true" || isActive === true;
 
     const uploadDir = path.join(__dirname, "../public/uploads");
 
@@ -347,15 +396,34 @@ exports.deleteProduct = async (req, res, next) => {
 // ==========================
 exports.getAdminProducts = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || "";
 
-    const productsData = await Product.find()
-      .sort({ createdAt: -1 });
+    const filter = {};
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { sku: { $regex: search, $options: "i" } },
+        { category: { $regex: search, $options: "i" } }
+      ];
+    }
+
+    const total = await Product.countDocuments(filter);
+    const productsData = await Product.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     const products = await applyOffers(productsData);
 
     res.json({
       success: true,
-      products
+      products,
+      total,
+      page,
+      pages: Math.ceil(total / limit)
     });
 
   } catch (error) {
@@ -408,17 +476,28 @@ exports.getAdminProductById = async (req, res) => {
 // ==========================
 exports.getAllProducts = async (req, res) => {
   try {
-    const filter = {};
+    const filter = { isActive: { $ne: false } }; // Only show active products to users
     let sortOption = { createdAt: -1 };
 
+    // Pagination parameters
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12;
+    const skip = (page - 1) * limit;
+
     if (req.query.category) {
-      filter.category = req.query.category;
+      filter.category = req.query.category.toLowerCase();
     }
-    //filter price
+    
+    // Price filter
     if (req.query.minPrice !== undefined || req.query.maxPrice !== undefined) {
       filter.price = {};
       if (req.query.minPrice !== undefined) filter.price.$gte = Number(req.query.minPrice);
       if (req.query.maxPrice !== undefined) filter.price.$lte = Number(req.query.maxPrice);
+    }
+
+    // Search filter
+    if (req.query.search) {
+      filter.name = { $regex: req.query.search, $options: "i" };
     }
 
     if (req.query.sort === "priceLow") {
@@ -429,34 +508,25 @@ exports.getAllProducts = async (req, res) => {
       sortOption = { createdAt: -1 };
     }
 
-    const productsData = await Product.find(filter).sort(sortOption);
+    const total = await Product.countDocuments(filter);
+    const productsData = await Product.find(filter)
+      .sort(sortOption)
+      .skip(skip)
+      .limit(limit);
+
     let products = await applyOffers(productsData);
-
-    // Calculate final price based on the new offerPercentage field
-    products = products.map(p => {
-      const pObj = p.toObject ? p.toObject() : p;
-      const basePrice = pObj.price;
-      const offerDiscount = (basePrice * (pObj.offerPercentage || 0)) / 100;
-      
-      // Use the higher discount between existing applyOffers logic and local offerPercentage
-      const currentFinalPrice = pObj.finalPrice || basePrice;
-      const localOfferPrice = basePrice - offerDiscount;
-      
-      const absoluteFinalPrice = Math.min(currentFinalPrice, localOfferPrice);
-      const absoluteDiscountPercentage = Math.max(pObj.discountPercentage || 0, pObj.offerPercentage || 0);
-
-      return {
-        ...pObj,
-        finalPrice: Math.round(absoluteFinalPrice),
-        discountPercentage: Math.round(absoluteDiscountPercentage)
-      };
-    });
 
     if (req.query.onSale === "true") {
       products = products.filter(p => p.discountPercentage > 0);
     }
 
-    res.json({ products });
+    res.json({ 
+      success: true, 
+      products,
+      total,
+      page,
+      pages: Math.ceil(total / limit)
+    });
 
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -479,19 +549,7 @@ exports.getProductById = async (req, res) => {
     const productsWithOffers = await applyOffers([product]);
     const p = productsWithOffers[0];
     
-    const basePrice = p.price;
-    const offerDiscount = (basePrice * (p.offerPercentage || 0)) / 100;
-    const currentFinalPrice = p.finalPrice || basePrice;
-    const localOfferPrice = basePrice - offerDiscount;
-    
-    const finalPrice = Math.round(Math.min(currentFinalPrice, localOfferPrice));
-    const discountPercentage = Math.round(Math.max(p.discountPercentage || 0, p.offerPercentage || 0));
-
-    res.json({
-      ...p,
-      finalPrice,
-      discountPercentage
-    });
+    res.json(p);
   } catch (error) {
     console.error("GET PRODUCT BY ID ERROR:", error);
     res.status(500).json({ message: "Server error" });

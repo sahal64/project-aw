@@ -176,6 +176,18 @@
             color: var(--primary-color);
         }
 
+        .newsletter-form .form-control {
+            border-radius: 50px;
+            padding-left: 20px;
+            border: 1px solid #eee;
+        }
+
+        .newsletter-form .btn {
+            border-radius: 50px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
         /* Search Inline */
         .search-form-inline {
             position: absolute;
@@ -276,15 +288,15 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container-fluid px-5">
-            <a class="navbar-brand" href="home.html"><img src="../common/images/logo.png" alt="AeroWatch"
+            <a class="navbar-brand" href="/user/home.html"><img src="../common/images/logo.png" alt="AeroWatch"
                     style="height: 55px;"></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
                 <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link" href="home.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="product.html">Shop</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/user/home.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/user/product.html">Shop</a></li>
                     <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
                     <li class="nav-item"><a class="nav-link active" href="contact.html">Contact</a></li>
                 </ul>
@@ -294,11 +306,11 @@
                     <input type="text" class="form-control" placeholder="Search...">
                 </form>
                 <a href="#" class="icon-btn" id="search-trigger"><i class="bi bi-search"></i></a>
-                <a href="wishlist.html" class="icon-btn" title="Wishlist"><i class="bi bi-heart"></i></a>
-                <a href="#" class="icon-btn" id="accountBtn" title="Account">
+                <a href="javascript:Auth.goToWishlist()" class="icon-btn" title="Wishlist"><i class="bi bi-heart"></i></a>
+                <a href="#" class="icon-btn" id="accountBtn" href="javascript:Auth.goToAccount()" title="Account">
                     <i class="bi bi-person"></i>
                 </a>
-                <a href="cart.html" class="icon-btn" title="Cart"><i class="bi bi-bag"></i></a>
+                <a href="javascript:Auth.goToCart()" class="icon-btn" title="Cart"><i class="bi bi-bag"></i></a>
 
                 <!-- GUEST NAV: Shown when NOT logged in -->
                 <div id="guest-nav" class="align-items-center ms-3 d-none">
@@ -319,7 +331,7 @@
     <div class="container px-5 contact-header">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="home.html" class="text-muted text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><a href="/user/home.html" class="text-muted text-decoration-none">Home</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Contact</li>
             </ol>
         </nav>
@@ -365,57 +377,66 @@
         </div>
     </div>
 
-    <!-- Footer -->
     <footer>
         <div class="container-fluid px-5">
             <div class="row">
                 <div class="col-md-3 mb-4">
-                    <a href="#" class="footer-logo"><img src="../common/images/logo.png" alt="AeroWatch"
-                            style="height: 55px;"></a>
+                    <a href="/user/home.html" class="footer-logo">
+                        <img src="../common/images/logo.png" alt="AeroWatch" style="height: 55px;">
+                    </a>
+                    <p class="text-muted small mt-3">Elevate your style with our curated collection of premium timepieces. Quality and elegance in every second.</p>
                     <div class="d-flex mt-3">
-                        <a href="#" class="social-link"><i class="bi bi-facebook"></i> Facebook</a>
-                    </div>
-                    <div class="d-flex mt-2">
-                        <a href="#" class="social-link"><i class="bi bi-youtube"></i> Youtube</a>
-                    </div>
-                    <div class="d-flex mt-2">
-                        <a href="#" class="social-link"><i class="bi bi-telegram"></i> Telegram</a>
-                    </div>
-                    <div class="d-flex mt-2">
-                        <a href="#" class="social-link"><i class="bi bi-twitter"></i> Twitter</a>
+                        <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="bi bi-youtube"></i></a>
+                        <a href="#" class="social-link"><i class="bi bi-telegram"></i></a>
+                        <a href="#" class="social-link"><i class="bi bi-twitter-x"></i></a>
                     </div>
                 </div>
-                <div class="col-md-3 mb-4 footer-links">
-                    <h6>Getting Started</h6>
+                <div class="col-md-2 mb-4 footer-links">
+                    <h6>Shop</h6>
                     <ul>
-                        <li><a href="#">Release Notes</a></li>
-                        <li><a href="#">Upgrade Guide</a></li>
-                        <li><a href="#">Browser Support</a></li>
-                        <li><a href="#">Dark Mode</a></li>
+                        <li><a href="/user/product.html?category=men">Men's Watches</a></li>
+                        <li><a href="/user/product.html?category=women">Women's Watches</a></li>
+                        <li><a href="/user/product.html?offer=true">Offers</a></li>
                     </ul>
                 </div>
-                <div class="col-md-3 mb-4 footer-links">
-                    <h6>Explore</h6>
+                <div class="col-md-2 mb-4 footer-links">
+                    <h6>Customer Support</h6>
                     <ul>
-                        <li><a href="#">Prototyping</a></li>
-                        <li><a href="#">Design Systems</a></li>
-                        <li><a href="#">Pricing</a></li>
-                        <li><a href="#">Security</a></li>
+                        <li><a href="/user/contact.html">Contact Us</a></li>
+                        <li><a href="/user/faq.html">FAQ</a></li>
+                        <li><a href="#">Shipping Policy</a></li>
+                        <li><a href="#">Return Policy</a></li>
                     </ul>
                 </div>
-                <div class="col-md-3 mb-4 footer-links">
-                    <h6>Community</h6>
+                <div class="col-md-2 mb-4 footer-links">
+                    <h6>Account</h6>
                     <ul>
-                        <li><a href="#">Discussion Forums</a></li>
-                        <li><a href="#">Code of Conduct</a></li>
-                        <li><a href="#">Contributing</a></li>
-                        <li><a href="#">API Reference</a></li>
+                        <li><a href="/user/account.html">My Account</a></li>
+                        <li><a href="/user/account.html#orders">Orders</a></li>
+                        <li><a href="/user/wishlist.html">Wishlist</a></li>
                     </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h6>Newsletter</h6>
+                    <p class="text-muted small">Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.</p>
+                    <form class="newsletter-form d-flex gap-2">
+                        <input type="email" class="form-control form-control-sm" placeholder="Enter your email" required>
+                        <button class="btn btn-dark btn-sm text-uppercase" type="submit">Subscribe</button>
+                    </form>
+                    <div class="footer-links mt-3">
+                        <h6>Company</h6>
+                        <ul class="mb-0">
+                            <li><a href="/user/about.html">About Us</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                            <li><a href="#">Terms & Conditions</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             <div class="row mt-4 pt-3 border-top">
                 <div class="col-md-6">
-                    <small class="text-muted">AeroWatch © 2026</small>
+                    <small class="text-muted">AeroWatch © 2026. All rights reserved.</small>
                 </div>
                 <div class="col-md-6 text-end">
                     <i class="bi bi-credit-card-2-front fs-4 mx-1"></i>
@@ -463,8 +484,8 @@
             const logoutBtn = document.getElementById("logout-btn");
 
             const accountBtn = document.getElementById("accountBtn");
-            const cartBtn = document.querySelector('a[href="cart.html"]');
-            const wishlistBtn = document.querySelector('a[href="wishlist.html"]');
+            const cartBtn = document.querySelector('a[href="javascript:Auth.goToCart()"]');
+            const wishlistBtn = document.querySelector('a[href="javascript:Auth.goToWishlist()"]');
 
             /* =====================
                NAVBAR VISIBILITY
@@ -542,10 +563,7 @@
             }
         });
     </script>
-    <script src="/user/js/authGuard.js"></script>
-
-`n</body>
+    <script src="/js/auth.js"></script>
+</body>
 
 </html>
-
-

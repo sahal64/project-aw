@@ -247,6 +247,18 @@
             color: var(--primary-color);
         }
 
+        .newsletter-form .form-control {
+            border-radius: 50px;
+            padding-left: 20px;
+            border: 1px solid #eee;
+        }
+
+        .newsletter-form .btn {
+            border-radius: 50px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
         /* Search Inline */
         .search-form-inline {
             position: absolute;
@@ -347,33 +359,33 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container-fluid px-5">
-            <a class="navbar-brand" href="home.html"><img src="../common/images/logo.png" alt="AeroWatch"
+            <a class="navbar-brand" href="/user/home.html"><img src="../common/images/logo.png" alt="AeroWatch"
                     style="height: 55px;"></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
                 <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link" href="home.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="product.html">Shop</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/user/home.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/user/product.html">Shop</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/user/about.html">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/user/contact.html">Contact</a></li>
                 </ul>
             </div>
             <div class="d-flex align-items-center position-relative">
-                <form class="search-form-inline" id="search-form-inline" action="product.html">
-                    <input type="text" class="form-control" placeholder="Search...">
+                <form class="search-form-inline" id="search-form-inline" action="/user/product.html">
+                    <input type="text" class="form-control" name="search" placeholder="Search...">
                 </form>
                 <a href="#" class="icon-btn" id="search-trigger"><i class="bi bi-search"></i></a>
-                <a href="wishlist.html" class="icon-btn" title="Wishlist"><i class="bi bi-heart"></i></a>
-                <a href="#" class="icon-btn" id="accountBtn" title="Account">
+                <a href="javascript:Auth.goToWishlist()" class="icon-btn" title="Wishlist"><i class="bi bi-heart"></i></a>
+                <a href="javascript:Auth.goToAccount()" class="icon-btn" id="accountBtn" href="javascript:Auth.goToAccount()" title="Account">
                     <i class="bi bi-person"></i>
                 </a>
-                <a href="cart.html" class="icon-btn" title="Cart"><i class="bi bi-bag"></i></a>
+                <a href="javascript:Auth.goToCart()" class="icon-btn" title="Cart"><i class="bi bi-bag"></i></a>
 
                 <!-- GUEST NAV: Shown when NOT logged in -->
                 <div id="guest-nav" class="align-items-center ms-3 d-none">
-                    <a href="signup.html" class="btn btn-dark text-uppercase rounded-pill px-4"
+                    <a href="/user/signup.html" class="btn btn-dark text-uppercase rounded-pill px-4"
                         style="font-size: 0.85rem; padding-top: 8px; padding-bottom: 8px;">Sign Up</a>
                 </div>
 
@@ -444,6 +456,13 @@
                 </div>
 
                 <!-- Pagination -->
+                <div class="d-flex justify-content-center mt-5">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination" id="paginationContainer">
+                            <!-- Pagination buttons will be injected here -->
+                        </ul>
+                    </nav>
+                </div>
 
 
 
@@ -455,52 +474,66 @@
         </div>
     </div>
 
-    <!-- Footer -->
     <footer>
         <div class="container-fluid px-5">
             <div class="row">
                 <div class="col-md-3 mb-4">
-                    <a href="#" class="footer-logo"><img src="../common/images/logo.png" alt="AeroWatch"
-                            style="height: 55px;"></a>
+                    <a href="/user/home.html" class="footer-logo">
+                        <img src="../common/images/logo.png" alt="AeroWatch" style="height: 55px;">
+                    </a>
+                    <p class="text-muted small mt-3">Elevate your style with our curated collection of premium timepieces. Quality and elegance in every second.</p>
                     <div class="d-flex mt-3">
-                        <a href="#" class="social-link"><i class="bi bi-facebook"></i> Facebook</a>
-                    </div>
-                    <div class="d-flex mt-2">
-                        <a href="#" class="social-link"><i class="bi bi-youtube"></i> Youtube</a>
-                    </div>
-                    <div class="d-flex mt-2">
-                        <a href="#" class="social-link"><i class="bi bi-telegram"></i> Telegram</a>
-                    </div>
-                    <div class="d-flex mt-2">
-                        <a href="#" class="social-link"><i class="bi bi-twitter"></i> Twitter</a>
+                        <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="bi bi-youtube"></i></a>
+                        <a href="#" class="social-link"><i class="bi bi-telegram"></i></a>
+                        <a href="#" class="social-link"><i class="bi bi-twitter-x"></i></a>
                     </div>
                 </div>
-                <!-- ... (Same footer content) ... -->
-                <div class="col-md-3 mb-4 footer-links">
-                    <h6>Getting Started</h6>
+                <div class="col-md-2 mb-4 footer-links">
+                    <h6>Shop</h6>
                     <ul>
-                        <li><a href="#">Release Notes</a></li>
-                        <li><a href="#">Upgrade Guide</a></li>
+                        <li><a href="/user/product.html?category=men">Men's Watches</a></li>
+                        <li><a href="/user/product.html?category=women">Women's Watches</a></li>
+                        <li><a href="/user/product.html?offer=true">Offers</a></li>
                     </ul>
                 </div>
-                <div class="col-md-3 mb-4 footer-links">
-                    <h6>Explore</h6>
+                <div class="col-md-2 mb-4 footer-links">
+                    <h6>Customer Support</h6>
                     <ul>
-                        <li><a href="#">Prototyping</a></li>
-                        <li><a href="#">Design Systems</a></li>
+                        <li><a href="/user/contact.html">Contact Us</a></li>
+                        <li><a href="/user/faq.html">FAQ</a></li>
+                        <li><a href="#">Shipping Policy</a></li>
+                        <li><a href="#">Return Policy</a></li>
                     </ul>
                 </div>
-                <div class="col-md-3 mb-4 footer-links">
-                    <h6>Community</h6>
+                <div class="col-md-2 mb-4 footer-links">
+                    <h6>Account</h6>
                     <ul>
-                        <li><a href="#">Discussion Forums</a></li>
-                        <li><a href="#">Code of Conduct</a></li>
+                        <li><a href="/user/account.html">My Account</a></li>
+                        <li><a href="/user/account.html#orders">Orders</a></li>
+                        <li><a href="/user/wishlist.html">Wishlist</a></li>
                     </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h6>Newsletter</h6>
+                    <p class="text-muted small">Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.</p>
+                    <form class="newsletter-form d-flex gap-2">
+                        <input type="email" class="form-control form-control-sm" placeholder="Enter your email" required>
+                        <button class="btn btn-dark btn-sm text-uppercase" type="submit">Subscribe</button>
+                    </form>
+                    <div class="footer-links mt-3">
+                        <h6>Company</h6>
+                        <ul class="mb-0">
+                            <li><a href="/user/about.html">About Us</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                            <li><a href="#">Terms & Conditions</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             <div class="row mt-4 pt-3 border-top">
                 <div class="col-md-6">
-                    <small class="text-muted">AeroWatch © 2026</small>
+                    <small class="text-muted">AeroWatch © 2026. All rights reserved.</small>
                 </div>
                 <div class="col-md-6 text-end">
                     <i class="bi bi-credit-card-2-front fs-4 mx-1"></i>
@@ -543,15 +576,16 @@
             /* =====================
                AUTH STATE
             ====================== */
-            const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+            const isLoggedIn = Auth.isLoggedIn();
+            const { role } = getAuth();
 
             const guestNav = document.getElementById("guest-nav");
             const userNav = document.getElementById("user-nav");
             const logoutBtn = document.getElementById("logout-btn");
 
             const accountBtn = document.getElementById("accountBtn");
-            const cartBtn = document.querySelector('a[href="cart.html"]');
-            const wishlistBtn = document.querySelector('a[href="wishlist.html"]');
+            const cartBtn = document.querySelector('a[href="javascript:Auth.goToCart()"]');
+            const wishlistBtn = document.querySelector('a[href="javascript:Auth.goToWishlist()"]');
 
             /* =====================
                NAVBAR VISIBILITY
@@ -576,11 +610,17 @@
 
 
             // ==========================
+            // PAGINATION STATE
+            // ==========================
+            let currentPage = 1;
+            const itemsPerPage = 12;
+
+            // ==========================
             // LOAD PRODUCTS FROM BACKEND
             // ==========================
-            async function loadProducts(category = "", sort = "", maxPrice = "") {
+            async function loadProducts(category = "", sort = "", maxPrice = "", page = 1) {
                 try {
-                    let url = "/api/products?";
+                    let url = `/api/products?page=${page}&limit=${itemsPerPage}&`;
 
                     if (category) {
                         url += `category=${category}&`;
@@ -594,11 +634,26 @@
                         url += `maxPrice=${maxPrice}&`;
                     }
 
+                    // Check for search in URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const search = urlParams.get('search');
+                    if (search) {
+                        url += `search=${search}&`;
+                    }
+
                     const res = await fetch(url);
                     const data = await res.json();
 
+                    console.log("Products:", data);
+
                     const container = document.getElementById("productContainer");
                     container.innerHTML = "";
+
+                    if (!data.products || data.products.length === 0) {
+                        container.innerHTML = `<div class="col-12 text-center py-5"><h3>No products found</h3></div>`;
+                        document.getElementById("paginationContainer").innerHTML = "";
+                        return;
+                    }
 
                     data.products.forEach(product => {
 
@@ -606,17 +661,36 @@
                             ? product.images[0]
                             : "https://placehold.co/300x300?text=No+Image";
 
+                        const hasDiscount = product.discountPercentage > 0;
+                        let priceHtml = `<div class="product-price">₹${product.price.toLocaleString('en-IN')}</div>`;
+                        let badgeHtml = "";
+
+                        if (hasDiscount) {
+                            priceHtml = `
+                                <div class="d-flex align-items-center">
+                                    <span class="price-old" style="text-decoration: line-through; color: #6c757d; font-size: 0.85rem; margin-right: 8px;">₹${product.price.toLocaleString('en-IN')}</span>
+                                    <div class="product-price">₹${product.finalPrice.toLocaleString('en-IN')}</div>
+                                </div>
+                            `;
+                            badgeHtml = `
+                                <div class="discount-badge" style="position: absolute; top: 10px; left: 10px; background: #ff4757; color: #fff; padding: 2px 8px; border-radius: 50px; font-weight: 700; font-size: 0.7rem; z-index: 5;">
+                                    ${product.discountPercentage}% OFF
+                                </div>
+                            `;
+                        }
+
                         container.innerHTML += `
                 <div class="col-md-4">
                     <div class="product-card"
-                        onclick="window.location.href='single-product.html?id=${product._id}'">
+                        onclick="window.location.href='single-product.html?id=${product._id}'" style="position: relative;">
+                        ${badgeHtml}
                         <!-- Wishlist Button -->
-                        <div class="wishlist-btn" title="Add to Wishlist" onclick="event.stopPropagation(); addToWishlistApi('${product._id}')">
+                        <div class="wishlist-btn" id="wishlist-icon-${product._id}" title="Add to Wishlist" onclick="event.stopPropagation(); addToWishlistApi('${product._id}')">
                             <i class="bi bi-heart"></i>
                         </div>
                         
                         <!-- Add to Cart Button -->
-                        <div class="cart-btn" title="Add to Cart" onclick="event.stopPropagation(); addToCartLocal('${product._id}', '${product.name}', ${product.price}, '${image}', ${product.stock})">
+                        <div class="cart-btn" title="Add to Cart" onclick="event.stopPropagation(); addToCartLocal('${product._id}', '${product.name}', ${product.finalPrice || product.price}, '${image}', ${product.stock})">
                             <i class="bi bi-bag-plus"></i>
                         </div>
                         <div class="product-img-container">
@@ -636,27 +710,62 @@
                             <div class="rating">
                                 <i class="bi bi-star-fill"></i> 4.5
                             </div>
-                            <div class="product-price">
-                                ₹${product.price}
-                            </div>
+                            ${priceHtml}
                         </div>
                     </div>
                 </div>
             `;
                     });
 
-                    if (data.products.length === 0) {
-                        container.innerHTML = `
-                <div class="col-12 text-center mt-5">
-                    <h5>No products found</h5>
-                </div>
-            `;
-                    }
+                    renderPagination(data.pages, data.page);
 
                 } catch (error) {
                     console.error("Error loading products:", error);
                 }
             }
+
+            function renderPagination(totalPages, currentPageNum) {
+                const pagination = document.getElementById("paginationContainer");
+                pagination.innerHTML = "";
+
+                if (totalPages <= 1) return;
+
+                // Previous Button
+                const prevLi = document.createElement("li");
+                prevLi.className = `page-item ${currentPageNum === 1 ? 'disabled' : ''}`;
+                prevLi.innerHTML = `
+                    <a class="page-link" href="#" onclick="event.preventDefault(); goToPage(${currentPageNum - 1})">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                `;
+                pagination.appendChild(prevLi);
+
+                // Page Numbers
+                for (let i = 1; i <= totalPages; i++) {
+                    const li = document.createElement("li");
+                    li.className = `page-item ${i === currentPageNum ? 'active' : ''}`;
+                    li.innerHTML = `
+                        <a class="page-link" href="#" onclick="event.preventDefault(); goToPage(${i})">${i}</a>
+                    `;
+                    pagination.appendChild(li);
+                }
+
+                // Next Button
+                const nextLi = document.createElement("li");
+                nextLi.className = `page-item ${currentPageNum === totalPages ? 'disabled' : ''}`;
+                nextLi.innerHTML = `
+                    <a class="page-link" href="#" onclick="event.preventDefault(); goToPage(${currentPageNum + 1})">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                `;
+                pagination.appendChild(nextLi);
+            }
+
+            window.goToPage = function(page) {
+                currentPage = page;
+                fetchProducts();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
 
 
             const menCheckbox = document.getElementById("cat1");
@@ -665,7 +774,9 @@
             const priceRangeInput = document.getElementById("priceRangeInput");
             const priceRangeValue = document.getElementById("priceRangeValue");
 
-            function fetchProducts() {
+            function fetchProducts(resetPage = false) {
+                if (resetPage) currentPage = 1;
+
                 let selectedCategory = "";
                 if (menCheckbox.checked) selectedCategory = "men";
                 if (womenCheckbox.checked) selectedCategory = "women";
@@ -678,7 +789,7 @@
                 let maxPrice = priceRangeInput.value;
                 if (Number(maxPrice) >= 50000) maxPrice = ""; // No limit when at max
 
-                loadProducts(selectedCategory, selectedSort, maxPrice);
+                loadProducts(selectedCategory, selectedSort, maxPrice, currentPage);
             }
 
             priceRangeInput.addEventListener("input", () => {
@@ -691,22 +802,22 @@
             });
 
             priceRangeInput.addEventListener("change", () => {
-                fetchProducts();
+                fetchProducts(true);
             });
 
             menCheckbox.addEventListener("change", () => {
                 if (menCheckbox.checked) womenCheckbox.checked = false;
-                fetchProducts();
+                fetchProducts(true);
             });
 
             womenCheckbox.addEventListener("change", () => {
                 if (womenCheckbox.checked) menCheckbox.checked = false;
-                fetchProducts();
+                fetchProducts(true);
             });
 
             sortRadios.forEach(radio => {
                 radio.addEventListener("change", () => {
-                    fetchProducts();
+                    fetchProducts(true);
                 });
             });
 
@@ -719,9 +830,9 @@
             function protectPage(e, redirectTo) {
                 e.preventDefault();
 
-                const loggedInNow = localStorage.getItem("isLoggedIn") === "true";
+                const { token } = getAuth();
 
-                if (!loggedInNow) {
+                if (!token) {
                     Swal.fire({
                         icon: "warning",
                         title: "Login Required",
@@ -755,16 +866,7 @@
             if (logoutBtn) {
                 logoutBtn.addEventListener("click", async function (e) {
                     e.preventDefault();
-                    try {
-                        const res = await fetch("/api/auth/logout", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" }
-                        });
-                    } catch (error) {
-                        console.error("Logout failed:", error);
-                    }
-                    localStorage.removeItem("isLoggedIn");
-                    window.location.href = "home.html";
+                    await Auth.logout();
                 });
             }
 
@@ -823,32 +925,47 @@
            GLOBAL ADD TO WISHLIST (API)
         ====================== */
         async function addToWishlistApi(productId) {
+            const { token, role } = getAuth();
+
+            // DEBUG LOGS
+            console.log("Token:", token);
+            console.log("Role:", role);
+
+            if (!token) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Login Required',
+                    text: 'Please login to add items to your wishlist.',
+                    confirmButtonText: 'Login',
+                    confirmButtonColor: '#000'
+                }).then(() => {
+                    window.location.href = 'login.html';
+                });
+                return;
+            }
+
+            if (role !== "user") {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Access Denied',
+                    text: 'Only users can add items to the wishlist.'
+                });
+                return;
+            }
+
             try {
                 const res = await fetch('/api/users/wishlist/add', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
                     },
-                    credentials: 'include',
                     body: JSON.stringify({ productId })
                 });
 
                 const data = await res.json();
 
                 if (!res.ok) {
-                    if (res.status === 401 || data.message === "Not authorized, no token" || data.message === "No token provided") {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Login Required',
-                            text: 'Please login to add items to your wishlist.',
-                            confirmButtonText: 'Login',
-                            confirmButtonColor: '#000'
-                        }).then(() => {
-                            window.location.href = 'login.html';
-                        });
-                        return;
-                    }
-
                     if (data.message === "Product already in wishlist") {
                         Swal.fire({
                             icon: "info",
@@ -859,8 +976,15 @@
                         });
                         return;
                     }
-
                     throw new Error(data.message || 'Failed to add to wishlist');
+                }
+
+                // UI UPDATE: Fill the heart icon
+                const heartIcon = document.querySelector(`#wishlist-icon-${productId} i`);
+                if (heartIcon) {
+                    heartIcon.classList.remove('bi-heart');
+                    heartIcon.classList.add('bi-heart-fill');
+                    heartIcon.classList.add('text-danger');
                 }
 
                 Swal.fire({
@@ -875,14 +999,13 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
-                    text: 'Something went wrong while adding to wishlist.'
+                    text: error.message || 'Something went wrong while adding to wishlist.'
                 });
             }
         }
     </script>
-    <script src="/user/js/authGuard.js"></script>
-
-`n</body>
+    <script src="/js/auth.js"></script>
+</body>
 
 </html>
 

@@ -103,8 +103,81 @@
 
         footer {
             margin-top: 80px;
-            padding: 30px 0;
+            padding-top: 50px;
+            padding-bottom: 30px;
             border-top: 1px solid #eee;
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: block;
+            text-decoration: none;
+            color: var(--primary-color);
+        }
+
+        .footer-links h6 {
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .footer-links ul {
+            padding: 0;
+            list-style: none;
+        }
+
+        .footer-links ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links ul li a {
+            color: var(--muted-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .footer-links ul li a:hover {
+            color: var(--primary-color);
+        }
+
+        .social-link {
+            color: var(--muted-color);
+            margin-right: 15px;
+            transition: 0.2s;
+        }
+
+        .social-link:hover {
+            color: var(--primary-color);
+        }
+
+        .newsletter-form .form-control {
+            border-radius: 50px;
+            padding-left: 20px;
+            border: 1px solid #eee;
+        }
+
+        .newsletter-form .btn {
+            border-radius: 50px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        /* Tabs Styling */
+        .nav-tabs .nav-link {
+            color: var(--muted-color);
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background: transparent;
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: 700;
         }
     </style>
     <style>
@@ -141,15 +214,15 @@
     <!-- Header -->
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container-fluid px-5">
-            <a class="navbar-brand" href="home.html"><img src="../common/images/logo.png" alt="AeroWatch"
+            <a class="navbar-brand" href="/user/home.html"><img src="../common/images/logo.png" alt="AeroWatch"
                     style="height: 55px;"></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
                 <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link" href="home.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="product.html">Shop</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/user/home.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/user/product.html">Shop</a></li>
                     <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
                 </ul>
@@ -160,7 +233,7 @@
                 </form>
                 <a href="#" class="icon-btn" id="search-trigger"><i class="bi bi-search"></i></a>
                 <a href="/user/wishlist.html" class="icon-btn" title="Wishlist"><i class="bi bi-heart"></i></a>
-                <a href="/user/account.html" class="icon-btn" id="accountBtn" title="Account">
+                <a href="/user/account.html" class="icon-btn" id="accountBtn" href="javascript:Auth.goToAccount()" title="Account">
                     <i class="bi bi-person-fill"></i>
                 </a>
                 <a href="/user/cart.html" class="icon-btn" title="Cart"><i class="bi bi-bag"></i></a>
@@ -199,15 +272,15 @@
                     <div class="section-title text-muted text-uppercase fw-bold fs-6 mb-2 mt-4 ps-3">Manage My Account
                     </div>
                     <nav class="nav flex-column account-nav mb-2">
-                        <a class="nav-link active" href="/user/account.html"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                        <a class="nav-link" href="#profile" id="side-dashboard-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
                         <a class="nav-link" href="/user/profile-details.html"><i class="bi bi-person"></i> My Profile</a>
-                        <a class="nav-link" href="/user/address-book.html"><i class="bi bi-geo-alt"></i> Address Book</a>
+                        <a class="nav-link" href="#addresses" id="side-addresses-link"><i class="bi bi-geo-alt"></i> Address Book</a>
                         <a class="nav-link" href="/user/my-wallet.html"><i class="bi bi-wallet2"></i> My Payment Options</a>
                     </nav>
 
                     <div class="section-title text-muted text-uppercase fw-bold fs-6 mb-2 mt-4 ps-3">My Orders</div>
                     <nav class="nav flex-column account-nav mb-4">
-                        <a class="nav-link" href="/user/my-orders.html"><i class="bi bi-box-seam"></i> My Orders</a>
+                        <a class="nav-link" href="#orders" id="side-orders-link"><i class="bi bi-box-seam"></i> My Orders</a>
                         <a class="nav-link" href="/user/my-returns.html"><i class="bi bi-arrow-return-left"></i> My
                             Returns</a>
                         <a class="nav-link" href="/user/my-cancellations.html"><i class="bi bi-x-circle"></i> My
@@ -223,48 +296,107 @@
 
             <!-- Main Content -->
             <div class="col-lg-9">
-                <h3 class="fw-bold mb-4">My Dashboard</h3>
-                <div class="row g-4">
-                    <div class="col-md-4">
-                        <div class="dashboard-card text-center">
-                            <h2 class="display-4 fw-bold text-primary">0</h2>
-                            <p class="text-muted">Total Orders</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="dashboard-card text-center">
-                            <h2 class="display-4 fw-bold text-warning">0</h2>
-                            <p class="text-muted">Pending Delivery</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="dashboard-card text-center">
-                            <h2 class="display-4 fw-bold text-success">0</h2>
-                            <p class="text-muted">Returns</p>
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs mb-4 border-0" id="accountTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-pane" type="button" role="tab">Dashboard</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders-pane" type="button" role="tab">Orders History</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="addresses-tab" data-bs-toggle="tab" data-bs-target="#addresses-pane" type="button" role="tab">Addresses</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="accountTabsContent">
+                    <!-- Dashboard Pane -->
+                    <div class="tab-pane fade show active" id="profile-pane" role="tabpanel">
+                        <h3 class="fw-bold mb-4">My Dashboard</h3>
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <div class="dashboard-card text-center">
+                                    <h2 class="display-4 fw-bold text-primary" id="totalOrdersCount">0</h2>
+                                    <p class="text-muted">Total Orders</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="dashboard-card text-center">
+                                    <h2 class="display-4 fw-bold text-warning" id="pendingOrdersCount">0</h2>
+                                    <p class="text-muted">Pending Delivery</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="dashboard-card text-center">
+                                    <h2 class="display-4 fw-bold text-success" id="totalReturnsCount">0</h2>
+                                    <p class="text-muted">Returns</p>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="dashboard-card border-0 shadow-sm">
+                                    <h5 class="fw-bold mb-3">Recent Orders</h5>
+                                    <div class="table-responsive">
+                                        <table class="table align-middle">
+                                            <thead>
+                                                <tr>
+                                                    <th>Order ID</th>
+                                                    <th>Date</th>
+                                                    <th>Status</th>
+                                                    <th>Total</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="recentOrdersTable">
+                                                <tr>
+                                                    <td colspan="5" class="text-center">No recent orders found</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="text-end mt-3">
+                                        <a href="#orders" onclick="handleHashNavigation('#orders')" class="btn btn-link text-dark text-decoration-none fw-bold small">View All Orders &rarr;</a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-12">
-                        <div class="dashboard-card">
-                            <h5 class="fw-bold mb-3">Recent Orders</h5>
-                            <div class="table-responsive">
-                                <table class="table align-middle">
-                                    <thead>
-                                        <tr>
-                                            <th>Order ID</th>
-                                            <th>Date</th>
-                                            <th>Status</th>
-                                            <th>Total</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="recentOrdersTable">
-                                        <tr>
-                                            <td colspan="5" class="text-center">No recent orders found</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                    <!-- Orders Pane -->
+                    <div class="tab-pane fade" id="orders-pane" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="fw-bold mb-0">Order History</h3>
+                        </div>
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table align-middle table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Order ID</th>
+                                                <th>Date</th>
+                                                <th>Status</th>
+                                                <th>Total</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="allOrdersTable">
+                                            <tr>
+                                                <td colspan="5" class="text-center py-4">Loading orders...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Addresses Pane -->
+                    <div class="tab-pane fade" id="addresses-pane" role="tabpanel">
+                        <h3 class="fw-bold mb-4">My Addresses</h3>
+                        <div class="dashboard-card border-0 shadow-sm">
+                            <p class="text-muted">Manage your shipping and billing addresses.</p>
+                            <a href="/user/address-book.html" class="btn btn-dark">Manage Address Book</a>
                         </div>
                     </div>
                 </div>
@@ -272,12 +404,76 @@
         </div>
     </div>
 
-    <!-- Footer -->
     <footer>
-        <div class="container text-center">
-            <small class="text-muted">AeroWatch © 2026</small>
+        <div class="container-fluid px-5">
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <a href="/user/home.html" class="footer-logo">
+                        <img src="../common/images/logo.png" alt="AeroWatch" style="height: 55px;">
+                    </a>
+                    <p class="text-muted small mt-3">Elevate your style with our curated collection of premium timepieces. Quality and elegance in every second.</p>
+                    <div class="d-flex mt-3">
+                        <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="bi bi-youtube"></i></a>
+                        <a href="#" class="social-link"><i class="bi bi-telegram"></i></a>
+                        <a href="#" class="social-link"><i class="bi bi-twitter-x"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-4 footer-links">
+                    <h6>Shop</h6>
+                    <ul>
+                        <li><a href="/user/product.html?category=men">Men's Watches</a></li>
+                        <li><a href="/user/product.html?category=women">Women's Watches</a></li>
+                        <li><a href="/user/product.html?offer=true">Offers</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-4 footer-links">
+                    <h6>Customer Support</h6>
+                    <ul>
+                        <li><a href="/user/contact.html">Contact Us</a></li>
+                        <li><a href="/user/faq.html">FAQ</a></li>
+                        <li><a href="#">Shipping Policy</a></li>
+                        <li><a href="#">Return Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-4 footer-links">
+                    <h6>Account</h6>
+                    <ul>
+                        <li><a href="/user/account.html">My Account</a></li>
+                        <li><a href="/user/account.html#orders">Orders</a></li>
+                        <li><a href="/user/wishlist.html">Wishlist</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h6>Newsletter</h6>
+                    <p class="text-muted small">Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.</p>
+                    <form class="newsletter-form d-flex gap-2">
+                        <input type="email" class="form-control form-control-sm" placeholder="Enter your email" required>
+                        <button class="btn btn-dark btn-sm text-uppercase" type="submit">Subscribe</button>
+                    </form>
+                    <div class="footer-links mt-3">
+                        <h6>Company</h6>
+                        <ul class="mb-0">
+                            <li><a href="/user/about.html">About Us</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                            <li><a href="#">Terms & Conditions</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4 pt-3 border-top">
+                <div class="col-md-6">
+                    <small class="text-muted">AeroWatch © 2026. All rights reserved.</small>
+                </div>
+                <div class="col-md-6 text-end">
+                    <i class="bi bi-credit-card-2-front fs-4 mx-1"></i>
+                    <i class="bi bi-paypal fs-4 mx-1"></i>
+                    <i class="bi bi-stripe fs-4 mx-1"></i>
+                </div>
+            </div>
         </div>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -308,6 +504,16 @@
             async function loadUserInfo() {
                 try {
                     let res = await fetch("/api/auth/me", { credentials: "include" });
+                    
+                    if (res.status === 401) {
+                        const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+                        if (!refreshRes.ok) {
+                            window.location.href = "/login.html";
+                            return;
+                        }
+                        res = await fetch("/api/auth/me", { credentials: "include" });
+                    }
+
                     if (!res.ok) throw new Error("Auth failed");
                     const user = await res.json();
 
@@ -317,26 +523,162 @@
 
                 } catch (err) {
                     console.error(err);
-                    window.location.href = "login.html";
+                    window.location.href = "/login.html";
                 }
             }
 
-            const sidebarLogoutBtn = document.getElementById("sidebarLogoutBtn");
-            if (sidebarLogoutBtn) {
-                sidebarLogoutBtn.addEventListener("click", async function (e) {
-                    e.preventDefault();
-                    await fetch("/api/auth/logout", { method: "POST" });
-                    localStorage.removeItem("isLoggedIn");
-                    window.location.href = "home.html";
-                });
+            async function loadOrders() {
+                try {
+                    let res = await fetch("/api/orders/my-orders?sort=newest", {
+                        credentials: "include"
+                    });
+
+                    if (res.status === 401) {
+                        const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+                        if (!refreshRes.ok) return;
+                        res = await fetch("/api/orders/my-orders?sort=newest", { credentials: "include" });
+                    }
+
+                    if (!res.ok) return;
+                    const orders = await res.json();
+
+                    // Update Dashboard Counters
+                    document.getElementById('totalOrdersCount').textContent = orders.length;
+                    document.getElementById('pendingOrdersCount').textContent = orders.filter(o => 
+                        ['Placed', 'Processing', 'Shipped'].includes(o.orderStatus)
+                    ).length;
+                    document.getElementById('totalReturnsCount').textContent = orders.filter(o => 
+                        ['Returned', 'Return Requested'].includes(o.orderStatus)
+                    ).length;
+
+                    // Populate Recent Orders (Dashboard)
+                    const recentTbody = document.getElementById("recentOrdersTable");
+                    recentTbody.innerHTML = "";
+                    const recentOrders = orders.slice(0, 5);
+                    
+                    if (recentOrders.length === 0) {
+                        recentTbody.innerHTML = '<tr><td colspan="5" class="text-center">No recent orders found</td></tr>';
+                    } else {
+                        recentOrders.forEach(renderOrderRow(recentTbody));
+                    }
+
+                    // Populate All Orders (Orders Tab)
+                    const allTbody = document.getElementById("allOrdersTable");
+                    allTbody.innerHTML = "";
+                    if (orders.length === 0) {
+                        allTbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">No orders found</td></tr>';
+                    } else {
+                        orders.forEach(renderOrderRow(allTbody));
+                    }
+
+                } catch (err) {
+                    console.error("Orders error:", err);
+                }
             }
 
+            function renderOrderRow(tbody) {
+                return (order) => {
+                    const date = new Date(order.createdAt).toLocaleDateString("en-IN");
+                    let statusBadge = "secondary";
+                    if (order.orderStatus === "Placed") statusBadge = "primary";
+                    if (order.orderStatus === "Delivered") statusBadge = "success";
+                    if (order.orderStatus === "Cancelled") statusBadge = "danger";
+
+                    let actionsHtml = `<a href="order-details.html?id=${order._id}" class="btn btn-sm btn-dark">View</a>`;
+                    if (order.orderStatus === 'Placed' || order.orderStatus === 'Processing') {
+                        actionsHtml += `<button class="btn btn-sm btn-outline-danger ms-1" onclick="cancelOrder('${order._id}')">Cancel</button>`;
+                    }
+
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>#${order.orderNumber || order._id.slice(-6).toUpperCase()}</td>
+                        <td>${date}</td>
+                        <td><span class="badge bg-${statusBadge}">${order.orderStatus}</span></td>
+                        <td>₹${order.totalAmount.toLocaleString("en-IN")}</td>
+                        <td>${actionsHtml}</td>
+                    `;
+                    tbody.appendChild(row);
+                };
+            }
+
+            window.cancelOrder = async function(orderId) {
+                const result = await Swal.fire({
+                    title: "Cancel Order?",
+                    text: "Are you sure you want to cancel this order?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#000",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, cancel it"
+                });
+
+                if (result.isConfirmed) {
+                    try {
+                        const res = await fetch(`/api/orders/cancel/${orderId}`, {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            credentials: "include"
+                        });
+                        if (res.ok) {
+                            Swal.fire("Cancelled!", "Your order has been cancelled.", "success");
+                            loadOrders();
+                        } else {
+                            const data = await res.json();
+                            Swal.fire("Error", data.message || "Failed to cancel order", "error");
+                        }
+                    } catch (err) {
+                        Swal.fire("Error", "Something went wrong", "error");
+                    }
+                }
+            };
+
             loadUserInfo();
+            loadOrders();
+
+            // Hash Navigation Logic
+            function handleHashNavigation() {
+                const hash = window.location.hash || '#profile';
+                
+                // Sidebar Active State
+                document.querySelectorAll('.account-nav .nav-link').forEach(link => {
+                    link.classList.toggle('active', link.getAttribute('href') === hash);
+                });
+
+                // Tab Switching
+                let tabId = 'profile-tab';
+                if (hash === '#orders') tabId = 'orders-tab';
+                if (hash === '#addresses') tabId = 'addresses-tab';
+
+                const tabEl = document.querySelector(`#${tabId}`);
+                if (tabEl) {
+                    bootstrap.Tab.getOrCreateInstance(tabEl).show();
+                    // Update Page Title or Breadcrumb if needed
+                }
+            }
+
+            // Listen for hash changes
+            window.addEventListener('hashchange', handleHashNavigation);
+            
+            // Initial check
+            handleHashNavigation();
+
+            // Intercept Sidebar Links to handle hashes without page reload if safe
+            document.querySelectorAll('.account-nav .nav-link').forEach(link => {
+                if (link.getAttribute('href').includes('#')) {
+                    link.addEventListener('click', () => {
+                        handleHashNavigation();
+                    });
+                }
+            });
+
+            // Expose for inline onclick
+            window.handleHashNavigation = handleHashNavigation;
         });
     </script>
-    <script src="/user/js/authGuard.js"></script>
-    <script src="/user/js/userGuard.js"></script>
-<script src="/user/js/userAuth.js"></script>
+    <script src="/js/auth.js"></script>
+    <script>
+        Auth.checkAccess("user");
+    </script>
 </body>
 
 </html>

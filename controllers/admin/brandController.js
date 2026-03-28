@@ -4,6 +4,10 @@ const fs = require("fs");
 const path = require("path");
 const sharp = require("sharp");
 
+function escapeRegex(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 // @desc    Create new brand
 // @route   POST /api/admin/brands
 exports.createBrand = async (req, res) => {
@@ -71,7 +75,24 @@ exports.createBrand = async (req, res) => {
 // @route   GET /api/admin/brands
 exports.getAllBrands = async (req, res) => {
   try {
-    const brands = await Brand.aggregate([
+    const { search } = req.query;
+    const matchStage = {};
+
+    if (search) {
+      const sanitizedSearch = search.trim().slice(0, 50);
+      if (sanitizedSearch) {
+        matchStage.name = { $regex: new RegExp(escapeRegex(sanitizedSearch), "i") };
+      }
+    }
+
+    const pipeline = [];
+    
+    // Add match stage if search exists
+    if (Object.keys(matchStage).length > 0) {
+      pipeline.push({ $match: matchStage });
+    }
+
+    pipeline.push(
       {
         $lookup: {
           from: "products",
@@ -96,8 +117,9 @@ exports.getAllBrands = async (req, res) => {
         }
       },
       { $sort: { createdAt: -1 } }
-    ]);
+    );
 
+    const brands = await Brand.aggregate(pipeline);
     res.json(brands);
   } catch (error) {
     console.error("Get All Brands Error:", error);

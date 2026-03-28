@@ -76,12 +76,14 @@ exports.googleLogin = async (req, res) => {
 
     res.json({
       message: "Google login successful",
+      token: accessToken,
       role: user.role,
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
-        profilePicture: user.profilePicture
+        profilePicture: user.profilePicture,
+        role: user.role
       }
     });
 
@@ -226,7 +228,17 @@ exports.loginUser = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.json({ message: "Login successful", role: user.role });
+    res.json({ 
+      message: "Login successful", 
+      token: accessToken,
+      role: user.role,
+      user: {
+        _id: user._id,
+        role: user.role,
+        name: user.name,
+        email: user.email
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

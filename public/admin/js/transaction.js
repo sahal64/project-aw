@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 url += `?${params.toString()}`;
             }
 
-            const res = await fetch(url, { credentials: 'include' });
+            const res = await Auth.fetch(url);
             if (!res.ok) throw new Error('Failed to fetch transactions');
 
             transactions = await res.json();
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
         modalContent.style.display = 'none';
 
         try {
-            const res = await fetch(`/api/admin/orders/${orderId}`, { credentials: 'include' });
+            const res = await Auth.fetch(`/api/admin/orders/${orderId}`);
             if (!res.ok) throw new Error('Failed to fetch order details');
             const order = await res.json();
 

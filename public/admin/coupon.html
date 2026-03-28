@@ -237,6 +237,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js"></script>
     <script>
         // ==========================
         // ADMIN AUTH CHECK
@@ -273,7 +274,7 @@
         // ==========================
         async function loadCoupons() {
             try {
-                const res = await fetch('/api/admin/coupons', { credentials: 'include' });
+                const res = await Auth.fetch("/api/admin/coupons");
                 const tbody = document.getElementById("couponTableBody");
 
                 if (!res.ok) {
@@ -388,9 +389,8 @@
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        const res = await fetch(`/api/admin/coupons/${id}`, {
-                            method: 'DELETE',
-                            credentials: 'include'
+                        const res = await Auth.fetch(`/api/admin/coupons/${id}`, {
+                            method: 'DELETE'
                         });
                         if (res.ok) {
                             Swal.fire({
@@ -424,9 +424,8 @@
 
         async function toggleCoupon(id) {
             try {
-                const res = await fetch(`/api/admin/coupons/${id}/toggle`, {
-                    method: 'PATCH',
-                    credentials: 'include'
+                const res = await Auth.fetch(`/api/admin/coupons/${id}/toggle`, {
+                    method: 'PATCH'
                 });
                 if (res.ok) {
                     Swal.fire({
@@ -592,10 +591,8 @@
                 const url = currentEditId ? `/api/admin/coupons/${currentEditId}` : '/api/admin/coupons';
                 const method = currentEditId ? 'PUT' : 'POST';
 
-                const res = await fetch(url, {
+                const res = await Auth.fetch(url, {
                     method: method,
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
                     body: JSON.stringify(payload)
                 });
 
@@ -638,30 +635,7 @@
         });
 
         async function checkAdminAuth() {
-            try {
-                let res = await fetch("/api/auth/me", { credentials: "include" });
-                if (res.status === 401) {
-                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
-                    if (!refreshRes.ok) {
-                        window.location.href = "/admin/login.html";
-                        return false;
-                    }
-                    res = await fetch("/api/auth/me", { credentials: "include" });
-                }
-                if (!res.ok) {
-                    window.location.href = "/admin/login.html";
-                    return false;
-                }
-                const user = await res.json();
-                if (user.role !== "admin") {
-                    window.location.href = "/admin/login.html";
-                    return false;
-                }
-                return true;
-            } catch (err) {
-                window.location.href = "/admin/login.html";
-                return false;
-            }
+            return await Auth.checkBackendAccess("admin");
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -672,17 +646,7 @@
 
         document.getElementById("admin-logout").addEventListener("click", async (e) => {
             e.preventDefault();
-            try {
-                await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.href = "/admin/login.html";
-            } catch (err) {
-                console.error("Logout error:", err);
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.href = "/admin/login.html";
-            }
+            Auth.logout();
         });
 
         // Restrict coupon code characters

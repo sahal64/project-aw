@@ -12,6 +12,7 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/auth.js"></script>
 
     <style>
         :root {
@@ -337,55 +338,16 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/auth.js"></script>
     <script>
         // ==========================
-        // ADMIN AUTH CHECK
+        // ACCESS CONTROL
         // ==========================
-        async function checkAdminAuth() {
-            try {
-                let res = await fetch("/api/auth/me", { credentials: "include" });
+        Auth.checkBackendAccess("admin");
 
-                if (res.status === 401) {
-                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
-                    if (!refreshRes.ok) {
-                        window.location.href = "/admin/login.html";
-                        return false;
-                    }
-                    res = await fetch("/api/auth/me", { credentials: "include" });
-                }
-
-                if (!res.ok) {
-                    window.location.href = "/admin/login.html";
-                    return false;
-                }
-
-                const user = await res.json();
-                if (user.role !== "admin") {
-                    window.location.href = "/admin/login.html";
-                    return false;
-                }
-
-                return true;
-
-            } catch (err) {
-                window.location.href = "/admin/login.html";
-                return false;
-            }
-        }
-
-        document.getElementById("admin-logout").addEventListener("click", async (e) => {
+        document.getElementById("admin-logout").addEventListener("click", (e) => {
             e.preventDefault();
-            try {
-                await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.href = "/admin/login.html";
-            } catch (err) {
-                console.error("Logout error:", err);
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.href = "/admin/login.html";
-            }
+            Auth.logout();
         });
 
         // ==========================
@@ -393,7 +355,7 @@
         // ==========================
         async function loadDashboard() {
             try {
-                const res = await fetch("/api/admin/dashboard/stats", { credentials: "include" });
+                const res = await Auth.fetch("/api/admin/dashboard/stats");
                 if (!res.ok) {
                     console.error("Failed to load dashboard stats");
                     return;
@@ -415,7 +377,7 @@
         // ==========================
         async function loadRecentOrders() {
             try {
-                const res = await fetch("/api/admin/orders", { credentials: "include" });
+                const res = await Auth.fetch("/api/admin/orders");
                 if (!res.ok) {
                     console.error("Failed to fetch recent orders");
                     return;
@@ -467,7 +429,7 @@
         // ==========================
         async function loadRevenueChart() {
             try {
-                const res = await fetch("/api/admin/dashboard/revenue-chart", { credentials: "include" });
+                const res = await Auth.fetch("/api/admin/dashboard/revenue-chart");
                 if (!res.ok) return;
 
                 const data = await res.json();
@@ -537,12 +499,10 @@ text:"Please select both start and end date."
 return;
 }
 
-try{
-
-const res = await fetch(
-`/api/admin/reports/sales?startDate=${start}&endDate=${end}`,
-{credentials:"include"}
-);
+            try {
+                const res = await Auth.fetch(
+                    `/api/admin/reports/sales?startDate=${start}&endDate=${end}`
+                );
 
 const data = await res.json();
 
@@ -567,13 +527,10 @@ text:err.message
 }
 
         document.addEventListener("DOMContentLoaded", () => {
-            checkAdminAuth().then((isAuth) => {
-                if (isAuth) {
-                    loadDashboard();
-                    loadRecentOrders();
-                    loadRevenueChart();
-                }
-            });
+            Auth.checkBackendAccess("admin");
+            loadDashboard();
+            loadRecentOrders();
+            loadRevenueChart();
         });
     </script>
 </body>

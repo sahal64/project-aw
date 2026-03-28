@@ -101,7 +101,7 @@
             background: #fff;
             padding: 15px;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             margin-top: 10px;
         }
     </style>
@@ -152,7 +152,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="d-flex justify-content-end gap-2 align-items-center">
                 <select id="statusFilter" class="form-select shadow-none" style="width: 151px;">
                     <option value="all">All Status</option>
@@ -219,6 +219,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/auth.js"></script>
     <script>
         // Pagination State
         let currentPage = 1;
@@ -229,36 +230,25 @@
         let customStart = "";
         let customEnd = "";
 
-        // Admin Validation
-        async function checkAdminAuth() {
-            try {
-                let res = await fetch("/api/auth/me", { credentials: "include" });
-                if (res.status === 401) {
-                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
-                    if (!refreshRes.ok) { window.location.href = "/admin/login.html"; return false; }
-                    res = await fetch("/api/auth/me", { credentials: "include" });
-                }
-                if (!res.ok) { window.location.href = "/admin/login.html"; return false; }
-                const user = await res.json();
-                if (user.role !== "admin") { window.location.href = "/admin/login.html"; return false; }
-                return true;
-            } catch (err) {
-                window.location.href = "/admin/login.html";
-                return false;
-            }
-        }
-
         // Fetch Orders
         async function fetchOrders(page = 1) {
             try {
                 currentPage = page;
-                let url = `/api/admin/orders?page=${currentPage}&limit=${limit}&status=${currentStatus}&search=${encodeURIComponent(currentSearch)}&dateFilter=${currentDateFilter}`;
-                
-                if (currentDateFilter === "custom") {
-                    url += `&startDate=${customStart}&endDate=${customEnd}`;
-                }
+                const url = `/api/orders/admin/all?page=${page}&limit=${limit}&search=${currentSearch}&status=${currentStatus}&dateFilter=${currentDateFilter}&startDate=${customStart}&endDate=${customEnd}`;
 
-                const response = await fetch(url, { credentials: 'include' });
+                console.log("Fetching orders from:", url);
+
+                const response = await Auth.fetch(url, {
+                    method: "GET"
+                });
+
+                console.log("Response status:", response.status);
+
+                if (response.status === 401) {
+                    Swal.fire("Session expired", "Please login again", "warning");
+                    window.location.href = "/admin/login.html";
+                    return;
+                }
 
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -266,9 +256,11 @@
                 }
 
                 const data = await response.json();
+                console.log("Orders API response:", data);
+
                 renderOrders(data.orders);
                 renderPagination(data.totalPages, data.currentPage);
-                
+
                 document.getElementById("showingCount").innerText = data.orders.length;
                 document.getElementById("totalCount").innerText = data.totalOrders;
             } catch (error) {
@@ -370,7 +362,7 @@
         let searchTimeout;
         document.getElementById("searchInput").addEventListener("input", (e) => {
             const val = e.target.value.trim();
-            
+
             if (val && !searchRegex.test(val)) {
                 Swal.fire({
                     icon: 'error',
@@ -385,7 +377,7 @@
             }
 
             if (val.length > 50) {
-                 Swal.fire({
+                Swal.fire({
                     icon: 'error',
                     title: 'Limit Exceeded',
                     text: 'Search input cannot exceed 50 characters',
@@ -417,9 +409,8 @@
 
             if (result.isConfirmed) {
                 try {
-                    const response = await fetch(`/api/admin/orders/${id}`, {
-                        method: 'DELETE',
-                        credentials: 'include'
+                    const response = await Auth.fetch(`/api/admin/orders/${id}`, {
+                        method: 'DELETE'
                     });
 
                     const data = await response.json();
@@ -478,23 +469,13 @@
         }
 
         // Initialize
-        checkAdminAuth().then((isAuth) => {
+        Auth.checkBackendAccess("admin").then((isAuth) => {
             if (isAuth) fetchOrders(1);
         });
 
         document.getElementById("admin-logout").addEventListener("click", async (e) => {
             e.preventDefault();
-            try {
-                await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.href = "/admin/login.html";
-            } catch (err) {
-                console.error("Logout error:", err);
-                localStorage.clear();
-                sessionStorage.clear();
-                window.location.href = "/admin/login.html";
-            }
+            Auth.logout();
         });
     </script>
 </body>

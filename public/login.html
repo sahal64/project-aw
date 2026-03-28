@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AeroWatch - Unified Login</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --font-family: 'Outfit', sans-serif;
+            --primary-color: #000000;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: #f8f9fa;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .logo-box {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .form-control {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .btn-dark {
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            width: 100%;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="logo-box">
+             <img src="common/images/logo.png" alt="AeroWatch" style="max-height: 80px;">
+        </div>
+        <h2 class="login-title">Sign In</h2>
+        
+        <form id="loginForm">
+            <div class="mb-3">
+                <input type="email" id="email" class="form-control" placeholder="Email Address" required>
+            </div>
+            <div class="mb-3">
+                <input type="password" id="password" class="form-control" placeholder="Password" required>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="rememberMe">
+                    <label class="form-check-label small" for="rememberMe">Remember Email</label>
+                </div>
+                <a href="/user/forgot-password.html" class="small text-decoration-none fw-bold">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="btn btn-dark">Login Now &rarr;</button>
+
+            <!-- Divider -->
+            <div class="text-center my-4">
+                <hr>
+                <small class="text-muted">Or continue with Google</small>
+            </div>
+
+            <div id="g_id_onload"
+                data-client_id="387563249973-b52mdftfupf603t9pch5k72umt87775i.apps.googleusercontent.com"
+                data-context="signin" data-ux_mode="popup" data-callback="handleGoogleLogin"
+                data-auto_prompt="false">
+            </div>
+
+            <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" 
+                 data-text="signin_with" data-size="large" data-logo_alignment="left" data-width="340">
+            </div>
+
+            <div class="mt-4 text-center">
+                <small>New to AeroWatch? <a href="/user/signup.html" class="fw-bold text-dark text-decoration-none">Create Account</a></small>
+            </div>
+        </form>
+    </div>
+
+    <!-- Auth Script Dependency -->
+    <script src="js/auth.js"></script>
+    <script>
+        // ==========================
+        // AUTO-FILL REMEMBERED EMAIL
+        // ==========================
+        document.addEventListener("DOMContentLoaded", () => {
+            const rememberedEmail = localStorage.getItem("rememberEmail");
+            if (rememberedEmail) {
+                document.getElementById("email").value = rememberedEmail;
+                document.getElementById("rememberMe").checked = true;
+            }
+        });
+
+        // ==========================
+        // GOOGLE LOGIN HANDLER
+        // ==========================
+        async function handleGoogleLogin(response) {
+            try {
+                const res = await fetch("/api/auth/google", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: response.credential })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || "Google Login failed");
+
+                // STORE IN COOKIES (aligned with auth.js)
+                if (data.role === "admin") {
+                    document.cookie = `admin_token=${data.token}; path=/; max-age=18000; SameSite=Lax`;
+                    document.cookie = `admin_id=${data.user._id}; path=/; max-age=18000; SameSite=Lax`;
+                    window.location.href = "/admin/dashboard.html";
+                } else {
+                    document.cookie = `user_token=${data.token}; path=/; max-age=18000; SameSite=Lax`;
+                    document.cookie = `user_id=${data.user._id}; path=/; max-age=18000; SameSite=Lax`;
+                    window.location.href = "/user/home.html";
+                }
+            } catch (err) {
+                Swal.fire({ icon: "error", title: "Login Error", text: err.message });
+            }
+        }
+
+        // ==========================
+        // NORMAL LOGIN HANDLER
+        // ==========================
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById("email").value.trim().toLowerCase();
+            const password = document.getElementById("password").value;
+            const rememberMe = document.getElementById("rememberMe").checked;
+
+            // CLIENT VALIDATION
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                return Swal.fire({ icon: "warning", title: "Invalid Email", text: "Please enter a valid email address." });
+            }
+            if (password.length < 6) {
+                return Swal.fire({ icon: "warning", title: "Invalid Password", text: "Password must be at least 6 characters." });
+            }
+
+            try {
+                const data = await Auth.login(email, password, rememberMe);
+                
+                // Role Redirection
+                if (data.role === "admin") {
+                    window.location.href = "/admin/dashboard.html";
+                } else {
+                    window.location.href = "/user/home.html";
+                }
+            } catch (err) {
+                Swal.fire({ icon: "error", title: "Login Failed", text: err.message });
+            }
+        });
+    </script>
+</body>
+</html>

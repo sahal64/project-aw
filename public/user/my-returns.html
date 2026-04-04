@@ -254,7 +254,28 @@
             <!-- Main Content -->
             <div class="col-lg-9">
                 <h3 class="fw-bold mb-4">My Returns</h3>
-                <div class="alert alert-info">You have no return requests placed.</div>
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Order ID</th>
+                                        <th>Requested Date</th>
+                                        <th>Reason</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="returnsTableBody">
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">Loading returns...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -335,12 +356,7 @@
     <script>
         async function loadUserInfo() {
             try {
-                let res = await fetch("/api/auth/me", { credentials: "include" });
-                if (res.status === 401) {
-                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
-                    if (!refreshRes.ok) { window.location.href = "login.html"; return; }
-                    res = await fetch("/api/auth/me", { credentials: "include" });
-                }
+                let res = await Auth.fetch("/api/auth/me");
                 if (res.status === 403) {
                     const data = await res.json();
                     if (data.message === "Your account has been blocked") {
@@ -371,14 +387,64 @@
         if (logoutBtn) {
             logoutBtn.addEventListener("click", async function (e) {
                 e.preventDefault();
-                await fetch("/api/auth/logout", { method: "POST" });
-                localStorage.removeItem("isLoggedIn");
-                window.location.href = "home.html";
+                await Auth.logout();
             });
         }
 
+        async function loadReturns() {
+            try {
+                const res = await Auth.fetch("/api/orders/my-orders?type=returns");
+                if (!res.ok) return;
+
+                const orders = await res.json();
+                const tbody = document.getElementById("returnsTableBody");
+                tbody.innerHTML = "";
+
+                if (orders.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4">No return requests found</td></tr>`;
+                    return;
+                }
+
+                orders.forEach(order => {
+                    const status = order.returnRequest ? order.returnRequest.status : "none";
+                    if (status === "none") return; // Safety Skip
+
+                    const reqDate = new Date(order.returnRequest.requestedAt || order.updatedAt).toLocaleDateString("en-IN");
+                    
+                    let statusBadge = "info";
+                    let displayStatus = status;
+                    if (status === "requested") {
+                        statusBadge = "warning text-dark";
+                        displayStatus = "Pending Approval";
+                    } else if (status === "approved") {
+                        statusBadge = "success";
+                        displayStatus = "Return Approved";
+                    } else if (status === "rejected") {
+                        statusBadge = "danger";
+                        displayStatus = "Return Rejected";
+                    }
+
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>#${order.orderNumber || order._id.slice(-6).toUpperCase()}</td>
+                        <td>${reqDate}</td>
+                        <td class="small text-truncate" style="max-width: 200px;">${order.returnRequest.reason || 'N/A'}</td>
+                        <td><span class="badge bg-${statusBadge}">${displayStatus}</span></td>
+                        <td>
+                            <a href="order-details.html?id=${order._id}" class="btn btn-sm btn-dark">View Order</a>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
-            loadUserInfo();
+            loadUserInfo().then(() => {
+                loadReturns();
+            });
             // Search Toggle (Inline)
             const searchTrigger = document.getElementById('search-trigger');
             const searchForm = document.getElementById('search-form-inline');

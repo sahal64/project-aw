@@ -114,7 +114,7 @@ exports.getSales = async (req, res) => {
 exports.updateSale = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, value, startDate, endDate, status } = req.body;
+    const { name, value, startDate, endDate, status, appliesTo, targetIds } = req.body;
 
     const sale = await Sale.findById(id);
     if (!sale) {
@@ -127,6 +127,23 @@ exports.updateSale = async (req, res) => {
     if (startDate) sale.startDate = new Date(startDate);
     if (endDate) sale.endDate = new Date(endDate);
     if (status) sale.status = status;
+
+    // Update appliesTo and targetIds if provided
+    if (appliesTo) {
+      sale.appliesTo = appliesTo;
+      if (appliesTo === "all") {
+        sale.targetIds = [];
+        sale.onModel = undefined;
+      } else {
+        if (targetIds) {
+          sale.targetIds = Array.isArray(targetIds) ? targetIds : [targetIds];
+        }
+        sale.onModel = appliesTo === "product" ? "Product" : (appliesTo === "brand" ? "Brand" : "Category");
+      }
+    } else if (targetIds) {
+      // If only targetIds updated (unlikely but possible)
+      sale.targetIds = Array.isArray(targetIds) ? targetIds : [targetIds];
+    }
 
     // Handle Image if provided
     if (req.file) {

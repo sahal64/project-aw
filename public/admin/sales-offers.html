@@ -201,10 +201,10 @@
                             </div>
                             <div class="col-md-6 mb-3" id="targetIdsContainer" style="display:none;">
                                 <label class="form-label">Select Target(s)</label>
-                                <select class="form-select" name="targetIds" id="targetIds" multiple>
-                                    <!-- Dynamic Options -->
-                                </select>
-                                <small class="text-muted">Hold Ctrl/Cmd to select multiple</small>
+                                <div id="targetIdsList" class="border p-2 rounded bg-white" style="max-height: 200px; overflow-y: auto;">
+                                    <!-- Dynamic Checkboxes -->
+                                </div>
+                                <small class="text-muted">Select multiple by checking boxes</small>
                             </div>
                         </div>
                         <div class="row">
@@ -249,13 +249,33 @@
                             <label class="form-label">Sale Name</label>
                             <input type="text" class="form-control" name="name" id="editName" required>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Banner Image (Leave empty to keep existing)</label>
-                            <input type="file" class="form-control" name="bannerImage" accept="image/*">
+                        <div class="row" id="editBannerContainer">
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Banner Image (Leave empty to keep existing)</label>
+                                <input type="file" class="form-control" name="bannerImage" accept="image/*">
+                            </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Discount Value</label>
+                            <label class="form-label">Discount Value / Percentage</label>
                             <input type="number" class="form-control" name="value" id="editValue" min="1" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Applies To</label>
+                                <select class="form-select" name="appliesTo" id="editAppliesTo" required>
+                                    <option value="all">All Products</option>
+                                    <option value="product">Specific Products</option>
+                                    <option value="brand">Brand</option>
+                                    <option value="category">Category</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3" id="editTargetIdsContainer" style="display:none;">
+                                <label class="form-label">Select Target(s)</label>
+                                <div id="editTargetIdsList" class="border p-2 rounded bg-white" style="max-height: 200px; overflow-y: auto;">
+                                    <!-- Dynamic Checkboxes -->
+                                </div>
+                                <small class="text-muted">Select multiple by checking boxes</small>
+                            </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -288,108 +308,140 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/auth.js"></script>
     <script>
-        // Auth check
-        async function checkAdminAuth() {
-            try {
-                let res = await fetch("/api/auth/me", { credentials: "include" });
-                if (res.status === 401) {
-                    const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
-                    if (!refreshRes.ok) return window.location.href = "/admin/login.html";
-                    res = await fetch("/api/auth/me", { credentials: "include" });
-                }
-                if (!res.ok) return window.location.href = "/admin/login.html";
-                const user = await res.json();
-                if (user.role !== "admin") window.location.href = "/admin/login.html";
-            } catch (err) {
-                window.location.href = "/admin/login.html";
-            }
-        }
-
         document.addEventListener("DOMContentLoaded", () => {
-            checkAdminAuth();
-            fetchSales();
+            Auth.checkBackendAccess("admin").then(isAuth => {
+                if (isAuth) fetchSales();
+            });
         });
 
         document.getElementById("admin-logout").addEventListener("click", async (e) => {
             e.preventDefault();
-            await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-            window.location.href = "/admin/login.html";
+            await Auth.logout();
         });
 
-        // Toggle Dynamic Target Selection
-        document.getElementById("appliesTo").addEventListener("change", async (e) => {
-            const appliesTo = e.target.value;
-            const container = document.getElementById("targetIdsContainer");
-            const select = document.getElementById("targetIds");
+        // Reusable function to load targets as checkboxes
+        async function loadTargetOptions(appliesTo, containerId, listId, selectedIds = []) {
+            const container = document.getElementById(containerId);
+            const listDiv = document.getElementById(listId);
 
             if (appliesTo === "all") {
                 container.style.display = "none";
-                select.required = false;
                 return;
             }
 
             container.style.display = "block";
-            select.required = true;
-            select.innerHTML = '<option disabled>Loading...</option>';
+            listDiv.innerHTML = '<div class="p-2 text-muted small">Loading...</div>';
 
             try {
                 let url = "";
-                if (appliesTo === "product") url = "/api/admin/products"; 
+                if (appliesTo === "product") url = "/api/admin/products?all=true"; 
                 else if (appliesTo === "brand") url = "/api/admin/brands";
                 else if (appliesTo === "category") url = "/api/admin/categories";
 
                 const res = await fetch(url);
                 const data = await res.json();
                 
-                let list = [];
-                if (appliesTo === "product") list = data.products || [];
-                else if (appliesTo === "brand") list = data || [];
-                else if (appliesTo === "category") list = data || [];
+                let items = [];
+                if (appliesTo === "product") {
+                    items = data.products || [];
+                } else {
+                    items = data || [];
+                }
 
-                select.innerHTML = "";
-                list.forEach(item => {
-                    select.innerHTML += `<option value="${item._id}">${item.name}</option>`;
+                if (items.length === 0) {
+                    listDiv.innerHTML = '<div class="p-2 text-muted small">No items found</div>';
+                    return;
+                }
+
+                listDiv.innerHTML = "";
+                items.forEach(item => {
+                    const isChecked = selectedIds.includes(item._id);
+                    const div = document.createElement("div");
+                    div.className = "form-check";
+                    div.innerHTML = `
+                        <input class="form-check-input target-checkbox" type="checkbox" value="${item._id}" id="chk_${listId}_${item._id}" ${isChecked ? 'checked' : ''}>
+                        <label class="form-check-label small" for="chk_${listId}_${item._id}">
+                            ${item.name}
+                        </label>
+                    `;
+                    listDiv.appendChild(div);
                 });
             } catch (err) {
                 console.error("Error loading targets:", err);
-                select.innerHTML = '<option disabled>Error loading targets</option>';
+                listDiv.innerHTML = '<div class="p-2 text-danger small">Error loading targets</div>';
             }
+        }
+
+        // Add Modal appliesTo listener
+        document.getElementById("appliesTo").addEventListener("change", (e) => {
+            loadTargetOptions(e.target.value, "targetIdsContainer", "targetIdsList");
         });
 
-        // Fetch and Display Sales
+        // Edit Modal appliesTo listener
+        document.getElementById("editAppliesTo").addEventListener("change", (e) => {
+            loadTargetOptions(e.target.value, "editTargetIdsContainer", "editTargetIdsList");
+        });
+
+        // Fetch and Display Sales & Offers
         async function fetchSales() {
             try {
-                const res = await fetch("/api/admin/sales");
-                const { sales } = await res.json();
+                const [salesRes, offersRes] = await Promise.all([
+                    fetch("/api/admin/sales"),
+                    fetch("/api/admin/offers")
+                ]);
+
+                const { sales } = await salesRes.json();
+                const offers = await offersRes.json();
+
                 const tableBody = document.getElementById("saleTableBody");
                 tableBody.innerHTML = "";
 
-                sales.forEach(sale => {
+                // Combine and sort by createdAt
+                const allItems = [
+                    ...sales.map(s => ({ ...s, itemType: 'campaign' })),
+                    ...offers.map(o => ({ ...o, itemType: 'offer' }))
+                ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                allItems.forEach(item => {
+                    const isCampaign = item.itemType === 'campaign';
+                    const status = isCampaign ? item.status : (item.status ? 'active' : 'inactive');
                     const statusClass = {
                         active: 'bg-success',
                         inactive: 'bg-secondary',
                         scheduled: 'bg-primary',
                         expired: 'bg-danger'
-                    }[sale.status] || 'bg-dark';
+                    }[status] || 'bg-dark';
 
-                    const offerText = sale.discountUnit === 'percentage' 
-                        ? `${sale.value}% OFF` 
-                        : `₹${sale.value} OFF`;
+                    const offerText = isCampaign 
+                        ? (item.discountUnit === 'percentage' ? `${item.value}% OFF` : `₹${item.value} OFF`)
+                        : `${item.discountPercentage}% OFF`;
+
+                    const bannerHtml = isCampaign 
+                        ? `<img src="${item.bannerImage}" class="sale-banner" onerror="this.src='../common/images/placeholder.jpg'">`
+                        : `<div class="sale-banner bg-light d-flex align-items-center justify-content-center text-muted small border">No Banner</div>`;
+
+                    const nameText = isCampaign 
+                        ? item.name 
+                        : `<span class="text-muted small">[Offer]</span> ${item.referenceId?.name || 'Direct Offer'}`;
+
+                    const appliesToText = isCampaign 
+                        ? item.appliesTo 
+                        : `<span class="text-capitalize">${item.type}</span>`;
 
                     tableBody.innerHTML += `
                         <tr>
-                            <td><img src="${sale.bannerImage}" class="sale-banner" onerror="this.src='../common/images/placeholder.jpg'"></td>
-                            <td class="fw-bold">${sale.name}</td>
+                            <td>${bannerHtml}</td>
+                            <td class="fw-bold">${nameText}</td>
                             <td><span class="badge bg-light text-dark border">${offerText}</span></td>
-                            <td class="text-capitalize">${sale.appliesTo}</td>
-                            <td>${new Date(sale.startDate).toLocaleDateString()}</td>
-                            <td>${new Date(sale.endDate).toLocaleDateString()}</td>
-                            <td><span class="badge ${statusClass} cursor-pointer" onclick="toggleStatus('${sale._id}')">${sale.status}</span></td>
+                            <td class="text-capitalize">${appliesToText}</td>
+                            <td>${new Date(item.startDate).toLocaleDateString()}</td>
+                            <td>${new Date(item.endDate).toLocaleDateString()}</td>
+                            <td><span class="badge ${statusClass} cursor-pointer" onclick="toggleStatus('${item._id}', '${item.itemType}')">${status}</span></td>
                             <td>
-                                <button class="btn btn-sm btn-outline-dark" onclick="openEditModal('${encodeURIComponent(JSON.stringify(sale))}')">
+                                <button class="btn btn-sm btn-outline-dark" onclick="openEditModal('${encodeURIComponent(JSON.stringify(item))}', '${item.itemType}')">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="deleteSale('${sale._id}')">
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteSale('${item._id}', '${item.itemType}')">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </td>
@@ -424,9 +476,12 @@
             }
 
             try {
+                const checkedBoxes = document.querySelectorAll("#targetIdsList .target-checkbox:checked");
+                checkedBoxes.forEach(cb => formData.append("targetIds", cb.value));
+
                 const res = await Auth.fetch("/api/admin/sales", {
                     method: "POST",
-                    body: formData // Auth.fetch handles headers, but FormData shouldn't have Content-Type set manually
+                    body: formData // Auth.fetch handles headers
                 });
                 const data = await res.json();
 
@@ -443,15 +498,50 @@
             }
         });
 
-        // Edit Sale
-        function openEditModal(saleStr) {
-            const sale = JSON.parse(decodeURIComponent(saleStr));
-            document.getElementById("editSaleId").value = sale._id;
-            document.getElementById("editName").value = sale.name;
-            document.getElementById("editValue").value = sale.value;
-            document.getElementById("editStartDate").value = sale.startDate.split('T')[0];
-            document.getElementById("editEndDate").value = sale.endDate.split('T')[0];
-            document.getElementById("editStatus").value = sale.status;
+        // Edit Sale / Offer
+        let currentEditingType = 'campaign';
+        function openEditModal(itemStr, type) {
+            const item = JSON.parse(decodeURIComponent(itemStr));
+            currentEditingType = type;
+            document.getElementById("editSaleId").value = item._id;
+            document.getElementById("editName").value = type === 'campaign' ? item.name : `Offer for ${item.referenceId?.name || 'Target'}`;
+            document.getElementById("editName").disabled = type === 'offer'; // Cannot rename an offer reference here
+            
+            document.getElementById("editValue").value = type === 'campaign' ? item.value : item.discountPercentage;
+            document.getElementById("editStartDate").value = item.startDate.split('T')[0];
+            document.getElementById("editEndDate").value = item.endDate.split('T')[0];
+            
+            const statusSelect = document.getElementById("editStatus");
+            if (type === 'campaign') {
+                document.getElementById("editBannerContainer").style.display = "block";
+                
+                // Set Applies To
+                const appliesToSelect = document.getElementById("editAppliesTo");
+                appliesToSelect.value = item.appliesTo || "all";
+                appliesToSelect.disabled = false;
+                
+                // Load Targets
+                const selectedIds = item.targetIds ? item.targetIds.map(t => t._id || t) : [];
+                loadTargetOptions(item.appliesTo, "editTargetIdsContainer", "editTargetIdsList", selectedIds);
+
+                statusSelect.innerHTML = `
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="expired">Expired</option>
+                `;
+                statusSelect.value = item.status;
+            } else {
+                document.getElementById("editBannerContainer").style.display = "none";
+                document.getElementById("editTargetIdsContainer").style.display = "none";
+                document.getElementById("editAppliesTo").disabled = true;
+                document.getElementById("editAppliesTo").value = item.type; // category/brand/product
+
+                statusSelect.innerHTML = `
+                    <option value="true">Active (True)</option>
+                    <option value="false">Inactive (False)</option>
+                `;
+                statusSelect.value = item.status ? "true" : "false";
+            }
             
             new bootstrap.Modal(document.getElementById("editSaleModal")).show();
         }
@@ -460,16 +550,39 @@
             e.preventDefault();
             const id = document.getElementById("editSaleId").value;
             const formData = new FormData(e.target);
+            
+            // Collect targetIds from checkboxes for campaigns
+            if (currentEditingType === 'campaign') {
+                const checkedBoxes = document.querySelectorAll("#editTargetIdsList .target-checkbox:checked");
+                checkedBoxes.forEach(cb => formData.append("targetIds", cb.value));
+            }
+
+            // If editing Offer, adjust fields to match Offer model
+            let body = formData;
+            let url = `/api/admin/sales/${id}`;
+            let method = "PUT";
+
+            if (currentEditingType === 'offer') {
+                url = `/api/admin/offers/${id}`;
+                const rawObj = {
+                    discountPercentage: formData.get("value"),
+                    startDate: formData.get("startDate"),
+                    endDate: formData.get("endDate"),
+                    status: formData.get("status") === "true"
+                };
+                body = JSON.stringify(rawObj);
+            }
 
             try {
-                const res = await Auth.fetch(`/api/admin/sales/${id}`, {
-                    method: "PUT",
-                    body: formData
+                const res = await Auth.fetch(url, {
+                    method: method,
+                    headers: currentEditingType === 'offer' ? { 'Content-Type': 'application/json' } : undefined,
+                    body: body
                 });
                 const data = await res.json();
 
                 if (data.success) {
-                    Swal.fire("Updated", "Campaign updated successfully", "success");
+                    Swal.fire("Updated", `${currentEditingType} updated successfully`, "success");
                     bootstrap.Modal.getInstance(document.getElementById("editSaleModal")).hide();
                     fetchSales();
                 } else {
@@ -480,10 +593,10 @@
             }
         });
 
-        async function deleteSale(id) {
+        async function deleteSale(id, type) {
             const result = await Swal.fire({
                 title: "Are you sure?",
-                text: "Inactive sales will be permanently deleted.",
+                text: "Inactive items will be permanently deleted.",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#000",
@@ -492,7 +605,8 @@
 
             if (result.isConfirmed) {
                 try {
-                    const res = await Auth.fetch(`/api/admin/sales/${id}`, { method: "DELETE" });
+                    const url = type === 'campaign' ? `/api/admin/sales/${id}` : `/api/admin/offers/${id}`;
+                    const res = await Auth.fetch(url, { method: "DELETE" });
                     const data = await res.json();
                     if (data.success) {
                         Swal.fire("Deleted", data.message, "success");
@@ -506,9 +620,10 @@
             }
         }
 
-        async function toggleStatus(id) {
+        async function toggleStatus(id, type) {
             try {
-                const res = await Auth.fetch(`/api/admin/sales/${id}/status`, { method: "PATCH" });
+                const url = type === 'campaign' ? `/api/admin/sales/${id}/status` : `/api/admin/offers/${id}/status`;
+                const res = await Auth.fetch(url, { method: "PATCH" });
                 const data = await res.json();
                 if (data.success) {
                     fetchSales();

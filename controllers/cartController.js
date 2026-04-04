@@ -6,8 +6,8 @@ exports.checkStock = async (req, res) => {
         const { productId } = req.params;
         const product = await Product.findById(productId);
 
-        if (!product) {
-            return res.status(404).json({ success: false, message: "Product not found" });
+        if (!product || product.isActive === false) {
+            return res.status(404).json({ success: false, message: "Product not found or unavailable" });
         }
 
         res.json({
@@ -31,7 +31,7 @@ exports.batchCheckStock = async (req, res) => {
         const results = [];
         for (const item of items) {
             const product = await Product.findById(item.id);
-            if (product) {
+            if (product && product.isActive !== false) {
                 results.push({
                     id: item.id,
                     name: product.name,
@@ -46,7 +46,7 @@ exports.batchCheckStock = async (req, res) => {
                     availableStock: 0,
                     requestedQuantity: item.quantity,
                     isSufficient: false,
-                    error: "Product not found"
+                    error: "Product unavailable"
                 });
             }
         }

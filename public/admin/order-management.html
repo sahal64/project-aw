@@ -338,54 +338,70 @@
                 else if (order.orderStatus === 'Cancelled') statusBadgeClass = 'bg-danger text-white';
 
                 const tr = document.createElement('tr');
+                let returnInfo = "";
+                if (order.returnRequest && order.returnRequest.status === 'requested') {
+                    statusBadgeClass = 'bg-info text-dark';
+                    returnInfo = ` <div class="mt-1 small text-muted">Reason: ${order.returnRequest.reason}</div>`;
+                }
+
+                let actionsHtml = `
+                    <a href="/admin/order-details.html?id=${order._id}" class="btn btn-sm btn-outline-dark" title="View Details"><i class="bi bi-eye"></i></a>
+                `;
+
+                if (order.returnRequest && order.returnRequest.status === 'requested') {
+                    actionsHtml += `
+                        <button class="btn btn-sm btn-success approve-return ms-1" onclick="approveReturn('${order._id}')" title="Approve Return">
+                            ✔
+                        </button>
+                        <button class="btn btn-sm btn-danger reject-return ms-1" onclick="rejectReturn('${order._id}')" title="Reject Return">
+                            ❌
+                        </button>
+                    `;
+                } else {
+                    actionsHtml += `
+                        <button class="btn btn-sm btn-outline-danger ms-1" onclick="deleteOrder('${order._id}')" title="Delete Order">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    `;
+                }
+
                 tr.innerHTML = `
                     <td class="ps-4 fw-medium">${order.orderNumber || order._id.substring(0, 8)}</td>
                     <td>${customerName}</td>
                     <td>${date}</td>
                     <td class="fw-bold fs-6">₹${order.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                    <td><span class="status-badge ${statusBadgeClass}">${order.orderStatus}</span></td>
+                    <td>
+                        <span class="status-badge ${
+                            order.returnRequest && order.returnRequest.status === 'approved' ? 'bg-success text-white' : statusBadgeClass
+                        }">${
+                            order.returnRequest && order.returnRequest.status === 'requested' ? 'Return Requested' : 
+                            (order.returnRequest && order.returnRequest.status === 'approved' ? 'Returned' : order.orderStatus)
+                        }</span>
+                        ${returnInfo}
+                    </td>
                     <td class="pe-4 text-end">
-                        <a href="/admin/order-details.html?id=${order._id}" class="btn btn-sm btn-outline-dark" title="View Details"><i class="bi bi-eye"></i></a>
-                        <button class="btn btn-sm btn-outline-danger ms-1" onclick="deleteOrder('${order._id}')" title="Delete Order">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        ${actionsHtml}
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // Search Validation Regex: Letters, numbers, spaces, @
-        const searchRegex = /^[A-Za-z0-9@ ]*$/;
-
-        // Search Debounce
+        // Search Validation: Letters, numbers, spaces, hyphens, @
         let searchTimeout;
         document.getElementById("searchInput").addEventListener("input", (e) => {
-            const val = e.target.value.trim();
-
-            if (val && !searchRegex.test(val)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid Input',
-                    text: 'Search input can only contain letters, numbers, spaces, and @',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-                return;
+            let originalVal = e.target.value;
+            // Instantly remove invalid characters (allow hyphens for Order IDs like AW-...)
+            let sanitizedVal = originalVal.replace(/[^A-Za-z0-9@\-\s]/g, '');
+            
+            if (originalVal !== sanitizedVal) {
+                e.target.value = sanitizedVal;
             }
 
+            const val = sanitizedVal.trim();
+
             if (val.length > 50) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Limit Exceeded',
-                    text: 'Search input cannot exceed 50 characters',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
+                e.target.value = val.substring(0, 50);
                 return;
             }
 
@@ -466,6 +482,58 @@
             }
 
             fetchOrders(1);
+        }
+
+        async function approveReturn(id) {
+            const result = await Swal.fire({
+                title: 'Approve Return?',
+                text: "This will mark the return as approved and refund the amount to user's wallet.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#198754',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Approve'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await Auth.fetch(`/api/admin/orders/${id}/return/approve`, {
+                        method: 'PUT'
+                    });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.message || 'Approval failed');
+                    Swal.fire('Success', 'Return approved and amount refunded.', 'success');
+                    fetchOrders(currentPage);
+                } catch (error) {
+                    Swal.fire('Error', error.message, 'error');
+                }
+            }
+        }
+
+        async function rejectReturn(id) {
+            const result = await Swal.fire({
+                title: 'Reject Return?',
+                text: "This will mark the return request as rejected.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Reject'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await Auth.fetch(`/api/admin/orders/${id}/return/reject`, {
+                        method: 'PUT'
+                    });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.message || 'Rejection failed');
+                    Swal.fire('Success', 'Return request rejected.', 'success');
+                    fetchOrders(currentPage);
+                } catch (error) {
+                    Swal.fire('Error', error.message, 'error');
+                }
+            }
         }
 
         // Initialize

@@ -396,12 +396,10 @@ exports.deleteProduct = async (req, res, next) => {
 // ==========================
 exports.getAdminProducts = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+    const isAll = req.query.all === "true";
     const search = req.query.search || "";
-
     const filter = {};
+
     if (search) {
       filter.$or = [
         { name: { $regex: search, $options: "i" } },
@@ -409,6 +407,15 @@ exports.getAdminProducts = async (req, res) => {
         { category: { $regex: search, $options: "i" } }
       ];
     }
+
+    if (isAll) {
+      const products = await Product.find(filter).select("name _id").sort({ name: 1 });
+      return res.json({ success: true, products });
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
     const total = await Product.countDocuments(filter);
     const productsData = await Product.find(filter)
@@ -476,7 +483,15 @@ exports.getAdminProductById = async (req, res) => {
 // ==========================
 exports.getAllProducts = async (req, res) => {
   try {
-    const filter = { isActive: { $ne: false } }; // Only show active products to users
+    // 1. Get ALL Active Brand names
+    const activeBrands = await Brand.find({ status: true }).select("name");
+    const activeBrandNames = activeBrands.map(b => b.name);
+
+    // 2. Initial Filter (Must be active PRODUCT and from an active BRAND)
+    const filter = { 
+      isActive: { $ne: false },
+      brand: { $in: activeBrandNames }
+    };
     let sortOption = { createdAt: -1 };
 
     // Pagination parameters
@@ -486,6 +501,14 @@ exports.getAllProducts = async (req, res) => {
 
     if (req.query.category) {
       filter.category = req.query.category.toLowerCase();
+    }
+    
+    // Brand filter
+    if (req.query.brand) {
+      const brandArr = req.query.brand.split(',').filter(b => b.trim());
+      if (brandArr.length > 0) {
+        filter.brand = { $in: brandArr.map(b => new RegExp(`^${b}$`, "i")) };
+      }
     }
     
     // Price filter
@@ -542,8 +565,14 @@ exports.getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
 
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+    if (!product || product.isActive === false) {
+      return res.status(404).json({ message: "Product not found or unavailable" });
+    }
+
+    // NEW: Check if the brand of this product is active
+    const brandObj = await Brand.findOne({ name: product.brand, status: true });
+    if (!brandObj) {
+      return res.status(404).json({ message: "Product not found or unavailable (Brand Inactive)" });
     }
 
     const productsWithOffers = await applyOffers([product]);
@@ -553,6 +582,40 @@ exports.getProductById = async (req, res) => {
   } catch (error) {
     console.error("GET PRODUCT BY ID ERROR:", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ==========================
+// USER – Get Recommended Products
+// ==========================
+exports.getRecommendedProducts = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { category } = req.query;
+
+    // Fetch active brands first
+    const activeBrands = await Brand.find({ status: true }).select("name");
+    const activeNames = activeBrands.map(b => b.name);
+
+    const query = { 
+      _id: { $ne: id }, 
+      isActive: { $ne: false },
+      brand: { $in: activeNames }
+    };
+    if (category) query.category = category;
+
+    let products = await Product.find(query).limit(10); // Fetch more to filter down if needed
+    
+    // Apply offers to all found products
+    products = await applyOffers(products);
+
+    // Take top 4
+    const recommended = products.slice(0, 4);
+
+    res.json({ success: true, products: recommended });
+  } catch (error) {
+    console.error("GET RECOMMENDED PRODUCTS ERROR:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -656,7 +719,10 @@ exports.removeProductOffer = async (req, res) => {
 // ==========================
 exports.getOfferProducts = async (req, res) => {
   try {
-    const products = await Product.find({ offerPercentage: { $gt: 0 }, isActive: { $ne: false } })
+    const activeBrands = await Brand.find({ status: true }).select("name");
+    const activeNames = activeBrands.map(b => b.name);
+
+    const products = await Product.find({ offerPercentage: { $gt: 0 }, isActive: { $ne: false }, brand: { $in: activeNames } })
       .sort({ offerPercentage: -1 })
       .limit(3);
 
@@ -719,6 +785,19 @@ exports.getSaleProducts = async (req, res) => {
     res.json({ success: true, products: saleProducts });
   } catch (error) {
     console.error("GET SALE PRODUCTS ERROR:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+// ==========================
+// USER – Get Active Brands
+// ==========================
+exports.getActiveBrands = async (req, res) => {
+  try {
+    const brands = await Brand.find({ status: true }).select("name logo").sort({ name: 1 });
+    res.json({ success: true, brands });
+  } catch (error) {
+    console.error("GET ACTIVE BRANDS ERROR:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

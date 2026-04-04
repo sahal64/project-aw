@@ -440,9 +440,7 @@
         if (logoutBtn) {
             logoutBtn.addEventListener("click", async function (e) {
                 e.preventDefault();
-                await fetch("/api/auth/logout", { method: "POST" });
-                localStorage.removeItem("isLoggedIn");
-                window.location.href = "home.html";
+                await Auth.logout();
             });
         }
 
@@ -491,9 +489,19 @@
                     const itemCount = order.items.length;
 
                     let statusBadge = "secondary";
+                    let displayStatus = order.orderStatus;
                     if (order.orderStatus === "Placed") statusBadge = "primary";
                     if (order.orderStatus === "Delivered") statusBadge = "success";
                     if (order.orderStatus === "Cancelled") statusBadge = "danger";
+                    if (order.orderStatus === "Returned") statusBadge = "info";
+
+                    if (order.returnRequest && order.returnRequest.status === "approved") {
+                        displayStatus = "Return Approved";
+                        statusBadge = "success";
+                    } else if (order.returnRequest && order.returnRequest.status === "rejected") {
+                        displayStatus = "Return Rejected";
+                        statusBadge = "danger";
+                    }
 
                     let paymentBadge = "warning text-dark"; // Default for Pending
                     const paymentStatus = order.paymentStatus || "Pending";
@@ -503,6 +511,15 @@
                     let actionsHtml = `<a href="order-details.html?id=${order._id}" class="btn btn-sm btn-dark">View</a>`;
                     if (order.orderStatus === 'Placed' || order.orderStatus === 'Processing') {
                         actionsHtml += `<button class="btn btn-sm btn-danger ms-1" onclick="cancelOrder('${order._id}')">Cancel</button>`;
+                    } else if (order.orderStatus === 'Delivered' && (!order.returnRequest || order.returnRequest.status === 'none')) {
+                        // Check if within 7 days
+                        const deliveredDate = new Date(order.deliveredAt || order.updatedAt);
+                        const diffDays = (new Date() - deliveredDate) / (1000 * 60 * 60 * 24);
+                        if (diffDays <= 7) {
+                            actionsHtml += `<button class="btn btn-sm btn-outline-danger ms-1" onclick="openReturnModal('${order._id}')">Return</button>`;
+                        }
+                    } else if (order.returnRequest && order.returnRequest.status !== 'none') {
+                        actionsHtml += `<span class="badge bg-info text-dark ms-1 d-block mt-1">Return ${order.returnRequest.status}</span>`;
                     }
 
                     const row = document.createElement("tr");
@@ -510,7 +527,7 @@
         <td>#${order.orderNumber || order._id.slice(-6).toUpperCase()}</td>
         <td>${date}</td>
         <td>${itemCount} Product(s)</td>
-        <td><span class="badge bg-${statusBadge}">${order.orderStatus}</span></td>
+        <td><span class="badge bg-${statusBadge}">${displayStatus}</span></td>
         <td><span class="badge bg-${paymentBadge}">${paymentStatus}</span></td>
         <td>₹${order.totalAmount.toLocaleString("en-IN")}</td>
         <td>
@@ -578,6 +595,41 @@
             });
         }
 
+        function openReturnModal(orderId) {
+            document.getElementById('returnOrderId').value = orderId;
+            new bootstrap.Modal(document.getElementById('returnModal')).show();
+        }
+
+        async function submitReturn() {
+            const orderId = document.getElementById('returnOrderId').value;
+            const reason = document.getElementById('returnReason').value;
+
+            if (!reason) {
+                Swal.fire("Error", "Please select a reason for return", "warning");
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/orders/${orderId}/return`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ reason })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    Swal.fire("Success", "Return request submitted successfully", "success");
+                    bootstrap.Modal.getInstance(document.getElementById('returnModal')).hide();
+                    loadOrders();
+                } else {
+                    Swal.fire("Error", data.message, "error");
+                }
+            } catch (err) {
+                Swal.fire("Error", "Something went wrong", "error");
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             loadUserInfo().then(() => {
                 loadOrders();
@@ -596,6 +648,35 @@
 
     
 
+
+    <!-- Return Modal -->
+    <div class="modal fade" id="returnModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Request Return</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="returnOrderId">
+                    <div class="mb-3">
+                        <label class="form-label">Reason for Return</label>
+                        <select id="returnReason" class="form-select">
+                            <option value="">Select reason</option>
+                            <option value="Damaged product">Damaged product</option>
+                            <option value="Wrong item">Wrong item</option>
+                            <option value="Quality issue">Quality issue</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="submitReturn()">Submit Request</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="/js/auth.js"></script>
     <script>

@@ -47,6 +47,17 @@ app.use("/api/admin/sales", saleRoutes);
 app.use("/api/admin", adminRoutes);
 
 
+/* Prevent back-button access to protected pages after logout */
+app.use((req, res, next) => {
+  // Apply no-cache headers to protected HTML pages
+  if (req.path.startsWith("/admin/") || req.path.startsWith("/user/")) {
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+  }
+  next();
+});
+
 /* Serve Frontend */
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));

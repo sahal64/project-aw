@@ -35,6 +35,8 @@ router.get("/orders", orderController.getAllOrders);
 router.get("/orders/:id", orderController.getOrderById);
 router.put("/orders/:id", orderController.updateOrderStatus);
 router.delete("/orders/:id", orderController.deleteOrder);
+router.put("/orders/:id/return/approve", orderController.approveReturn);
+router.put("/orders/:id/return/reject", orderController.rejectReturn);
 router.get("/transactions", orderController.getAdminTransactions);
 
 // --- Categories ---

@@ -367,36 +367,13 @@
         </div>
 
         <!-- Recommended Products -->
-        <div class="mt-5 pt-5">
+        <div class="mt-5 pt-5 mb-5">
             <h4 class="fw-bold mb-4">Recommended products</h4>
-            <div class="row g-4">
-                <div class="col-md-3 col-6">
-                    <div class="card border-0 bg-light p-3">
-                        <img src="https://placehold.co/200x200" class="img-fluid mb-2">
-                        <h6 class="fw-bold">Black Watch</h6>
-                        <span class="text-primary fw-bold">$169.99</span>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="card border-0 bg-light p-3">
-                        <img src="https://placehold.co/200x200" class="img-fluid mb-2">
-                        <h6 class="fw-bold">Smart Watch</h6>
-                        <span class="text-primary fw-bold">$169.99</span>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="card border-0 bg-light p-3">
-                        <img src="https://placehold.co/200x200" class="img-fluid mb-2">
-                        <h6 class="fw-bold">Silver Watch</h6>
-                        <span class="text-primary fw-bold">$169.99</span>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="card border-0 bg-light p-3">
-                        <img src="https://placehold.co/200x200" class="img-fluid mb-2">
-                        <h6 class="fw-bold">Gold Watch</h6>
-                        <span class="text-primary fw-bold">$169.99</span>
-                    </div>
+            <div class="row g-4" id="recommendations-row">
+                <!-- Dynamic Recommendations -->
+                <div class="col-12 text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-dark" role="status"></div>
+                    <span class="ms-2">Finding recommendations...</span>
                 </div>
             </div>
         </div>
@@ -505,7 +482,7 @@
             /* =====================
                AUTH STATE
             ====================== */
-            const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+            const isLoggedIn = Auth.isLoggedIn();
 
             const guestNav = document.getElementById("guest-nav");
             const userNav = document.getElementById("user-nav");
@@ -527,13 +504,7 @@
             if (logoutBtn) {
                 logoutBtn.addEventListener("click", async function (e) {
                     e.preventDefault();
-                    try {
-                        await fetch("/api/auth/logout", { method: "POST" });
-                    } catch (error) {
-                        console.error("Logout failed:", error);
-                    }
-                    localStorage.removeItem("isLoggedIn");
-                    window.location.href = "home.html";
+                    await Auth.logout();
                 });
             }
 
@@ -571,6 +542,8 @@
                 const addToCartBtn = document.getElementById("addToCartBtn");
 
                 addToCartBtn.addEventListener("click", async function () {
+                    if (!Auth.requireLogin("add items to your cart")) return;
+                    
                     const quantity = parseInt(document.getElementById("quantity-input").value);
 
                     // Fetch fresh stock from database as required
@@ -720,6 +693,9 @@
     });
 }
 
+                // Load Recommended Products
+                loadRecommendations(product.category, product._id);
+
 
             } catch (error) {
                 console.error("Error loading product:", error);
@@ -757,13 +733,54 @@
                     }
                 });
             }
-
         });
+
+        async function loadRecommendations(category, currentId) {
+            try {
+                const res = await fetch(`/api/products/recommended/${currentId}?category=${category}`);
+                const data = await res.json();
+                const container = document.getElementById("recommendations-row");
+
+                if (!res.ok || !data.products || data.products.length === 0) {
+                    container.innerHTML = '<div class="col-12 text-muted text-center py-4">No specific recommendations found.</div>';
+                    return;
+                }
+
+                container.innerHTML = "";
+                data.products.forEach(p => {
+                    const hasDiscount = p.discountPercentage > 0;
+                    const priceHtml = hasDiscount 
+                        ? `<span class="text-muted text-decoration-line-through me-2 small">₹${p.price.toLocaleString("en-IN")}</span><span class="fw-bold text-dark">₹${p.finalPrice.toLocaleString("en-IN")}</span>`
+                        : `<span class="fw-bold text-dark">₹${p.price.toLocaleString("en-IN")}</span>`;
+
+                    const col = document.createElement("div");
+                    col.className = "col-lg-3 col-md-4 col-6";
+                    col.innerHTML = `
+                        <a href="single-product.html?id=${p._id}" class="text-decoration-none">
+                            <div class="card border-0 bg-light p-3 h-100 position-relative overflow-hidden product-card-link">
+                                ${hasDiscount ? `<span class="badge bg-danger position-absolute top-0 end-0 m-2" style="font-size: 0.7rem;">${p.discountPercentage}% OFF</span>` : ''}
+                                <div class="text-center mb-2" style="height: 150px; display: flex; align-items: center; justify-content: center;">
+                                    <img src="${p.images[0]}" class="img-fluid" style="max-height: 100%; object-fit: contain;">
+                                </div>
+                                <h6 class="fw-bold text-dark mb-1 small text-truncate">${p.name}</h6>
+                                <div class="mt-auto">
+                                    ${priceHtml}
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                    container.appendChild(col);
+                });
+            } catch (err) {
+                console.error("Error loading recommendations:", err);
+                document.getElementById("recommendations-row").innerHTML = '<div class="col-12 text-muted">Failed to load recommendations.</div>';
+            }
+        }
     </script>
 
     
 
-`n    <script src="/js/auth.js"></script>
+    <script src="/js/auth.js?v=2"></script>
 </body>
 
 </html>

@@ -269,7 +269,7 @@
                 <h3 class="fw-bold mb-4">My Payment Options</h3>
 
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-12">
                         <div class="wallet-card">
                             <div class="wallet-label mb-2">Total Balance</div>
                             <div class="wallet-balance" id="walletBalance">₹0.00</div>
@@ -279,33 +279,6 @@
                             </div>
                             <i class="bi bi-wallet2 position-absolute"
                                 style="font-size: 8rem; right: -20px; bottom: -30px; opacity: 0.1;"></i>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body p-4">
-                                <h6 class="fw-bold mb-3">Saved Cards</h6>
-                                <div class="d-flex align-items-center mb-3 p-2 bg-light rounded">
-                                    <i class="bi bi-credit-card-2-front fs-3 me-3 text-primary"></i>
-                                    <div>
-                                        <div class="fw-bold">Visa ending in 4242</div>
-                                        <small class="text-muted">Expires 12/28</small>
-                                    </div>
-                                    <button class="btn btn-link text-danger ms-auto"><i
-                                            class="bi bi-trash"></i></button>
-                                </div>
-                                <div class="d-flex align-items-center p-2 bg-light rounded">
-                                    <i class="bi bi-credit-card-2-front fs-3 me-3 text-warning"></i>
-                                    <div>
-                                        <div class="fw-bold">Mastercard ending in 8899</div>
-                                        <small class="text-muted">Expires 09/26</small>
-                                    </div>
-                                    <button class="btn btn-link text-danger ms-auto"><i
-                                            class="bi bi-trash"></i></button>
-                                </div>
-                                <button class="btn btn-outline-dark w-100 mt-3 border-dashed"><i
-                                        class="bi bi-plus-lg"></i> Add New Card</button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -426,21 +399,7 @@
 
         async function loadUserInfo() {
             try {
-                let res = await fetch('/api/auth/me');
-
-                if (res.status === 401) {
-                    const refreshRes = await fetch("/api/auth/refresh", {
-                        method: "POST",
-                        credentials: "include"
-                    });
-
-                    if (!refreshRes.ok) {
-                        window.location.href = "login.html";
-                        return;
-                    }
-
-                    res = await fetch('/api/auth/me');
-                }
+                let res = await Auth.fetch('/api/auth/me');
 
                 if (res.status === 403) {
                     const data = await res.json();
@@ -475,29 +434,13 @@
         if (sidebarLogoutBtn) {
             sidebarLogoutBtn.addEventListener("click", async function (e) {
                 e.preventDefault();
-                await fetch("/api/auth/logout", { method: "POST" });
-                localStorage.removeItem("isLoggedIn");
-                window.location.href = "home.html";
+                await Auth.logout();
             });
         }
 
         async function loadWalletData() {
             try {
-                let balanceRes = await fetch('/api/wallet', { credentials: 'include' });
-
-                if (balanceRes.status === 401) {
-                    const refreshRes = await fetch("/api/auth/refresh", {
-                        method: "POST",
-                        credentials: "include"
-                    });
-
-                    if (!refreshRes.ok) {
-                        window.location.href = "login.html";
-                        return;
-                    }
-
-                    balanceRes = await fetch('/api/wallet', { credentials: 'include' });
-                }
+                let balanceRes = await Auth.fetch('/api/wallet');
 
                 if (balanceRes.ok) {
                     const wallet = await balanceRes.json();

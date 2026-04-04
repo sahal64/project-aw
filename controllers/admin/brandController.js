@@ -76,8 +76,11 @@ exports.createBrand = async (req, res) => {
 exports.getAllBrands = async (req, res) => {
   try {
     const { search } = req.query;
-    const matchStage = {};
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
+    const matchStage = {};
     if (search) {
       const sanitizedSearch = search.trim().slice(0, 50);
       if (sanitizedSearch) {
@@ -85,14 +88,26 @@ exports.getAllBrands = async (req, res) => {
       }
     }
 
-    const pipeline = [];
+    // Pipeline for basic matching and counting
+    const countPipeline = [];
+    if (Object.keys(matchStage).length > 0) {
+      countPipeline.push({ $match: matchStage });
+    }
+    countPipeline.push({ $count: "total" });
     
-    // Add match stage if search exists
+    // Execute both in parallel
+    const [countResult] = await Brand.aggregate(countPipeline);
+    const totalCount = countResult ? countResult.total : 0;
+
+    const pipeline = [];
     if (Object.keys(matchStage).length > 0) {
       pipeline.push({ $match: matchStage });
     }
 
     pipeline.push(
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
       {
         $lookup: {
           from: "products",
@@ -115,15 +130,21 @@ exports.getAllBrands = async (req, res) => {
           createdAt: 1,
           productCount: { $size: "$products" }
         }
-      },
-      { $sort: { createdAt: -1 } }
+      }
     );
 
     const brands = await Brand.aggregate(pipeline);
-    res.json(brands);
+    
+    res.json({
+      success: true,
+      brands,
+      total: totalCount,
+      page,
+      pages: Math.ceil(totalCount / limit)
+    });
   } catch (error) {
     console.error("Get All Brands Error:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

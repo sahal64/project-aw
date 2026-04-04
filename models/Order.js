@@ -108,6 +108,18 @@ const orderSchema = new mongoose.Schema(
     isDeleted: {
       type: Boolean,
       default: false
+    },
+    returnRequest: {
+      status: {
+        type: String,
+        enum: ["none", "requested", "approved", "rejected"],
+        default: "none"
+      },
+      reason: String,
+      requestedAt: Date
+    },
+    deliveredAt: {
+      type: Date
     }
   },
   { timestamps: true }

@@ -93,8 +93,9 @@
         }
 
         .product-card:hover {
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
             background: #fff;
+            transform: translateY(-5px);
         }
 
         .product-img-container {
@@ -105,18 +106,44 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden; /* Protect images from overflowing card */
         }
 
-        .product-img {
-            max-height: 100%;
-            max-width: 100%;
+        .product-img-container .product-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             object-fit: contain;
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .primary-img {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .hover-img {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        .product-card:hover .primary-img {
+            opacity: 0;
+            transform: scale(1.1);
+        }
+
+        .product-card:hover .hover-img {
+            opacity: 1;
+            transform: scale(1.05); /* Slight zoom-in feel */
         }
 
         .wishlist-btn {
             position: absolute;
             top: 0;
             right: 0;
+            z-index: 10;
             background: #fff;
             border-radius: 50%;
             width: 35px;
@@ -141,6 +168,7 @@
             position: absolute;
             top: 45px;
             right: 0;
+            z-index: 10;
             background: #fff;
             border-radius: 50%;
             width: 35px;
@@ -351,6 +379,52 @@
             color: var(--primary-color);
             transform: rotate(90deg);
         }
+
+        /* Brands Filter List Scrollable */
+        #brandsFilterContainer {
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        /* Custom Scrollbar for Brand List */
+        #brandsFilterContainer::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #brandsFilterContainer::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        #brandsFilterContainer::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 10px;
+        }
+
+        #brandsFilterContainer::-webkit-scrollbar-thumb:hover {
+            background: #888;
+        }
+
+        .brand-search-box {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .brand-search-box input {
+            padding-left: 30px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .brand-search-box i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ccc;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 
@@ -378,7 +452,7 @@
                 </form>
                 <a href="#" class="icon-btn" id="search-trigger"><i class="bi bi-search"></i></a>
                 <a href="javascript:Auth.goToWishlist()" class="icon-btn" title="Wishlist"><i class="bi bi-heart"></i></a>
-                <a href="javascript:Auth.goToAccount()" class="icon-btn" id="accountBtn" href="javascript:Auth.goToAccount()" title="Account">
+                <a href="javascript:Auth.goToAccount()" class="icon-btn" title="Account">
                     <i class="bi bi-person"></i>
                 </a>
                 <a href="javascript:Auth.goToCart()" class="icon-btn" title="Cart"><i class="bi bi-bag"></i></a>
@@ -415,9 +489,27 @@
                         <label class="form-check-label" for="cat2">Women's Fashion</label>
 
                     </div>
-
                 </div>
 
+                <div class="mb-4">
+                    <h5 class="filter-title">Brands</h5>
+                    <div class="brand-search-box">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="brandSearchInput" class="form-control form-control-sm" placeholder="Search brands...">
+                    </div>
+                    <div id="brandsFilterContainer">
+                        <!-- Dynamic Checkboxes -->
+                        <div class="text-muted small">Loading brands...</div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="filter-title">Offers</h5>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="offerFilter" value="true">
+                        <label class="form-check-label" for="offerFilter">On Sale / Special Offers</label>
+                    </div>
+                </div>
                 <div class="mb-4">
                     <h5 class="filter-title">Price: <span id="priceRangeValue" class="text-primary fw-bold">Up to
                             ₹50,000+</span></h5>
@@ -618,12 +710,20 @@
             // ==========================
             // LOAD PRODUCTS FROM BACKEND
             // ==========================
-            async function loadProducts(category = "", sort = "", maxPrice = "", page = 1) {
+            async function loadProducts(category = "", sort = "", maxPrice = "", page = 1, brand = "", onSale = false) {
                 try {
                     let url = `/api/products?page=${page}&limit=${itemsPerPage}&`;
 
                     if (category) {
                         url += `category=${category}&`;
+                    }
+
+                    if (brand) {
+                        url += `brand=${brand}&`;
+                    }
+
+                    if (onSale) {
+                        url += `onSale=true&`;
                     }
 
                     if (sort) {
@@ -660,6 +760,11 @@
                         const image = product.images && product.images.length > 0
                             ? product.images[0]
                             : "https://placehold.co/300x300?text=No+Image";
+                            
+                        // Get hover image if available, else fallback to primary
+                        const hoverImage = product.images && product.images.length > 1
+                            ? product.images[1]
+                            : image;
 
                         const hasDiscount = product.discountPercentage > 0;
                         let priceHtml = `<div class="product-price">₹${product.price.toLocaleString('en-IN')}</div>`;
@@ -694,7 +799,8 @@
                             <i class="bi bi-bag-plus"></i>
                         </div>
                         <div class="product-img-container">
-                            <img src="${image}" class="product-img">
+                            <img src="${image}" class="product-img primary-img">
+                            <img src="${hoverImage}" class="product-img hover-img text-center">
                         </div>
 
                         <div class="product-category">
@@ -789,8 +895,74 @@
                 let maxPrice = priceRangeInput.value;
                 if (Number(maxPrice) >= 50000) maxPrice = ""; // No limit when at max
 
-                loadProducts(selectedCategory, selectedSort, maxPrice, currentPage);
+                // Get checked brands
+                const checkedBrands = Array.from(document.querySelectorAll('.brand-checkbox:checked')).map(cb => cb.value);
+                const brandStr = checkedBrands.join(",");
+
+                // Get offer filter
+                const isOfferChecked = document.getElementById("offerFilter")?.checked || false;
+
+                loadProducts(selectedCategory, selectedSort, maxPrice, currentPage, brandStr, isOfferChecked);
             }
+
+            let allBrands = [];
+
+            // Load Active Brands for Sidebar
+            async function loadActiveBrands() {
+                try {
+                    const res = await fetch("/api/products/active-brands");
+                    if (!res.ok) throw new Error("Failed to fetch brands");
+                    const data = await res.json();
+                    
+                    const container = document.getElementById("brandsFilterContainer");
+                    if (!container) return;
+
+                    if (data.brands && data.brands.length > 0) {
+                        allBrands = data.brands;
+                        renderBrandList();
+                    } else {
+                        container.innerHTML = `<div class="text-muted small">No brands available</div>`;
+                    }
+                } catch (error) {
+                    console.error("Error loading brands:", error);
+                    const container = document.getElementById("brandsFilterContainer");
+                    if (container) container.innerHTML = `<div class="text-danger small">Failed to load</div>`;
+                }
+            }
+
+            function renderBrandList(searchTerm = "") {
+                const container = document.getElementById("brandsFilterContainer");
+                if (!container) return;
+
+                const filteredBrands = allBrands.filter(b => 
+                    b.name.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+
+                if (filteredBrands.length === 0) {
+                    container.innerHTML = `<div class="text-muted small px-1">No brands found</div>`;
+                    return;
+                }
+
+                container.innerHTML = "";
+                filteredBrands.forEach((brand, idx) => {
+                    const div = document.createElement("div");
+                    div.className = "form-check mb-2";
+                    div.innerHTML = `
+                        <input class="form-check-input brand-checkbox" type="checkbox" id="brand_${brand._id || idx}" value="${brand.name}">
+                        <label class="form-check-label w-100" for="brand_${brand._id || idx}">${brand.name}</label>
+                    `;
+                    container.appendChild(div);
+
+                    // Listen for changes
+                    div.querySelector("input").addEventListener("change", () => {
+                        fetchProducts(true);
+                    });
+                });
+            }
+
+            document.getElementById("brandSearchInput")?.addEventListener("input", (e) => {
+                renderBrandList(e.target.value);
+            });
 
             priceRangeInput.addEventListener("input", () => {
                 const val = Number(priceRangeInput.value);
@@ -821,44 +993,12 @@
                 });
             });
 
+            document.getElementById("offerFilter")?.addEventListener("change", () => {
+                fetchProducts(true);
+            });
 
 
 
-            /* =====================
-               PROTECT PAGES
-            ====================== */
-            function protectPage(e, redirectTo) {
-                e.preventDefault();
-
-                const { token } = getAuth();
-
-                if (!token) {
-                    Swal.fire({
-                        icon: "warning",
-                        title: "Login Required",
-                        text: "Please login to continue",
-                        confirmButtonText: "Login",
-                        confirmButtonColor: "#000"
-                    }).then(() => {
-                        window.location.href = "login.html";
-                    });
-                } else {
-                    window.location.href = redirectTo;
-                }
-            }
-
-            if (accountBtn) {
-                accountBtn.addEventListener("click", e => protectPage(e, "account.html"));
-            }
-
-            // Note: Cart and Wishlist buttons might be inside the navbar or elsewhere
-            if (cartBtn) {
-                cartBtn.addEventListener("click", e => protectPage(e, "cart.html"));
-            }
-
-            if (wishlistBtn) {
-                wishlistBtn.addEventListener("click", e => protectPage(e, "wishlist.html"));
-            }
 
             /* =====================
                LOGOUT
@@ -879,6 +1019,9 @@
                 womenCheckbox.checked = true;
             }
 
+            // Load brands which inherently has nothing checked at first
+            loadActiveBrands();
+
             fetchProducts();
 
         });
@@ -887,6 +1030,8 @@
            GLOBAL ADD TO CART
         ====================== */
         function addToCartLocal(id, name, price, image, stock) {
+            if (!Auth.requireLogin("add items to your cart")) return;
+
             let cart = JSON.parse(localStorage.getItem("cartItems")) || [];
             const existingIndex = cart.findIndex(item => item.id === id);
 
@@ -925,13 +1070,10 @@
            GLOBAL ADD TO WISHLIST (API)
         ====================== */
         async function addToWishlistApi(productId) {
-            const { token, role } = getAuth();
+            const isLoggedIn = Auth.isLoggedIn();
+            const { role } = getAuth();
 
-            // DEBUG LOGS
-            console.log("Token:", token);
-            console.log("Role:", role);
-
-            if (!token) {
+            if (!isLoggedIn) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Login Required',
@@ -957,10 +1099,10 @@
                 const res = await fetch('/api/users/wishlist/add', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ productId })
+                    body: JSON.stringify({ productId }),
+                    credentials: "include"
                 });
 
                 const data = await res.json();
@@ -1004,7 +1146,7 @@
             }
         }
     </script>
-    <script src="/js/auth.js"></script>
+    <script src="/js/auth.js?v=2"></script>
 </body>
 
 </html>

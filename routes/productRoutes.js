@@ -15,7 +15,9 @@ const {
   addProductOffer,
   removeProductOffer,
   getOfferProducts,
-  getSaleProducts
+  getSaleProducts,
+  getActiveBrands,
+  getRecommendedProducts
 } = require("../controllers/productController");
 
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -36,6 +38,12 @@ router.get("/offers", getOfferProducts);
 
 // Get Sale Products (Active Campaign)
 router.get("/sale", getSaleProducts);
+
+// Get active brands for product filtering
+router.get("/active-brands", getActiveBrands);
+
+// Get Recommended Products
+router.get("/recommended/:id", getRecommendedProducts);
 
 // Get single product
 router.get("/:id", getProductById);

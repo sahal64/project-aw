@@ -7,7 +7,10 @@ const {
   getAllOrders,
   updateOrderStatus,
   getOrderById,
-  cancelOrder
+  cancelOrder,
+  requestReturn,
+  approveReturn,
+  rejectReturn
 } = require("../controllers/orderController");
 
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -24,6 +27,8 @@ router.put("/cancel-item/:orderId/:itemId", authMiddleware, (req, res, next) => 
   const { cancelOrderItem } = require("../controllers/orderController");
   return cancelOrderItem(req, res, next);
 });
+
+router.put("/:id/return", authMiddleware, requestReturn);
 
 // ADMIN ROUTES
 router.get("/admin/all", authMiddleware, adminMiddleware, (req, res, next) => {

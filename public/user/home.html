@@ -70,10 +70,11 @@
         /* Hero Section */
         /* Hero Section */
         .hero-section {
-            background-image: url('../common/images/hero_trio.jpg');
+            background-color: #f8f9fa;
+            background-image: url('../common/images/hero_banner_wide.png');
             background-size: cover;
-            background-position: center;
-            min-height: 500px;
+            background-position: right center;
+            min-height: 400px;
             display: flex;
             align-items: center;
             border-radius: 20px;
@@ -561,7 +562,7 @@
                 </form>
                 <a href="#" class="icon-btn" id="search-trigger"><i class="bi bi-search"></i></a>
                 <a href="javascript:Auth.goToWishlist()" class="icon-btn" title="Wishlist"><i class="bi bi-heart"></i></a>
-                <a href="javascript:Auth.goToAccount()" class="icon-btn" id="accountBtn" href="javascript:Auth.goToAccount()" title="Account">
+                <a href="javascript:Auth.goToAccount()" class="icon-btn" title="Account">
                     <i class="bi bi-person"></i>
                 </a>
                 <a href="javascript:Auth.goToCart()" class="icon-btn" title="Cart"><i class="bi bi-bag"></i></a>
@@ -809,7 +810,7 @@
                 /* =====================
                    AUTH STATE
                 ====================== */
-                const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+                const isLoggedIn = Auth.isLoggedIn();
 
                 const guestNav = document.getElementById("guest-nav");
                 const userNav = document.getElementById("user-nav");
@@ -829,24 +830,12 @@
                     }
                 }
 
-                if (accountBtn) {
-                    accountBtn.addEventListener("click", e => protectPage(e, "account.html"));
-                }
 
-                if (cartBtn) {
-                    cartBtn.addEventListener("click", e => protectPage(e, "cart.html"));
-                }
-
-                if (wishlistBtn) {
-                    wishlistBtn.addEventListener("click", e => protectPage(e, "wishlist.html"));
-                }
 
                 if (logoutBtn) {
-                    logoutBtn.addEventListener("click", async function (e) {
+                    logoutBtn.addEventListener("click", e => {
                         e.preventDefault();
-                        await fetch("/api/auth/logout", { method: "POST" });
-                        localStorage.removeItem("isLoggedIn");
-                        window.location.href = "home.html";
+                        Auth.logout();
                     });
                 }
 
@@ -911,25 +900,7 @@
             });
 
 
-            function protectPage(e, redirectTo) {
-                e.preventDefault();
 
-                const loggedInNow = localStorage.getItem("isLoggedIn") === "true";
-
-                if (!loggedInNow) {
-                    Swal.fire({
-                        icon: "warning",
-                        title: "Login Required",
-                        text: "Please login to continue",
-                        confirmButtonText: "Login",
-                        confirmButtonColor: "#000"
-                    }).then(() => {
-                        window.location.href = "login.html";
-                    });
-                } else {
-                    window.location.href = redirectTo;
-                }
-            }
 
 
             async function loadCategories() {
@@ -1174,6 +1145,8 @@
                GLOBAL ADD TO CART
             ====================== */
             function addToCartLocal(id, name, price, image, stock) {
+                if (!Auth.requireLogin("add items to your cart")) return;
+
                 let cart = JSON.parse(localStorage.getItem("cartItems")) || [];
                 const existingIndex = cart.findIndex(item => item.id === id);
 
@@ -1216,10 +1189,8 @@
 
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="/js/auth.js"></script>
-    <script>
-        Auth.checkAccess("user");
-    </script>
+    <script src="/js/auth.js?v=2"></script>
+
 </body>
 
 </html>

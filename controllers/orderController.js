@@ -120,7 +120,12 @@ exports.placeOrder = async (req, res) => {
 // USER – Get My Orders
 exports.getMyOrders = async (req, res) => {
   try {
-    const { sort } = req.query;
+    const { sort, type } = req.query;
+    const filter = { user: req.user._id };
+
+    if (type === "returns") {
+      filter["returnRequest.status"] = { $in: ["requested", "approved", "rejected"] };
+    }
 
     let sortOption = { createdAt: -1 }; // Default: Newest first
 
@@ -132,7 +137,7 @@ exports.getMyOrders = async (req, res) => {
       sortOption = { totalAmount: 1 };
     }
 
-    const orders = await Order.find({ user: req.user._id })
+    const orders = await Order.find(filter)
       .sort(sortOption)
       .populate("items.product");
 
@@ -373,8 +378,18 @@ exports.updateOrderStatus = async (req, res) => {
     if (!order.subtotal) {
       order.subtotal = order.totalAmount + (order.discount || 0);
     }
+    
+    const updateData = { 
+      orderStatus: status, 
+      subtotal: order.subtotal 
+    };
+
+    if (status === "Delivered") {
+      updateData.deliveredAt = new Date();
+    }
+
     order.orderStatus = status;
-    await Order.updateOne({ _id: order._id }, { $set: { orderStatus: status, subtotal: order.subtotal } }, { session });
+    await Order.updateOne({ _id: order._id }, { $set: updateData }, { session });
 
     await session.commitTransaction();
     res.json({ message: "Order status updated", order });
@@ -610,6 +625,119 @@ exports.deleteOrder = async (req, res) => {
     await order.save();
 
     res.json({ message: "Order deleted successfully (soft delete)" });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+// USER – Request Return
+exports.requestReturn = async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const order = await Order.findOne({
+      _id: req.params.id,
+      user: req.user._id
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.orderStatus !== "Delivered") {
+      return res.status(400).json({ message: "Only delivered orders can be returned" });
+    }
+
+    if (order.returnRequest.status !== "none") {
+      return res.status(400).json({ message: "Return already requested for this order" });
+    }
+
+    // Eligibility check (7 days)
+    const days = 7;
+    const deliveredDate = new Date(order.deliveredAt || order.updatedAt);
+    const now = new Date();
+    const diff = (now - deliveredDate) / (1000 * 60 * 60 * 24);
+
+    if (diff > days) {
+      return res.status(400).json({ message: "Return period (7 days) has expired" });
+    }
+
+    order.returnRequest = {
+      status: "requested",
+      reason: reason || "No reason provided",
+      requestedAt: new Date()
+    };
+
+    await order.save();
+
+    res.json({ message: "Return request submitted successfully", order });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ADMIN – Approve Return
+exports.approveReturn = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const order = await Order.findById(req.params.id).session(session);
+
+    if (!order) throw new Error("Order not found");
+
+    if (order.returnRequest.status !== "requested") {
+      throw new Error("No active return request for this order");
+    }
+
+    order.returnRequest.status = "approved";
+
+    // Optional: Handle Refund if paid
+    if (order.paymentStatus === "Paid") {
+      let wallet = await Wallet.findOne({ user: order.user }).session(session);
+      if (!wallet) {
+        wallet = new Wallet({ user: order.user, balance: 0, transactions: [] });
+      }
+      
+      wallet.balance += order.totalAmount;
+      wallet.transactions.push({
+        type: "Refund",
+        amount: order.totalAmount,
+        order: order._id,
+        description: `Refund for returned order ${order.orderNumber}`
+      });
+      await wallet.save({ session });
+      order.paymentStatus = "Refunded";
+    }
+
+    await order.save({ session });
+    await session.commitTransaction();
+    res.json({ message: "Return request approved", order });
+
+  } catch (error) {
+    await session.abortTransaction();
+    res.status(400).json({ message: error.message });
+  } finally {
+    session.endSession();
+  }
+};
+
+// ADMIN – Reject Return
+exports.rejectReturn = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (order.returnRequest.status !== "requested") {
+      return res.status(400).json({ message: "No active return request for this order" });
+    }
+
+    order.returnRequest.status = "rejected";
+    await order.save();
+
+    res.json({ message: "Return request rejected", order });
 
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -58,20 +58,26 @@ exports.googleLogin = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.cookie("accessToken", accessToken, {
+    const cookieName = user.role === "admin" ? "admin_token" : "user_token";
+
+    // Do NOT clear opposite session — allow both admin and user sessions to coexist
+
+    res.cookie(cookieName, accessToken, {
       httpOnly: true,
       secure: false, // localhost
       sameSite: "lax",
       path: "/",
-      maxAge: 15 * 60 * 1000
+      maxAge: 5 * 60 * 60 * 1000 // 5 hours
     });
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
+    // Role-specific cookie for frontend detection (allows both sessions to coexist)
+    const roleCookieName = user.role === "admin" ? "admin_role" : "user_role";
+    res.cookie(roleCookieName, user.role, {
+      httpOnly: false,
       secure: false,
       sameSite: "lax",
       path: "/",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 5 * 60 * 60 * 1000
     });
 
     res.json({
@@ -161,19 +167,23 @@ exports.verifyOtp = async (req, res) => {
   }
 };
 
-// GET CURRENT USER
+// GET CURRENT IDENTITY
 exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
+
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "Account not found" });
     }
+
     if (user.isBlocked) {
       return res.status(403).json({ message: "Your account has been blocked" });
     }
+
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    console.error("GET ME ERROR:", error);
+    res.status(500).json({ message: "Authentication failure" });
   }
 };
 
@@ -212,20 +222,26 @@ exports.loginUser = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.cookie("accessToken", accessToken, {
+    const cookieName = user.role === "admin" ? "admin_token" : "user_token";
+
+    // Do NOT clear opposite session — allow both admin and user sessions to coexist
+
+    res.cookie(cookieName, accessToken, {
       httpOnly: true,
       secure: false,      // localhost
       sameSite: "lax",
       path: "/",
-      maxAge: 15 * 60 * 1000
+      maxAge: 5 * 60 * 60 * 1000 // 5 hours
     });
 
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
+    // Role-specific cookie for frontend detection (allows both sessions to coexist)
+    const roleCookieName = user.role === "admin" ? "admin_role" : "user_role";
+    res.cookie(roleCookieName, user.role, {
+      httpOnly: false,
       secure: false,
       sameSite: "lax",
       path: "/",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 5 * 60 * 60 * 1000
     });
 
     res.json({ 
@@ -387,14 +403,17 @@ exports.refreshAccessToken = async (req, res) => {
     const newAccessToken = jwt.sign(
       { id: decoded.id, role: decoded.role },
       process.env.JWT_SECRET,
-      { expiresIn: "15m" }
+      { expiresIn: "5hr" }
     );
 
-    res.cookie("accessToken", newAccessToken, {
+    const cookieName = decoded.role === "admin" ? "admin_token" : "user_token";
+
+    res.cookie(cookieName, newAccessToken, {
       httpOnly: true,
+      secure: false, // localhost
       sameSite: "lax",
       path: "/",
-      maxAge: 15 * 60 * 1000,
+      maxAge: 5 * 60 * 60 * 1000,
     });
 
     res.json({ message: "Access token refreshed" });
@@ -403,19 +422,25 @@ exports.refreshAccessToken = async (req, res) => {
     return res.status(401).json({ message: "Invalid refresh token" });
   }
 };
-// LOGOUT
+// LOGOUT (Context-specific: only clear the session for the current side)
 exports.logoutUser = (req, res) => {
-  res.clearCookie("accessToken", {
-    httpOnly: true,
-    secure: false, // localhost
-    sameSite: "lax",
-    path: "/"
-  });
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",
-    path: "/"
-  });
+  const logoutRole = req.body.role || "user";
+
+  if (logoutRole === "admin") {
+    res.clearCookie("admin_token", { path: "/" });
+    res.clearCookie("admin_role", { path: "/" });
+    res.clearCookie("admin_id", { path: "/" });
+  } else {
+    res.clearCookie("user_token", { path: "/" });
+    res.clearCookie("user_role", { path: "/" });
+    res.clearCookie("user_id", { path: "/" });
+  }
+
+  // Legacy cleanup
+  res.clearCookie("token", { path: "/" });
+  res.clearCookie("role", { path: "/" });
+  res.clearCookie("refreshToken", { path: "/" });
+
   res.json({ message: "Logged out successfully" });
 };
+

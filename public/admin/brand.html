@@ -157,6 +157,12 @@
                     </tbody>
                 </table>
             </div>
+            <div class="card-footer bg-white border-top-0 pt-0 pb-4">
+                <nav aria-label="Brand pagination">
+                    <ul class="pagination justify-content-center mb-0" id="brandPagination">
+                    </ul>
+                </nav>
+            </div>
         </div>
     </div>
 
@@ -240,7 +246,7 @@
             searchInput.addEventListener("input", () => {
                 clearTimeout(timeout);
                 timeout = setTimeout(() => {
-                    fetchBrands(searchInput.value);
+                    fetchBrands(1, searchInput.value);
                 }, 300);
             });
         });
@@ -250,25 +256,31 @@
             Auth.logout();
         });
 
+        let currentPage = 1;
+        let currentSearch = "";
+
         // ==========================
         // BRAND MANAGEMENT
         // ==========================
-        async function fetchBrands(search = "") {
+        async function fetchBrands(page = 1, search = "") {
+            currentPage = page;
+            currentSearch = search;
+            
             try {
-                const url = search 
-                    ? `/api/admin/brands?search=${encodeURIComponent(search.trim())}` 
-                    : "/api/admin/brands";
+                const url = `/api/admin/brands?page=${page}&search=${encodeURIComponent(search.trim())}`;
                 const res = await fetch(url);
-                const brands = await res.json();
+                const data = await res.json();
+                
                 const tableBody = document.getElementById("brandTableBody");
                 tableBody.innerHTML = "";
 
-                if (brands.length === 0) {
+                if (!data.success || data.brands.length === 0) {
                     tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">No brands found</td></tr>`;
+                    renderPagination(0, 0);
                     return;
                 }
 
-                brands.forEach(brand => {
+                data.brands.forEach(brand => {
                     const logoUrl = brand.logo ? brand.logo : "https://placehold.co/40";
                     const statusBadge = brand.status 
                         ? `<span class="badge bg-success" style="cursor:pointer" onclick="toggleStatus('${brand._id}')">Active</span>`
@@ -291,9 +303,50 @@
                         </tr>
                     `;
                 });
+
+                renderPagination(data.pages, data.page);
             } catch (err) {
                 console.error("Fetch brands error:", err);
             }
+        }
+
+        function renderPagination(totalPages, activePage) {
+            const pagination = document.getElementById("brandPagination");
+            pagination.innerHTML = "";
+
+            if (totalPages <= 1) return;
+
+            // Previous button
+            const prevLi = document.createElement("li");
+            prevLi.className = `page-item ${activePage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#">Previous</a>`;
+            prevLi.onclick = (e) => {
+                e.preventDefault();
+                if (activePage > 1) fetchBrands(activePage - 1, currentSearch);
+            };
+            pagination.appendChild(prevLi);
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement("li");
+                li.className = `page-item ${i === activePage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                li.onclick = (e) => {
+                    e.preventDefault();
+                    fetchBrands(i, currentSearch);
+                };
+                pagination.appendChild(li);
+            }
+
+            // Next button
+            const nextLi = document.createElement("li");
+            nextLi.className = `page-item ${activePage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#">Next</a>`;
+            nextLi.onclick = (e) => {
+                e.preventDefault();
+                if (activePage < totalPages) fetchBrands(activePage + 1, currentSearch);
+            };
+            pagination.appendChild(nextLi);
         }
 
         // Add Brand
@@ -318,7 +371,7 @@
                     Swal.fire("Success", data.message, "success");
                     e.target.reset();
                     bootstrap.Modal.getInstance(document.getElementById("addBrandModal")).hide();
-                    fetchBrands();
+                    fetchBrands(1, ""); // Reset to page 1 on new add
                 } else {
                     Swal.fire("Error", data.message, "error");
                 }
@@ -366,7 +419,7 @@
                 if (res.ok) {
                     Swal.fire("Success", data.message, "success");
                     bootstrap.Modal.getInstance(document.getElementById("editBrandModal")).hide();
-                    fetchBrands();
+                    fetchBrands(currentPage, currentSearch);
                 } else {
                     Swal.fire("Error", data.message, "error");
                 }
@@ -393,7 +446,7 @@
                     const data = await res.json();
                     if (res.ok) {
                         Swal.fire("Deleted!", data.message, "success");
-                        fetchBrands();
+                        fetchBrands(currentPage, currentSearch);
                     } else {
                         Swal.fire("Error", data.message, "error");
                     }
@@ -409,7 +462,7 @@
                 const res = await Auth.fetch(`/api/admin/brands/${id}/status`, { method: "PATCH" });
                 const data = await res.json();
                 if (res.ok) {
-                    fetchBrands();
+                    fetchBrands(currentPage, currentSearch);
                 } else {
                     Swal.fire("Error", data.message, "error");
                 }

@@ -233,22 +233,11 @@
                 </form>
                 <a href="#" class="icon-btn" id="search-trigger"><i class="bi bi-search"></i></a>
                 <a href="/user/wishlist.html" class="icon-btn" title="Wishlist"><i class="bi bi-heart"></i></a>
-                <a href="/user/account.html" class="icon-btn" id="accountBtn" href="javascript:Auth.goToAccount()" title="Account">
+                <a href="javascript:Auth.goToAccount()" class="icon-btn" title="Account">
                     <i class="bi bi-person-fill"></i>
                 </a>
                 <a href="/user/cart.html" class="icon-btn" title="Cart"><i class="bi bi-bag"></i></a>
 
-                <!-- GUEST NAV: Shown when NOT logged in -->
-                <div id="guest-nav" class="align-items-center ms-3 d-none">
-                    <a href="/user/signup.html" class="btn btn-dark text-uppercase rounded-pill px-4"
-                        style="font-size: 0.85rem; padding-top: 8px; padding-bottom: 8px;">Sign Up</a>
-                </div>
-
-                <!-- USER NAV: Only Logout Button -->
-                <div id="user-nav" class="align-items-center d-none">
-                    <a href="#" class="icon-btn ms-3 text-danger" id="logout-btn" title="Logout"
-                        style="font-size: 1rem;"><i class="bi bi-box-arrow-right"></i></a>
-                </div>
             </div>
         </div>
     </nav>
@@ -503,16 +492,7 @@
 
             async function loadUserInfo() {
                 try {
-                    let res = await fetch("/api/auth/me", { credentials: "include" });
-                    
-                    if (res.status === 401) {
-                        const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
-                        if (!refreshRes.ok) {
-                            window.location.href = "/login.html";
-                            return;
-                        }
-                        res = await fetch("/api/auth/me", { credentials: "include" });
-                    }
+                    let res = await Auth.fetch("/api/auth/me");
 
                     if (!res.ok) throw new Error("Auth failed");
                     const user = await res.json();
@@ -529,15 +509,7 @@
 
             async function loadOrders() {
                 try {
-                    let res = await fetch("/api/orders/my-orders?sort=newest", {
-                        credentials: "include"
-                    });
-
-                    if (res.status === 401) {
-                        const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
-                        if (!refreshRes.ok) return;
-                        res = await fetch("/api/orders/my-orders?sort=newest", { credentials: "include" });
-                    }
+                    let res = await Auth.fetch("/api/orders/my-orders?sort=newest");
 
                     if (!res.ok) return;
                     const orders = await res.json();
@@ -673,6 +645,14 @@
 
             // Expose for inline onclick
             window.handleHashNavigation = handleHashNavigation;
+
+            const sidebarLogoutBtn = document.getElementById("sidebarLogoutBtn");
+            if (sidebarLogoutBtn) {
+                sidebarLogoutBtn.addEventListener("click", async (e) => {
+                    e.preventDefault();
+                    await Auth.logout();
+                });
+            }
         });
     </script>
     <script src="/js/auth.js"></script>

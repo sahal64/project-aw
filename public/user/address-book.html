@@ -429,7 +429,7 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+            const isLoggedIn = Auth.isLoggedIn();
 
             // If not logged in, redirect to login
             if (!isLoggedIn) {
@@ -440,13 +440,7 @@
             // Handle Logout from Sidebar
             const handleLogout = async (e) => {
                 e.preventDefault();
-                try {
-                    await fetch("/api/auth/logout", { method: "POST" });
-                } catch (err) {
-                    console.error(err);
-                }
-                localStorage.removeItem("isLoggedIn");
-                window.location.href = "home.html";
+                await Auth.logout();
             };
 
             const logoutBtn = document.getElementById("sidebarLogoutBtn");
@@ -454,12 +448,7 @@
 
             async function loadUserInfo() {
                 try {
-                    let res = await fetch("/api/auth/me", { credentials: "include" });
-                    if (res.status === 401) {
-                        const refreshRes = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
-                        if (!refreshRes.ok) throw new Error("Session expired");
-                        res = await fetch("/api/auth/me", { credentials: "include" });
-                    }
+                    let res = await Auth.fetch("/api/auth/me");
                     if (res.status === 403) {
                         const data = await res.json();
                         if (data.message === "Your account has been blocked") {

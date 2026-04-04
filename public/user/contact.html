@@ -307,7 +307,7 @@
                 </form>
                 <a href="#" class="icon-btn" id="search-trigger"><i class="bi bi-search"></i></a>
                 <a href="javascript:Auth.goToWishlist()" class="icon-btn" title="Wishlist"><i class="bi bi-heart"></i></a>
-                <a href="#" class="icon-btn" id="accountBtn" href="javascript:Auth.goToAccount()" title="Account">
+                <a href="javascript:Auth.goToAccount()" class="icon-btn" title="Account">
                     <i class="bi bi-person"></i>
                 </a>
                 <a href="javascript:Auth.goToCart()" class="icon-btn" title="Cart"><i class="bi bi-bag"></i></a>
@@ -477,7 +477,7 @@
             /* =====================
                AUTH STATE
             ====================== */
-            const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+            const isLoggedIn = Auth.isLoggedIn();
 
             const guestNav = document.getElementById("guest-nav");
             const userNav = document.getElementById("user-nav");
@@ -511,54 +511,17 @@
             /* =====================
                PROTECT PAGES
             ====================== */
-            function protectPage(e, redirectTo) {
-                e.preventDefault();
 
-                const loggedInNow = localStorage.getItem("isLoggedIn") === "true";
 
-                if (!loggedInNow) {
-                    Swal.fire({
-                        icon: "warning",
-                        title: "Login Required",
-                        text: "Please login to continue",
-                        confirmButtonText: "Login",
-                        confirmButtonColor: "#000"
-                    }).then(() => {
-                        window.location.href = "login.html";
-                    });
-                } else {
-                    window.location.href = redirectTo;
-                }
-            }
 
-            if (accountBtn) {
-                accountBtn.addEventListener("click", e => protectPage(e, "account.html"));
-            }
-
-            if (cartBtn) {
-                cartBtn.addEventListener("click", e => protectPage(e, "cart.html"));
-            }
-
-            if (wishlistBtn) {
-                wishlistBtn.addEventListener("click", e => protectPage(e, "wishlist.html"));
-            }
 
             /* =====================
                LOGOUT
             ====================== */
             if (logoutBtn) {
-                logoutBtn.addEventListener("click", async function (e) {
+                logoutBtn.addEventListener("click", e => {
                     e.preventDefault();
-                    try {
-                        const res = await fetch("/api/auth/logout", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" }
-                        });
-                    } catch (error) {
-                        console.error("Logout failed:", error);
-                    }
-                    localStorage.removeItem("isLoggedIn");
-                    window.location.href = "home.html";
+                    Auth.logout();
                 });
             }
         });

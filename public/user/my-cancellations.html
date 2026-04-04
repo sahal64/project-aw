@@ -401,9 +401,7 @@
         if (logoutBtn) {
             logoutBtn.addEventListener("click", async function (e) {
                 e.preventDefault();
-                await fetch("/api/auth/logout", { method: "POST" });
-                localStorage.removeItem("isLoggedIn");
-                window.location.href = "home.html";
+                await Auth.logout();
             });
         }
 

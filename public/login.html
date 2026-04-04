@@ -131,20 +131,19 @@
                 const res = await fetch("/api/auth/google", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ token: response.credential })
+                    body: JSON.stringify({ token: response.credential }),
+                    credentials: "include"
                 });
 
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message || "Google Login failed");
 
-                // STORE IN COOKIES (aligned with auth.js)
+                // Sync auth state locally
+                localStorage.setItem("isLoggedIn", "true");
+
                 if (data.role === "admin") {
-                    document.cookie = `admin_token=${data.token}; path=/; max-age=18000; SameSite=Lax`;
-                    document.cookie = `admin_id=${data.user._id}; path=/; max-age=18000; SameSite=Lax`;
                     window.location.href = "/admin/dashboard.html";
                 } else {
-                    document.cookie = `user_token=${data.token}; path=/; max-age=18000; SameSite=Lax`;
-                    document.cookie = `user_id=${data.user._id}; path=/; max-age=18000; SameSite=Lax`;
                     window.location.href = "/user/home.html";
                 }
             } catch (err) {

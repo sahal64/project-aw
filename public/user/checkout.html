@@ -360,11 +360,11 @@
             <div class="row g-3">
               <div class="col-6">
                 <label class="small text-muted mb-1">First Name*</label>
-                <input type="text" class="form-control rounded-0 shadow-none border-dark" id="modalFirstName" required>
+                <input type="text" class="form-control rounded-0 shadow-none border-dark" id="modalFirstName" maxlength="50" required>
               </div>
               <div class="col-6">
                 <label class="small text-muted mb-1">Last Name*</label>
-                <input type="text" class="form-control rounded-0 shadow-none border-dark" id="modalLastName" required>
+                <input type="text" class="form-control rounded-0 shadow-none border-dark" id="modalLastName" maxlength="50" required>
               </div>
               <div class="col-6">
                 <label class="small text-muted mb-1">Phone*</label>
@@ -378,21 +378,15 @@
               <div class="col-12">
                 <label class="small text-muted mb-1">Street Address*</label>
                 <input type="text" class="form-control rounded-0 shadow-none border-dark" id="modalAddress"
-                  placeholder="House No, Street, Area" required>
+                  placeholder="House No, Street, Area" maxlength="100" required>
               </div>
               <div class="col-6">
                 <label class="small text-muted mb-1">City*</label>
-                <input type="text" class="form-control rounded-0 shadow-none border-dark" id="modalCity" required>
+                <input type="text" class="form-control rounded-0 shadow-none border-dark" id="modalCity" maxlength="50" required>
               </div>
               <div class="col-6">
                 <label class="small text-muted mb-1">State*</label>
-                <select class="form-select rounded-0 shadow-none border-dark" id="modalState" required>
-                  <option value="">Select State</option>
-                  <option value="Delhi">Delhi</option>
-                  <option value="Maharashtra">Maharashtra</option>
-                  <option value="California">California</option>
-                  <option value="New York">New York</option>
-                </select>
+                <input type="text" class="form-control rounded-0 shadow-none border-dark" id="modalState" maxlength="50" placeholder="e.g. Maharashtra" required>
               </div>
               <div class="col-12 mt-3">
                 <div class="form-check">
@@ -754,7 +748,12 @@
             card.innerHTML = `
                       <div class="d-flex justify-content-between">
                           <h6 class="fw-bold mb-1">${addr.firstName} ${addr.lastName}</h6>
-                          <span class="badge bg-light text-dark border">${addr.phone}</span>
+                          <div>
+                              <span class="badge bg-light text-dark border me-2">${addr.phone}</span>
+                              <button type="button" class="btn btn-sm btn-outline-danger border-0 p-0" onclick="event.stopPropagation(); deleteAddress('${addr._id}')" title="Delete Address">
+                                  <i class="bi bi-trash"></i>
+                              </button>
+                          </div>
                       </div>
                       <p class="text-muted small mb-0 mt-2" style="line-height: 1.5;">
                           ${addr.street}<br>
@@ -772,23 +771,183 @@
         }
       }
 
+      window.deleteAddress = async function(id) {
+        try {
+          const confirmation = await Swal.fire({
+            title: "Delete Address?",
+            text: "Are you sure you want to remove this address?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it"
+          });
+          if (confirmation.isConfirmed) {
+            const res = await fetch(`/api/users/addresses/${id}`, { method: 'DELETE', credentials: 'include' });
+            if (res.ok) {
+              Swal.fire({ title: "Deleted", text: "Address removed.", icon: "success", confirmButtonColor: "#000", timer: 1500, showConfirmButton: false });
+              fetchAddresses();
+            } else {
+              Swal.fire({ title: "Error", text: "Could not remove address", icon: "error" });
+            }
+          }
+        } catch(err) { console.error(err); }
+      };
+
       fetchAddresses();
+
+      newAddressForm.addEventListener('input', function (e) {
+        if (e.target.classList.contains('is-invalid')) {
+          e.target.classList.remove('is-invalid');
+          const feedback = e.target.parentNode.querySelector('.invalid-feedback');
+          if (feedback) feedback.remove();
+        }
+      });
+
+      function showError(inputEl, message) {
+        inputEl.classList.add('is-invalid');
+        let feedback = inputEl.parentNode.querySelector('.invalid-feedback');
+        if (!feedback) {
+          feedback = document.createElement('div');
+          feedback.className = 'invalid-feedback';
+          inputEl.parentNode.appendChild(feedback);
+        }
+        feedback.innerText = message;
+      }
+
+      // Real-time Input Restrictors
+      const modalFirstName = document.getElementById("modalFirstName");
+      const modalLastName = document.getElementById("modalLastName");
+      const modalPhone = document.getElementById("modalPhone");
+      const modalZip = document.getElementById("modalZip");
+      const modalCity = document.getElementById("modalCity");
+      const modalAddress = document.getElementById("modalAddress");
+      const modalState = document.getElementById("modalState");
+      
+      modalFirstName.addEventListener('input', function() {
+        this.value = this.value.replace(/[^A-Za-z\s]/g, '');
+      });
+      modalLastName.addEventListener('input', function() {
+        this.value = this.value.replace(/[^A-Za-z\s]/g, '');
+      });
+      modalCity.addEventListener('input', function() {
+        this.value = this.value.replace(/[^A-Za-z\s]/g, '');
+      });
+      modalPhone.addEventListener('input', function() {
+        let val = this.value.replace(/\D/g, ''); 
+        if (val.length > 0 && /^[0-5]/.test(val[0])) val = val.substring(1); 
+        this.value = val.slice(0, 10);
+      });
+      modalZip.addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '').slice(0, 6);
+      });
+      modalAddress.addEventListener('input', function() {
+        this.value = this.value.replace(/[^A-Za-z0-9\s.,#\-\/]/g, '');
+      });
+      modalState.addEventListener('input', function() {
+        this.value = this.value.replace(/[^A-Za-z\s]/g, '');
+      });
+
+      const nameRegex = /^[A-Za-z\s]{2,50}$/;
+      const phoneRegex = /^[6-9]\d{9}$/;
+      const pincodeRegex = /^[1-9][0-9]{5}$/;
+      const addressRegex = /^[A-Za-z0-9\s,\/\-#]{10,150}$/;
+      const cityRegex = /^[A-Za-z\s]{2,50}$/;
+      const stateRegex = /^[A-Za-z\s]{2,50}$/;
+
+      // Show Warnings on Blur
+      modalFirstName.addEventListener('blur', function() {
+        if (!nameRegex.test(this.value.trim())) showError(this, "Name must contain only letters and be at least 2 characters");
+      });
+      modalLastName.addEventListener('blur', function() {
+        if (!nameRegex.test(this.value.trim())) showError(this, "Name must contain only letters and be at least 2 characters");
+      });
+      modalPhone.addEventListener('blur', function() {
+        if (!phoneRegex.test(this.value.trim())) showError(this, "Enter a valid 10-digit Indian phone number");
+      });
+      modalZip.addEventListener('blur', function() {
+        if (!pincodeRegex.test(this.value.trim())) showError(this, "Enter a valid 6-digit pincode");
+      });
+      document.getElementById("modalAddress").addEventListener('blur', function() {
+        if (!addressRegex.test(this.value.trim())) showError(this, "Enter a valid address (min 10 characters)");
+      });
+      modalCity.addEventListener('blur', function() {
+        if (!cityRegex.test(this.value.trim())) showError(this, "City must contain only letters");
+      });
+      modalState.addEventListener('blur', function() {
+        if (!stateRegex.test(this.value.trim())) showError(this, "State must contain only letters");
+      });
 
       newAddressForm.addEventListener("submit", async function (e) {
         e.preventDefault();
+
+        let isValid = true;
+        const inputs = {
+          firstName: document.getElementById("modalFirstName"),
+          lastName: document.getElementById("modalLastName"),
+          phone: document.getElementById("modalPhone"),
+          zip: document.getElementById("modalZip"),
+          street: document.getElementById("modalAddress"),
+          city: document.getElementById("modalCity"),
+          state: document.getElementById("modalState")
+        };
+
+        const fnVal = inputs.firstName.value.trim();
+        if (!nameRegex.test(fnVal)) {
+          showError(inputs.firstName, "Name must contain only letters and be at least 2 characters");
+          isValid = false;
+        }
+
+        const lnVal = inputs.lastName.value.trim();
+        if (!nameRegex.test(lnVal)) {
+          showError(inputs.lastName, "Name must contain only letters and be at least 2 characters");
+          isValid = false;
+        }
+
+        const phVal = inputs.phone.value.trim();
+        if (!phoneRegex.test(phVal)) {
+          showError(inputs.phone, "Enter a valid 10-digit Indian phone number");
+          isValid = false;
+        }
+
+        const zipVal = inputs.zip.value.trim();
+        if (!pincodeRegex.test(zipVal)) {
+          showError(inputs.zip, "Enter a valid 6-digit pincode");
+          isValid = false;
+        }
+
+        const stVal = inputs.street.value.trim();
+        if (!addressRegex.test(stVal)) {
+          showError(inputs.street, "Enter a valid address (min 10 characters)");
+          isValid = false;
+        }
+
+        const ctVal = inputs.city.value.trim();
+        if (!cityRegex.test(ctVal)) {
+          showError(inputs.city, "City must contain only letters");
+          isValid = false;
+        }
+
+        const stateVal = inputs.state.value.trim();
+        if (!stateRegex.test(stateVal)) {
+          showError(inputs.state, "State must contain only letters");
+          isValid = false;
+        }
+
+        if (!isValid) return;
 
         const submitBtn = this.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
         submitBtn.innerText = 'Saving...';
 
         const newAddr = {
-          firstName: document.getElementById("modalFirstName").value.trim(),
-          lastName: document.getElementById("modalLastName").value.trim(),
-          phone: document.getElementById("modalPhone").value.trim(),
-          zip: document.getElementById("modalZip").value.trim(),
-          street: document.getElementById("modalAddress").value.trim(),
-          city: document.getElementById("modalCity").value.trim(),
-          state: document.getElementById("modalState").value
+          firstName: fnVal,
+          lastName: lnVal,
+          phone: phVal,
+          zip: zipVal,
+          street: stVal,
+          city: ctVal,
+          state: inputs.state.value
         };
 
         try {

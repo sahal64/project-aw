@@ -3,8 +3,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sendOtpEmail = require("../utils/sendEmail");
 const { OAuth2Client } = require("google-auth-library");
-
+const isProd = process.env.NODE_ENV === "production";
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 
 // GOOGLE LOGIN
 exports.googleLogin = async (req, res) => {
@@ -64,18 +65,18 @@ exports.googleLogin = async (req, res) => {
 
     res.cookie(cookieName, accessToken, {
       httpOnly: true,
-      secure: false, // localhost
-      sameSite: "lax",
+      secure: isProd,
+      sameSite: isProd ? "None" : "Lax",
       path: "/",
-      maxAge: 5 * 60 * 60 * 1000 // 5 hours
+      maxAge: 5 * 60 * 60 * 1000
     });
 
     // Role-specific cookie for frontend detection (allows both sessions to coexist)
     const roleCookieName = user.role === "admin" ? "admin_role" : "user_role";
     res.cookie(roleCookieName, user.role, {
       httpOnly: false,
-      secure: false,
-      sameSite: "lax",
+      secure: isProd,
+      sameSite: isProd ? "None" : "Lax",
       path: "/",
       maxAge: 5 * 60 * 60 * 1000
     });
@@ -228,20 +229,20 @@ exports.loginUser = async (req, res) => {
 
     res.cookie(cookieName, accessToken, {
       httpOnly: true,
-      secure: false,      // localhost
-      sameSite: "lax",
+      secure: isProd,
+      sameSite: isProd ? "None" : "Lax",
       path: "/",
-      maxAge: 5 * 60 * 60 * 1000 // 5 hours
+      maxAge: 5 * 60 * 60 * 1000
     });
 
     // Role-specific cookie for frontend detection (allows both sessions to coexist)
     const roleCookieName = user.role === "admin" ? "admin_role" : "user_role";
     res.cookie(roleCookieName, user.role, {
       httpOnly: false,
-      secure: false,
-      sameSite: "lax",
+      secure: isProd,
+      sameSite: isProd ? "None" : "Lax",
       path: "/",
-      maxAge: 5 * 60 * 60 * 1000
+    maxAge: 5 * 60 * 60 * 1000
     });
 
     res.json({ 
@@ -410,8 +411,8 @@ exports.refreshAccessToken = async (req, res) => {
 
     res.cookie(cookieName, newAccessToken, {
       httpOnly: true,
-      secure: false, // localhost
-      sameSite: "lax",
+      secure: isProd,
+      sameSite: isProd ? "None" : "Lax",
       path: "/",
       maxAge: 5 * 60 * 60 * 1000,
     });

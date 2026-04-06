@@ -3,6 +3,10 @@ const dotenv = require("dotenv");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const connectDB = require("./config/db");
+const morgan = require("morgan");
+const cors = require("cors");
+
+
 
 // Routes
 const authRoutes = require("./routes/authRoutes");
@@ -25,6 +29,16 @@ connectDB();
 const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
+
+app.set("trust proxy", 1);
+
+app.use(morgan("dev"));
+
+app.use(cors({
+  origin: process.env.CLIENT_URL,
+  credentials: true
+}));
+
 
 /* Middleware */
 app.use(express.json());

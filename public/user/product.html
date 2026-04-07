@@ -787,7 +787,7 @@
                         container.innerHTML += `
                 <div class="col-md-4">
                     <div class="product-card"
-                        onclick="window.location.href='single-product.html?id=${product._id}'" style="position: relative;">
+                        onclick="window.location.href='single-product?id=${product._id}'" style="position: relative;">
                         ${badgeHtml}
                         <!-- Wishlist Button -->
                         <div class="wishlist-btn" id="wishlist-icon-${product._id}" title="Add to Wishlist" onclick="event.stopPropagation(); addToWishlistApi('${product._id}')">
@@ -807,7 +807,7 @@
                             ${product.category}
                         </div>
 
-                        <a href="single-product.html?id=${product._id}"
+                        <a href="/single-product?id=${product._id}"
                            class="product-title">
                             ${product.name}
                         </a>

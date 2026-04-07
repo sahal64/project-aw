@@ -72,14 +72,33 @@ app.use((req, res, next) => {
   next();
 });
 
+/* Root Route */
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/user/home.html"));
+});
+
+
+// app.get("/shop", (req, res) => {
+//   res.sendFile(path.join(__dirname, "public/user/product.html"));
+// });
+
+// app.get("/single-product", (req, res) => {
+//   res.sendFile(path.join(__dirname, "public/user/single-product.html"));
+// });
+
+// app.get("/about", (req, res) => {
+//   res.sendFile(path.join(__dirname, "public/user/about.html"));
+// });
+
+// app.get("/contact", (req, res) => {
+//   res.sendFile(path.join(__dirname, "public/user/contact.html"));
+// });
+
 /* Serve Frontend */
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
-/* Root Route */
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
-});
+
 
 
 /* 404 Handler */

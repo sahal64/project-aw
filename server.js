@@ -94,6 +94,17 @@ app.get("/contact", (req, res) => {
   res.sendFile(path.join(__dirname, "public/user/contact.html"));
 });
 
+/* Fallback: Handle .html variants of clean URL routes */
+app.get("/single-product.html", (req, res) => {
+  res.redirect("/single-product" + (req._parsedUrl.search || ""));
+});
+app.get("/about.html", (req, res) => {
+  res.redirect("/about");
+});
+app.get("/contact.html", (req, res) => {
+  res.redirect("/contact");
+});
+
 /* Serve Frontend */
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));

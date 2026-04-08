@@ -937,7 +937,7 @@
                         container.innerHTML += `
                 <div class="col-md-4">
                     <div class="category-card" style="background-image: url('${bgImage}'); background-size: cover; background-position: center;"
-                         onclick="window.location.href='product.html?category=${catQuery}'">
+                         onclick="window.location.href='/user/product.html?category=${catQuery}'">
                         <div class="cat-content">
                             <div>
                                 <h5>${cat.name}</h5>
@@ -1058,7 +1058,7 @@
                         data.products.forEach(p => {
                             container.innerHTML += `
                                 <div class="col-6 col-md-4">
-                                    <div class="product-card" onclick="window.location.href='single-product.html?id=${p._id}'">
+                                    <div class="product-card" onclick="window.location.href='/single-product?id=${p._id}'">
                                         <div class="discount-badge">${p.discount}% OFF</div>
                                         <div class="product-img-container">
                                             <img src="${p.image}" alt="${p.name}" class="product-img">
@@ -1105,14 +1105,14 @@
 
                 return `
                     <div class="col-6 col-md-3">
-                        <div class="product-card" onclick="window.location.href='single-product.html?id=${product._id}'">
+                        <div class="product-card" onclick="window.location.href='/single-product?id=${product._id}'">
                             ${badgeHtml}
                             <div class="wishlist-btn" title="Add to Cart" onclick="event.stopPropagation(); addToCartLocal('${product._id}', '${product.name}', ${product.finalPrice || product.price}, '${image}', ${product.stock})"><i class="bi bi-bag-plus"></i></div>
                             <div class="product-img-container">
                                 <img src="${image}" alt="${product.name}" class="product-img">
                             </div>
                             <div class="product-category">${product.category}</div>
-                            <a href="single-product.html?id=${product._id}" class="product-title">${product.name}</a>
+                            <a href="/single-product?id=${product._id}" class="product-title">${product.name}</a>
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="rating"><i class="bi bi-star-fill"></i> 4.8 <span class="text-muted" style="font-size:0.75rem">(45)</span></div>
                                 ${priceHtml}

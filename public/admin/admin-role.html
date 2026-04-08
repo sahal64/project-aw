@@ -104,9 +104,6 @@
             <a href="/admin/all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
         </nav>
 
-        <span class="nav-label">Admin</span>
-        <nav class="nav flex-column">
-            <a href="/admin/admin-role.html" class="nav-link active"><i class="bi bi-shield-lock"></i> Admin Role</a>
             <a href="#" class="nav-link mt-3 text-danger" id="admin-logout"><i class="bi bi-box-arrow-right"></i>
                 Logout</a>
         </nav>
@@ -114,10 +111,10 @@
         <div class="mt-auto pt-4">
             <div class="d-flex align-items-center p-3 rounded bg-light">
                 <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center"
-                    style="width: 35px; height: 35px;">M</div>
+                    style="width: 35px; height: 35px;" id="adminAvatar">A</div>
                 <div class="ms-3">
-                    <h6 class="mb-0 fs-6">Mark Bert</h6>
-                    <small class="text-muted" style="font-size: 0.7rem;">Manager</small>
+                    <h6 class="mb-0 fs-6" id="adminName">Loading...</h6>
+                    <small class="text-muted" style="font-size: 0.7rem;">Admin</small>
                 </div>
             </div>
         </div>
@@ -143,9 +140,9 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="fw-bold">Mark Bert</td>
+                            <td class="fw-bold" id="adminNameTable">Logged Admin</td>
                             <td><span class="badge bg-dark">Super Admin</span></td>
-                            <td>mark@aerowatch.com</td>
+                            <td id="adminEmailTable">admin@aerowatch.com</td>
                             <td><span class="badge bg-success">Active</span></td>
                             <td>
                                 <button class="btn btn-sm btn-light"><i class="bi bi-pencil"></i></button>
@@ -169,12 +166,22 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/auth.js"></script>
+    <script src="/admin/js/admin-sidebar.js"></script>
     <script>
         // ==========================
         // ADMIN AUTH CHECK
         // ==========================
         async function checkAdminAuth() {
-            return await Auth.checkBackendAccess("admin");
+            const isAuth = await Auth.checkBackendAccess("admin");
+            if (isAuth) {
+                // We'll assume the side-bar script fetches the data, but for the table we can fetch manually or use the cached state if we stored it
+                fetch('/api/auth/me').then(res=>res.json()).then(data => {
+                    if(data.user) {
+                        document.getElementById('adminNameTable').textContent = data.user.name;
+                        document.getElementById('adminEmailTable').textContent = data.user.email;
+                    }
+                });
+            }
         }
 
         document.addEventListener("DOMContentLoaded", checkAdminAuth);

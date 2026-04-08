@@ -1,793 +1,929 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AeroWatch - Shop</title>
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"
+    />
 
     <style>
-        :root {
-            --font-family: 'Outfit', sans-serif;
-            --primary-color: #000000;
-            --secondary-color: #f8f9fa;
-            --text-color: #333333;
-            --muted-color: #6c757d;
-        }
+      :root {
+        --font-family: "Outfit", sans-serif;
+        --primary-color: #000000;
+        --secondary-color: #f8f9fa;
+        --text-color: #333333;
+        --muted-color: #6c757d;
+      }
 
-        body {
-            font-family: var(--font-family);
-            color: var(--text-color);
-            background-color: #ffffff;
-        }
+      body {
+        font-family: var(--font-family);
+        color: var(--text-color);
+        background-color: #ffffff;
+      }
 
-        /* Navbar */
-        .navbar {
-            padding-top: 20px;
-            padding-bottom: 20px;
-            background-color: #fff;
-        }
+      /* Navbar */
+      .navbar {
+        padding-top: 20px;
+        padding-bottom: 20px;
+        background-color: #fff;
+      }
 
-        .navbar-brand {
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: var(--primary-color);
-        }
+      .navbar-brand {
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: var(--primary-color);
+      }
 
-        .nav-link {
-            font-weight: 500;
-            color: var(--text-color);
-            margin: 0 10px;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-        }
+      .nav-link {
+        font-weight: 500;
+        color: var(--text-color);
+        margin: 0 10px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+      }
 
-        .nav-link:hover {
-            color: var(--primary-color);
-        }
+      .nav-link:hover {
+        color: var(--primary-color);
+      }
 
-        .nav-link.active {
-            color: var(--primary-color);
-            font-weight: 700;
-        }
+      .nav-link.active {
+        color: var(--primary-color);
+        font-weight: 700;
+      }
 
-        .icon-btn {
-            font-size: 1.2rem;
-            color: var(--text-color);
-            margin-left: 15px;
-            text-decoration: none;
-        }
+      .icon-btn {
+        font-size: 1.2rem;
+        color: var(--text-color);
+        margin-left: 15px;
+        text-decoration: none;
+      }
 
-        /* Filters */
-        .filter-sidebar {
-            padding-right: 20px;
-        }
+      /* Filters */
+      .filter-sidebar {
+        padding-right: 20px;
+      }
 
-        .filter-title {
-            font-weight: 700;
-            margin-bottom: 15px;
-            font-size: 1rem;
-        }
+      .filter-title {
+        font-weight: 700;
+        margin-bottom: 15px;
+        font-size: 1rem;
+      }
 
-        .form-check-label {
-            font-size: 0.9rem;
-            color: var(--muted-color);
-        }
+      .form-check-label {
+        font-size: 0.9rem;
+        color: var(--muted-color);
+      }
 
-        /* Product Grid */
-        .product-card {
-            border: none;
-            transition: 0.3s;
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
-            position: relative;
-            height: 100%;
-            cursor: pointer;
-        }
+      /* Product Grid */
+      .product-card {
+        border: none;
+        transition: 0.3s;
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 20px;
+        position: relative;
+        height: 100%;
+        cursor: pointer;
+      }
 
-        .product-card:hover {
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-            background: #fff;
-            transform: translateY(-5px);
-        }
+      .product-card:hover {
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+        background: #fff;
+        transform: translateY(-5px);
+      }
 
-        .product-img-container {
-            position: relative;
-            text-align: center;
-            margin-bottom: 15px;
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden; /* Protect images from overflowing card */
-        }
+      .product-img-container {
+        position: relative;
+        text-align: center;
+        margin-bottom: 15px;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden; /* Protect images from overflowing card */
+      }
 
-        .product-img-container .product-img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
+      .product-img-container .product-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
 
-        .primary-img {
-            opacity: 1;
-            transform: scale(1);
-        }
+      .primary-img {
+        opacity: 1;
+        transform: scale(1);
+      }
 
-        .hover-img {
-            opacity: 0;
-            transform: scale(0.95);
-        }
+      .hover-img {
+        opacity: 0;
+        transform: scale(0.95);
+      }
 
-        .product-card:hover .primary-img {
-            opacity: 0;
-            transform: scale(1.1);
-        }
+      .product-card:hover .primary-img {
+        opacity: 0;
+        transform: scale(1.1);
+      }
 
-        .product-card:hover .hover-img {
-            opacity: 1;
-            transform: scale(1.05); /* Slight zoom-in feel */
-        }
+      .product-card:hover .hover-img {
+        opacity: 1;
+        transform: scale(1.05); /* Slight zoom-in feel */
+      }
 
-        .wishlist-btn {
-            position: absolute;
-            top: 0;
-            right: 0;
-            z-index: 10;
-            background: #fff;
-            border-radius: 50%;
-            width: 35px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            color: #333;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+      .wishlist-btn {
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 10;
+        background: #fff;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        color: #333;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: 0.2s;
+      }
 
+      .wishlist-btn:hover {
+        background: var(--primary-color);
+        color: #fff;
+      }
 
-        .wishlist-btn:hover {
-            background: var(--primary-color);
-            color: #fff;
-        }
+      .cart-btn {
+        position: absolute;
+        top: 45px;
+        right: 0;
+        z-index: 10;
+        background: #fff;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        color: #333;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: 0.2s;
+        text-decoration: none;
+      }
 
-        .cart-btn {
-            position: absolute;
-            top: 45px;
-            right: 0;
-            z-index: 10;
-            background: #fff;
-            border-radius: 50%;
-            width: 35px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            color: #333;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: 0.2s;
-            text-decoration: none;
-        }
+      .cart-btn:hover {
+        background: var(--primary-color);
+        color: #fff;
+      }
 
-        .cart-btn:hover {
-            background: var(--primary-color);
-            color: #fff;
-        }
+      .product-title {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 5px;
+        display: block;
+        color: var(--text-color);
+        text-decoration: none;
+      }
 
-        .product-title {
-            font-weight: 600;
-            font-size: 1rem;
-            margin-bottom: 5px;
-            display: block;
-            color: var(--text-color);
-            text-decoration: none;
-        }
+      .product-category {
+        font-size: 0.8rem;
+        color: var(--muted-color);
+      }
 
-        .product-category {
-            font-size: 0.8rem;
-            color: var(--muted-color);
-        }
+      .product-price {
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--primary-color);
+      }
 
-        .product-price {
-            font-weight: 700;
-            font-size: 1rem;
-            color: var(--primary-color);
-        }
+      .rating {
+        font-size: 0.8rem;
+        color: #ffc107;
+      }
 
-        .rating {
-            font-size: 0.8rem;
-            color: #ffc107;
-        }
+      /* Pagination */
+      .pagination .page-link {
+        color: var(--text-color);
+        border: none;
+        background: #f8f9fa;
+        margin: 0 5px;
+        border-radius: 5px;
+      }
 
-        /* Pagination */
-        .pagination .page-link {
-            color: var(--text-color);
-            border: none;
-            background: #f8f9fa;
-            margin: 0 5px;
-            border-radius: 5px;
-        }
+      .pagination .page-item.active .page-link {
+        background: var(--primary-color);
+        color: #fff;
+      }
 
-        .pagination .page-item.active .page-link {
-            background: var(--primary-color);
-            color: #fff;
-        }
+      /* Footer */
+      footer {
+        margin-top: 80px;
+        padding-top: 50px;
+        padding-bottom: 30px;
+        border-top: 1px solid #eee;
+      }
 
-        /* Footer */
-        footer {
-            margin-top: 80px;
-            padding-top: 50px;
-            padding-bottom: 30px;
-            border-top: 1px solid #eee;
-        }
+      .footer-logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        display: block;
+        text-decoration: none;
+        color: var(--primary-color);
+      }
 
-        .footer-logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: block;
-            text-decoration: none;
-            color: var(--primary-color);
-        }
+      .footer-links h6 {
+        font-weight: 600;
+        margin-bottom: 20px;
+      }
 
-        .footer-links h6 {
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
+      .footer-links ul {
+        padding: 0;
+        list-style: none;
+      }
 
-        .footer-links ul {
-            padding: 0;
-            list-style: none;
-        }
+      .footer-links ul li {
+        margin-bottom: 10px;
+      }
 
-        .footer-links ul li {
-            margin-bottom: 10px;
-        }
+      .footer-links ul li a {
+        color: var(--muted-color);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: 0.2s;
+      }
 
-        .footer-links ul li a {
-            color: var(--muted-color);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: 0.2s;
-        }
+      .social-link {
+        color: var(--muted-color);
+        margin-right: 15px;
+      }
 
-        .social-link {
-            color: var(--muted-color);
-            margin-right: 15px;
-        }
+      .social-link:hover {
+        color: var(--primary-color);
+      }
 
-        .social-link:hover {
-            color: var(--primary-color);
-        }
+      .newsletter-form .form-control {
+        border-radius: 50px;
+        padding-left: 20px;
+        border: 1px solid #eee;
+      }
 
-        .newsletter-form .form-control {
-            border-radius: 50px;
-            padding-left: 20px;
-            border: 1px solid #eee;
-        }
+      .newsletter-form .btn {
+        border-radius: 50px;
+        padding-left: 20px;
+        padding-right: 20px;
+      }
 
-        .newsletter-form .btn {
-            border-radius: 50px;
-            padding-left: 20px;
-            padding-right: 20px;
-        }
+      /* Search Inline */
+      .search-form-inline {
+        position: absolute;
+        right: 50px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 250px;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 1000;
+      }
 
-        /* Search Inline */
-        .search-form-inline {
-            position: absolute;
-            right: 50px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 250px;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
+      .search-form-inline.active {
+        opacity: 1;
+        visibility: visible;
+        right: 180px;
+      }
 
-        .search-form-inline.active {
-            opacity: 1;
-            visibility: visible;
-            right: 180px;
-        }
+      .search-form-inline input {
+        border-radius: 20px;
+        padding-left: 15px;
+        padding-right: 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
 
-        .search-form-inline input {
-            border-radius: 20px;
-            padding-left: 15px;
-            padding-right: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
+      /* Search Overlay */
+      .search-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.98);
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+      }
 
-        /* Search Overlay */
-        .search-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.98);
-            z-index: 2000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
+      .search-overlay.active {
+        opacity: 1;
+        visibility: visible;
+      }
 
-        .search-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
+      .search-container {
+        width: 100%;
+        max-width: 800px;
+        padding: 0 20px;
+        text-align: center;
+        transform: translateY(20px);
+        transition: transform 0.3s ease;
+      }
 
-        .search-container {
-            width: 100%;
-            max-width: 800px;
-            padding: 0 20px;
-            text-align: center;
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-        }
+      .search-overlay.active .search-container {
+        transform: translateY(0);
+      }
 
-        .search-overlay.active .search-container {
-            transform: translateY(0);
-        }
+      .search-input {
+        width: 100%;
+        border: none;
+        border-bottom: 2px solid #eee;
+        font-size: 2rem;
+        padding: 15px 0;
+        background: transparent;
+        text-align: center;
+        font-weight: 300;
+        outline: none;
+        color: var(--primary-color);
+      }
 
-        .search-input {
-            width: 100%;
-            border: none;
-            border-bottom: 2px solid #eee;
-            font-size: 2rem;
-            padding: 15px 0;
-            background: transparent;
-            text-align: center;
-            font-weight: 300;
-            outline: none;
-            color: var(--primary-color);
-        }
+      .search-input::placeholder {
+        color: #ccc;
+      }
 
-        .search-input::placeholder {
-            color: #ccc;
-        }
+      .search-close {
+        position: absolute;
+        top: 40px;
+        right: 40px;
+        font-size: 2rem;
+        cursor: pointer;
+        color: var(--text-color);
+        transition: 0.3s;
+      }
 
-        .search-close {
-            position: absolute;
-            top: 40px;
-            right: 40px;
-            font-size: 2rem;
-            cursor: pointer;
-            color: var(--text-color);
-            transition: 0.3s;
-        }
+      .search-close:hover {
+        color: var(--primary-color);
+        transform: rotate(90deg);
+      }
 
-        .search-close:hover {
-            color: var(--primary-color);
-            transform: rotate(90deg);
-        }
+      /* Brands Filter List Scrollable */
+      #brandsFilterContainer {
+        max-height: 250px;
+        overflow-y: auto;
+        padding-right: 5px;
+      }
 
-        /* Brands Filter List Scrollable */
-        #brandsFilterContainer {
-            max-height: 250px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
+      /* Custom Scrollbar for Brand List */
+      #brandsFilterContainer::-webkit-scrollbar {
+        width: 4px;
+      }
 
-        /* Custom Scrollbar for Brand List */
-        #brandsFilterContainer::-webkit-scrollbar {
-            width: 4px;
-        }
+      #brandsFilterContainer::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
 
-        #brandsFilterContainer::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
+      #brandsFilterContainer::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 10px;
+      }
 
-        #brandsFilterContainer::-webkit-scrollbar-thumb {
-            background: #ccc;
-            border-radius: 10px;
-        }
+      #brandsFilterContainer::-webkit-scrollbar-thumb:hover {
+        background: #888;
+      }
 
-        #brandsFilterContainer::-webkit-scrollbar-thumb:hover {
-            background: #888;
-        }
+      .brand-search-box {
+        position: relative;
+        margin-bottom: 15px;
+      }
 
-        .brand-search-box {
-            position: relative;
-            margin-bottom: 15px;
-        }
+      .brand-search-box input {
+        padding-left: 30px;
+        font-size: 0.85rem;
+        border-radius: 8px;
+        border: 1px solid #eee;
+      }
 
-        .brand-search-box input {
-            padding-left: 30px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-            border: 1px solid #eee;
-        }
-
-        .brand-search-box i {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #ccc;
-            font-size: 0.8rem;
-        }
+      .brand-search-box i {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #ccc;
+        font-size: 0.8rem;
+      }
     </style>
-</head>
+  </head>
 
-<body>
-
+  <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg sticky-top">
-        <div class="container-fluid px-5">
-            <a class="navbar-brand" href="/user/home.html"><img src="../common/images/logo.png" alt="AeroWatch"
-                    style="height: 55px;"></a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link" href="/user/home.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="/user/product.html">Shop</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/user/about.html">About</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/user/contact.html">Contact</a></li>
-                </ul>
-            </div>
-            <div class="d-flex align-items-center position-relative">
-                <form class="search-form-inline" id="search-form-inline" action="/user/product.html">
-                    <input type="text" class="form-control" name="search" placeholder="Search...">
-                </form>
-                <a href="#" class="icon-btn" id="search-trigger"><i class="bi bi-search"></i></a>
-                <a href="javascript:Auth.goToWishlist()" class="icon-btn" title="Wishlist"><i class="bi bi-heart"></i></a>
-                <a href="javascript:Auth.goToAccount()" class="icon-btn" title="Account">
-                    <i class="bi bi-person"></i>
-                </a>
-                <a href="javascript:Auth.goToCart()" class="icon-btn" title="Cart"><i class="bi bi-bag"></i></a>
-
-                <!-- GUEST NAV: Shown when NOT logged in -->
-                <div id="guest-nav" class="align-items-center ms-3 d-none">
-                    <a href="/user/signup.html" class="btn btn-dark text-uppercase rounded-pill px-4"
-                        style="font-size: 0.85rem; padding-top: 8px; padding-bottom: 8px;">Sign Up</a>
-                </div>
-
-                <!-- USER NAV: Only Logout Button -->
-                <div id="user-nav" class="align-items-center d-none">
-                    <a href="#" class="icon-btn ms-3 text-danger" id="logout-btn" title="Logout"
-                        style="font-size: 1rem;"><i class="bi bi-box-arrow-right"></i></a>
-                </div>
-            </div>
+      <div class="container-fluid px-5">
+        <a class="navbar-brand" href="/user/home.html"
+          ><img
+            src="../common/images/logo.png"
+            alt="AeroWatch"
+            style="height: 55px"
+        /></a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div
+          class="collapse navbar-collapse justify-content-center"
+          id="navbarNav"
+        >
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="/user/home.html">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/user/product.html">Shop</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/about.html">About</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/contact.html">Contact</a>
+            </li>
+          </ul>
         </div>
+        <div class="d-flex align-items-center position-relative">
+          <form
+            class="search-form-inline"
+            id="search-form-inline"
+            action="/user/product.html"
+          >
+            <input
+              type="text"
+              class="form-control"
+              name="search"
+              placeholder="Search..."
+            />
+          </form>
+          <a href="#" class="icon-btn" id="search-trigger"
+            ><i class="bi bi-search"></i
+          ></a>
+          <a
+            href="javascript:Auth.goToWishlist()"
+            class="icon-btn"
+            title="Wishlist"
+            ><i class="bi bi-heart"></i
+          ></a>
+          <a
+            href="javascript:Auth.goToAccount()"
+            class="icon-btn"
+            title="Account"
+          >
+            <i class="bi bi-person"></i>
+          </a>
+          <a href="javascript:Auth.goToCart()" class="icon-btn" title="Cart"
+            ><i class="bi bi-bag"></i
+          ></a>
+
+          <!-- GUEST NAV: Shown when NOT logged in -->
+          <div id="guest-nav" class="align-items-center ms-3 d-none">
+            <a
+              href="/user/signup.html"
+              class="btn btn-dark text-uppercase rounded-pill px-4"
+              style="font-size: 0.85rem; padding-top: 8px; padding-bottom: 8px"
+              >Sign Up</a
+            >
+          </div>
+
+          <!-- USER NAV: Only Logout Button -->
+          <div id="user-nav" class="align-items-center d-none">
+            <a
+              href="#"
+              class="icon-btn ms-3 text-danger"
+              id="logout-btn"
+              title="Logout"
+              style="font-size: 1rem"
+              ><i class="bi bi-box-arrow-right"></i
+            ></a>
+          </div>
+        </div>
+      </div>
     </nav>
 
     <!-- Main Container -->
     <div class="container-fluid px-5 mt-4">
-        <div class="row">
-            <!-- Sidebar -->
-            <div class="col-lg-3 filter-sidebar">
-                <div class="mb-4">
-                    <h5 class="filter-title">Categories</h5>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" id="cat1" value="men">
-                        <label class="form-check-label" for="cat1">Men's Fashion</label>
-
-                    </div>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" id="cat2" value="women">
-                        <label class="form-check-label" for="cat2">Women's Fashion</label>
-
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <h5 class="filter-title">Brands</h5>
-                    <div class="brand-search-box">
-                        <i class="bi bi-search"></i>
-                        <input type="text" id="brandSearchInput" class="form-control form-control-sm" placeholder="Search brands...">
-                    </div>
-                    <div id="brandsFilterContainer">
-                        <!-- Dynamic Checkboxes -->
-                        <div class="text-muted small">Loading brands...</div>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <h5 class="filter-title">Offers</h5>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" id="offerFilter" value="true">
-                        <label class="form-check-label" for="offerFilter">On Sale / Special Offers</label>
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <h5 class="filter-title">Price: <span id="priceRangeValue" class="text-primary fw-bold">Up to
-                            ₹50,000+</span></h5>
-                    <input type="range" class="form-range" min="0" max="50000" step="500" value="50000"
-                        id="priceRangeInput">
-                    <div class="d-flex justify-content-between text-muted small">
-                        <span>₹0</span>
-                        <span>₹50,000+</span>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <h5 class="filter-title">Sort Order</h5>
-
-
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" name="sort" id="sort3" checked>
-                        <label class="form-check-label" for="sort3">Newest</label>
-                    </div>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" name="sort" id="sort4">
-                        <label class="form-check-label" for="sort4">Price Low - High</label>
-                    </div>
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" name="sort" id="sort5">
-                        <label class="form-check-label" for="sort5">Price High - Low</label>
-                    </div>
-                </div>
+      <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3 filter-sidebar">
+          <div class="mb-4">
+            <h5 class="filter-title">Categories</h5>
+            <div class="form-check mb-2">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="cat1"
+                value="men"
+              />
+              <label class="form-check-label" for="cat1">Men's Fashion</label>
             </div>
-
-            <!-- Product Grid -->
-            <div class="col-lg-9">
-
-                <!-- Product Items (Loop 9 times) -->
-                <div class="row g-4" id="productContainer">
-                </div>
-
-                <!-- Pagination -->
-                <div class="d-flex justify-content-center mt-5">
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination" id="paginationContainer">
-                            <!-- Pagination buttons will be injected here -->
-                        </ul>
-                    </nav>
-                </div>
-
-
-
+            <div class="form-check mb-2">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="cat2"
+                value="women"
+              />
+              <label class="form-check-label" for="cat2">Women's Fashion</label>
             </div>
+          </div>
 
+          <div class="mb-4">
+            <h5 class="filter-title">Brands</h5>
+            <div class="brand-search-box">
+              <i class="bi bi-search"></i>
+              <input
+                type="text"
+                id="brandSearchInput"
+                class="form-control form-control-sm"
+                placeholder="Search brands..."
+              />
+            </div>
+            <div id="brandsFilterContainer">
+              <!-- Dynamic Checkboxes -->
+              <div class="text-muted small">Loading brands...</div>
+            </div>
+          </div>
 
+          <div class="mb-4">
+            <h5 class="filter-title">Offers</h5>
+            <div class="form-check mb-2">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="offerFilter"
+                value="true"
+              />
+              <label class="form-check-label" for="offerFilter"
+                >On Sale / Special Offers</label
+              >
+            </div>
+          </div>
+          <div class="mb-4">
+            <h5 class="filter-title">
+              Price:
+              <span id="priceRangeValue" class="text-primary fw-bold"
+                >Up to ₹50,000+</span
+              >
+            </h5>
+            <input
+              type="range"
+              class="form-range"
+              min="0"
+              max="50000"
+              step="500"
+              value="50000"
+              id="priceRangeInput"
+            />
+            <div class="d-flex justify-content-between text-muted small">
+              <span>₹0</span>
+              <span>₹50,000+</span>
+            </div>
+          </div>
 
+          <div class="mb-4">
+            <h5 class="filter-title">Sort Order</h5>
 
+            <div class="form-check mb-2">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="sort"
+                id="sort3"
+                checked
+              />
+              <label class="form-check-label" for="sort3">Newest</label>
+            </div>
+            <div class="form-check mb-2">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="sort"
+                id="sort4"
+              />
+              <label class="form-check-label" for="sort4"
+                >Price Low - High</label
+              >
+            </div>
+            <div class="form-check mb-2">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="sort"
+                id="sort5"
+              />
+              <label class="form-check-label" for="sort5"
+                >Price High - Low</label
+              >
+            </div>
+          </div>
         </div>
+
+        <!-- Product Grid -->
+        <div class="col-lg-9">
+          <!-- Product Items (Loop 9 times) -->
+          <div class="row g-4" id="productContainer"></div>
+
+          <!-- Pagination -->
+          <div class="d-flex justify-content-center mt-5">
+            <nav aria-label="Page navigation">
+              <ul class="pagination" id="paginationContainer">
+                <!-- Pagination buttons will be injected here -->
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
     </div>
 
     <footer>
-        <div class="container-fluid px-5">
-            <div class="row">
-                <div class="col-md-3 mb-4">
-                    <a href="/user/home.html" class="footer-logo">
-                        <img src="../common/images/logo.png" alt="AeroWatch" style="height: 55px;">
-                    </a>
-                    <p class="text-muted small mt-3">Elevate your style with our curated collection of premium timepieces. Quality and elegance in every second.</p>
-                    <div class="d-flex mt-3">
-                        <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
-                        <a href="#" class="social-link"><i class="bi bi-youtube"></i></a>
-                        <a href="#" class="social-link"><i class="bi bi-telegram"></i></a>
-                        <a href="#" class="social-link"><i class="bi bi-twitter-x"></i></a>
-                    </div>
-                </div>
-                <div class="col-md-2 mb-4 footer-links">
-                    <h6>Shop</h6>
-                    <ul>
-                        <li><a href="/user/product.html?category=men">Men's Watches</a></li>
-                        <li><a href="/user/product.html?category=women">Women's Watches</a></li>
-                        <li><a href="/user/product.html?offer=true">Offers</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-2 mb-4 footer-links">
-                    <h6>Customer Support</h6>
-                    <ul>
-                        <li><a href="/user/contact.html">Contact Us</a></li>
-                        <li><a href="/user/faq.html">FAQ</a></li>
-                        <li><a href="#">Shipping Policy</a></li>
-                        <li><a href="#">Return Policy</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-2 mb-4 footer-links">
-                    <h6>Account</h6>
-                    <ul>
-                        <li><a href="/user/account.html">My Account</a></li>
-                        <li><a href="/user/account.html#orders">Orders</a></li>
-                        <li><a href="/user/wishlist.html">Wishlist</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <h6>Newsletter</h6>
-                    <p class="text-muted small">Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.</p>
-                    <form class="newsletter-form d-flex gap-2">
-                        <input type="email" class="form-control form-control-sm" placeholder="Enter your email" required>
-                        <button class="btn btn-dark btn-sm text-uppercase" type="submit">Subscribe</button>
-                    </form>
-                    <div class="footer-links mt-3">
-                        <h6>Company</h6>
-                        <ul class="mb-0">
-                            <li><a href="/user/about.html">About Us</a></li>
-                            <li><a href="#">Privacy Policy</a></li>
-                            <li><a href="#">Terms & Conditions</a></li>
-                        </ul>
-                    </div>
-                </div>
+      <div class="container-fluid px-5">
+        <div class="row">
+          <div class="col-md-3 mb-4">
+            <a href="/user/home.html" class="footer-logo">
+              <img
+                src="../common/images/logo.png"
+                alt="AeroWatch"
+                style="height: 55px"
+              />
+            </a>
+            <p class="text-muted small mt-3">
+              Elevate your style with our curated collection of premium
+              timepieces. Quality and elegance in every second.
+            </p>
+            <div class="d-flex mt-3">
+              <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
+              <a href="#" class="social-link"><i class="bi bi-youtube"></i></a>
+              <a href="#" class="social-link"><i class="bi bi-telegram"></i></a>
+              <a href="#" class="social-link"
+                ><i class="bi bi-twitter-x"></i
+              ></a>
             </div>
-            <div class="row mt-4 pt-3 border-top">
-                <div class="col-md-6">
-                    <small class="text-muted">AeroWatch © 2026. All rights reserved.</small>
-                </div>
-                <div class="col-md-6 text-end">
-                    <i class="bi bi-credit-card-2-front fs-4 mx-1"></i>
-                    <i class="bi bi-paypal fs-4 mx-1"></i>
-                    <i class="bi bi-stripe fs-4 mx-1"></i>
-                </div>
+          </div>
+          <div class="col-md-2 mb-4 footer-links">
+            <h6>Shop</h6>
+            <ul>
+              <li>
+                <a href="/user/product.html?category=men">Men's Watches</a>
+              </li>
+              <li>
+                <a href="/user/product.html?category=women">Women's Watches</a>
+              </li>
+              <li><a href="/user/product.html?offer=true">Offers</a></li>
+            </ul>
+          </div>
+          <div class="col-md-2 mb-4 footer-links">
+            <h6>Customer Support</h6>
+            <ul>
+              <li><a href="/user/contact.html">Contact Us</a></li>
+              <li><a href="/user/faq.html">FAQ</a></li>
+              <li><a href="#">Shipping Policy</a></li>
+              <li><a href="#">Return Policy</a></li>
+            </ul>
+          </div>
+          <div class="col-md-2 mb-4 footer-links">
+            <h6>Account</h6>
+            <ul>
+              <li><a href="/user/account.html">My Account</a></li>
+              <li><a href="/user/account.html#orders">Orders</a></li>
+              <li><a href="/user/wishlist.html">Wishlist</a></li>
+            </ul>
+          </div>
+          <div class="col-md-3 mb-4">
+            <h6>Newsletter</h6>
+            <p class="text-muted small">
+              Subscribe to get special offers, free giveaways, and
+              once-in-a-lifetime deals.
+            </p>
+            <form class="newsletter-form d-flex gap-2">
+              <input
+                type="email"
+                class="form-control form-control-sm"
+                placeholder="Enter your email"
+                required
+              />
+              <button class="btn btn-dark btn-sm text-uppercase" type="submit">
+                Subscribe
+              </button>
+            </form>
+            <div class="footer-links mt-3">
+              <h6>Company</h6>
+              <ul class="mb-0">
+                <li><a href="/user/about.html">About Us</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms & Conditions</a></li>
+              </ul>
             </div>
+          </div>
         </div>
+        <div class="row mt-4 pt-3 border-top">
+          <div class="col-md-6">
+            <small class="text-muted"
+              >AeroWatch © 2026. All rights reserved.</small
+            >
+          </div>
+          <div class="col-md-6 text-end">
+            <i class="bi bi-credit-card-2-front fs-4 mx-1"></i>
+            <i class="bi bi-paypal fs-4 mx-1"></i>
+            <i class="bi bi-stripe fs-4 mx-1"></i>
+          </div>
+        </div>
+      </div>
     </footer>
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Search Toggle (Inline)
-            const searchTrigger = document.getElementById('search-trigger');
-            const searchForm = document.getElementById('search-form-inline');
-            const searchInput = searchForm.querySelector('input');
+      document.addEventListener("DOMContentLoaded", function () {
+        // Search Toggle (Inline)
+        const searchTrigger = document.getElementById("search-trigger");
+        const searchForm = document.getElementById("search-form-inline");
+        const searchInput = searchForm.querySelector("input");
 
-            if (searchTrigger && searchForm) {
-                searchTrigger.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    searchForm.classList.toggle('active');
-                    if (searchForm.classList.contains('active')) {
-                        setTimeout(() => searchInput.focus(), 100);
-                    }
-                });
-
-                // Close when clicking outside
-                document.addEventListener('click', function (e) {
-                    if (!searchForm.contains(e.target) && !searchTrigger.contains(e.target)) {
-                        searchForm.classList.remove('active');
-                    }
-                });
+        if (searchTrigger && searchForm) {
+          searchTrigger.addEventListener("click", function (e) {
+            e.preventDefault();
+            searchForm.classList.toggle("active");
+            if (searchForm.classList.contains("active")) {
+              setTimeout(() => searchInput.focus(), 100);
             }
+          });
 
+          // Close when clicking outside
+          document.addEventListener("click", function (e) {
+            if (
+              !searchForm.contains(e.target) &&
+              !searchTrigger.contains(e.target)
+            ) {
+              searchForm.classList.remove("active");
+            }
+          });
+        }
 
-
-            /* =====================
+        /* =====================
                AUTH STATE
             ====================== */
-            const isLoggedIn = Auth.isLoggedIn();
-            const { role } = getAuth();
+        const isLoggedIn = Auth.isLoggedIn();
+        const { role } = getAuth();
 
-            const guestNav = document.getElementById("guest-nav");
-            const userNav = document.getElementById("user-nav");
-            const logoutBtn = document.getElementById("logout-btn");
+        const guestNav = document.getElementById("guest-nav");
+        const userNav = document.getElementById("user-nav");
+        const logoutBtn = document.getElementById("logout-btn");
 
-            const accountBtn = document.getElementById("accountBtn");
-            const cartBtn = document.querySelector('a[href="javascript:Auth.goToCart()"]');
-            const wishlistBtn = document.querySelector('a[href="javascript:Auth.goToWishlist()"]');
+        const accountBtn = document.getElementById("accountBtn");
+        const cartBtn = document.querySelector(
+          'a[href="javascript:Auth.goToCart()"]',
+        );
+        const wishlistBtn = document.querySelector(
+          'a[href="javascript:Auth.goToWishlist()"]',
+        );
 
-            /* =====================
+        /* =====================
                NAVBAR VISIBILITY
             ====================== */
-            if (guestNav && userNav) {
-                if (isLoggedIn) {
-                    // ✅ Logged in → only Logout (Show User Nav)
-                    guestNav.classList.remove("d-flex");
-                    guestNav.classList.add("d-none");
+        if (guestNav && userNav) {
+          if (isLoggedIn) {
+            // ✅ Logged in → only Logout (Show User Nav)
+            guestNav.classList.remove("d-flex");
+            guestNav.classList.add("d-none");
 
-                    userNav.classList.remove("d-none");
-                    userNav.classList.add("d-flex");
-                } else {
-                    // ❌ Not logged in → only Signup (Show Guest Nav)
-                    userNav.classList.remove("d-flex");
-                    userNav.classList.add("d-none");
+            userNav.classList.remove("d-none");
+            userNav.classList.add("d-flex");
+          } else {
+            // ❌ Not logged in → only Signup (Show Guest Nav)
+            userNav.classList.remove("d-flex");
+            userNav.classList.add("d-none");
 
-                    guestNav.classList.remove("d-none");
-                    guestNav.classList.add("d-flex");
-                }
+            guestNav.classList.remove("d-none");
+            guestNav.classList.add("d-flex");
+          }
+        }
+
+        // ==========================
+        // PAGINATION STATE
+        // ==========================
+        let currentPage = 1;
+        const itemsPerPage = 12;
+
+        // ==========================
+        // LOAD PRODUCTS FROM BACKEND
+        // ==========================
+        async function loadProducts(
+          category = "",
+          sort = "",
+          maxPrice = "",
+          page = 1,
+          brand = "",
+          onSale = false,
+        ) {
+          try {
+            let url = `/api/products?page=${page}&limit=${itemsPerPage}&`;
+
+            if (category) {
+              url += `category=${category}&`;
             }
 
+            if (brand) {
+              url += `brand=${brand}&`;
+            }
 
-            // ==========================
-            // PAGINATION STATE
-            // ==========================
-            let currentPage = 1;
-            const itemsPerPage = 12;
+            if (onSale) {
+              url += `onSale=true&`;
+            }
 
-            // ==========================
-            // LOAD PRODUCTS FROM BACKEND
-            // ==========================
-            async function loadProducts(category = "", sort = "", maxPrice = "", page = 1, brand = "", onSale = false) {
-                try {
-                    let url = `/api/products?page=${page}&limit=${itemsPerPage}&`;
+            if (sort) {
+              url += `sort=${sort}&`;
+            }
 
-                    if (category) {
-                        url += `category=${category}&`;
-                    }
+            if (maxPrice) {
+              url += `maxPrice=${maxPrice}&`;
+            }
 
-                    if (brand) {
-                        url += `brand=${brand}&`;
-                    }
+            // Check for search in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const search = urlParams.get("search");
+            if (search) {
+              url += `search=${search}&`;
+            }
 
-                    if (onSale) {
-                        url += `onSale=true&`;
-                    }
+            const res = await fetch(url);
+            const data = await res.json();
 
-                    if (sort) {
-                        url += `sort=${sort}&`;
-                    }
+            console.log("Products:", data);
 
-                    if (maxPrice) {
-                        url += `maxPrice=${maxPrice}&`;
-                    }
+            const container = document.getElementById("productContainer");
+            container.innerHTML = "";
 
-                    // Check for search in URL
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const search = urlParams.get('search');
-                    if (search) {
-                        url += `search=${search}&`;
-                    }
+            if (!data.products || data.products.length === 0) {
+              container.innerHTML = `<div class="col-12 text-center py-5"><h3>No products found</h3></div>`;
+              document.getElementById("paginationContainer").innerHTML = "";
+              return;
+            }
 
-                    const res = await fetch(url);
-                    const data = await res.json();
+            data.products.forEach((product) => {
+              const image =
+                product.images && product.images.length > 0
+                  ? product.images[0]
+                  : "https://placehold.co/300x300?text=No+Image";
 
-                    console.log("Products:", data);
+              // Get hover image if available, else fallback to primary
+              const hoverImage =
+                product.images && product.images.length > 1
+                  ? product.images[1]
+                  : image;
 
-                    const container = document.getElementById("productContainer");
-                    container.innerHTML = "";
+              const hasDiscount = product.discountPercentage > 0;
+              let priceHtml = `<div class="product-price">₹${product.price.toLocaleString("en-IN")}</div>`;
+              let badgeHtml = "";
 
-                    if (!data.products || data.products.length === 0) {
-                        container.innerHTML = `<div class="col-12 text-center py-5"><h3>No products found</h3></div>`;
-                        document.getElementById("paginationContainer").innerHTML = "";
-                        return;
-                    }
-
-                    data.products.forEach(product => {
-
-                        const image = product.images && product.images.length > 0
-                            ? product.images[0]
-                            : "https://placehold.co/300x300?text=No+Image";
-                            
-                        // Get hover image if available, else fallback to primary
-                        const hoverImage = product.images && product.images.length > 1
-                            ? product.images[1]
-                            : image;
-
-                        const hasDiscount = product.discountPercentage > 0;
-                        let priceHtml = `<div class="product-price">₹${product.price.toLocaleString('en-IN')}</div>`;
-                        let badgeHtml = "";
-
-                        if (hasDiscount) {
-                            priceHtml = `
+              if (hasDiscount) {
+                priceHtml = `
                                 <div class="d-flex align-items-center">
-                                    <span class="price-old" style="text-decoration: line-through; color: #6c757d; font-size: 0.85rem; margin-right: 8px;">₹${product.price.toLocaleString('en-IN')}</span>
-                                    <div class="product-price">₹${product.finalPrice.toLocaleString('en-IN')}</div>
+                                    <span class="price-old" style="text-decoration: line-through; color: #6c757d; font-size: 0.85rem; margin-right: 8px;">₹${product.price.toLocaleString("en-IN")}</span>
+                                    <div class="product-price">₹${product.finalPrice.toLocaleString("en-IN")}</div>
                                 </div>
                             `;
-                            badgeHtml = `
+                badgeHtml = `
                                 <div class="discount-badge" style="position: absolute; top: 10px; left: 10px; background: #ff4757; color: #fff; padding: 2px 8px; border-radius: 50px; font-weight: 700; font-size: 0.7rem; z-index: 5;">
                                     ${product.discountPercentage}% OFF
                                 </div>
                             `;
-                        }
+              }
 
-                        container.innerHTML += `
+              container.innerHTML += `
                 <div class="col-md-4">
                     <div class="product-card"
-                        onclick="window.location.href='single-product?id=${product._id}'" style="position: relative;">
+                        onclick="window.location.href='/single-product?id=${product._id}'" style="position: relative;">
                         ${badgeHtml}
                         <!-- Wishlist Button -->
                         <div class="wishlist-btn" id="wishlist-icon-${product._id}" title="Add to Wishlist" onclick="event.stopPropagation(); addToWishlistApi('${product._id}')">
@@ -821,334 +957,352 @@
                     </div>
                 </div>
             `;
-                    });
+            });
 
-                    renderPagination(data.pages, data.page);
+            renderPagination(data.pages, data.page);
+          } catch (error) {
+            console.error("Error loading products:", error);
+          }
+        }
 
-                } catch (error) {
-                    console.error("Error loading products:", error);
-                }
-            }
+        function renderPagination(totalPages, currentPageNum) {
+          const pagination = document.getElementById("paginationContainer");
+          pagination.innerHTML = "";
 
-            function renderPagination(totalPages, currentPageNum) {
-                const pagination = document.getElementById("paginationContainer");
-                pagination.innerHTML = "";
+          if (totalPages <= 1) return;
 
-                if (totalPages <= 1) return;
-
-                // Previous Button
-                const prevLi = document.createElement("li");
-                prevLi.className = `page-item ${currentPageNum === 1 ? 'disabled' : ''}`;
-                prevLi.innerHTML = `
+          // Previous Button
+          const prevLi = document.createElement("li");
+          prevLi.className = `page-item ${currentPageNum === 1 ? "disabled" : ""}`;
+          prevLi.innerHTML = `
                     <a class="page-link" href="#" onclick="event.preventDefault(); goToPage(${currentPageNum - 1})">
                         <i class="bi bi-chevron-left"></i>
                     </a>
                 `;
-                pagination.appendChild(prevLi);
+          pagination.appendChild(prevLi);
 
-                // Page Numbers
-                for (let i = 1; i <= totalPages; i++) {
-                    const li = document.createElement("li");
-                    li.className = `page-item ${i === currentPageNum ? 'active' : ''}`;
-                    li.innerHTML = `
+          // Page Numbers
+          for (let i = 1; i <= totalPages; i++) {
+            const li = document.createElement("li");
+            li.className = `page-item ${i === currentPageNum ? "active" : ""}`;
+            li.innerHTML = `
                         <a class="page-link" href="#" onclick="event.preventDefault(); goToPage(${i})">${i}</a>
                     `;
-                    pagination.appendChild(li);
-                }
+            pagination.appendChild(li);
+          }
 
-                // Next Button
-                const nextLi = document.createElement("li");
-                nextLi.className = `page-item ${currentPageNum === totalPages ? 'disabled' : ''}`;
-                nextLi.innerHTML = `
+          // Next Button
+          const nextLi = document.createElement("li");
+          nextLi.className = `page-item ${currentPageNum === totalPages ? "disabled" : ""}`;
+          nextLi.innerHTML = `
                     <a class="page-link" href="#" onclick="event.preventDefault(); goToPage(${currentPageNum + 1})">
                         <i class="bi bi-chevron-right"></i>
                     </a>
                 `;
-                pagination.appendChild(nextLi);
+          pagination.appendChild(nextLi);
+        }
+
+        window.goToPage = function (page) {
+          currentPage = page;
+          fetchProducts();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        };
+
+        const menCheckbox = document.getElementById("cat1");
+        const womenCheckbox = document.getElementById("cat2");
+        const sortRadios = document.querySelectorAll("input[name='sort']");
+        const priceRangeInput = document.getElementById("priceRangeInput");
+        const priceRangeValue = document.getElementById("priceRangeValue");
+
+        function fetchProducts(resetPage = false) {
+          if (resetPage) currentPage = 1;
+
+          let selectedCategory = "";
+          if (menCheckbox.checked) selectedCategory = "men";
+          if (womenCheckbox.checked) selectedCategory = "women";
+
+          let selectedSort = "newest";
+          if (document.getElementById("sort3").checked) selectedSort = "newest";
+          else if (document.getElementById("sort4").checked)
+            selectedSort = "priceLow";
+          else if (document.getElementById("sort5").checked)
+            selectedSort = "priceHigh";
+
+          let maxPrice = priceRangeInput.value;
+          if (Number(maxPrice) >= 50000) maxPrice = ""; // No limit when at max
+
+          // Get checked brands
+          const checkedBrands = Array.from(
+            document.querySelectorAll(".brand-checkbox:checked"),
+          ).map((cb) => cb.value);
+          const brandStr = checkedBrands.join(",");
+
+          // Get offer filter
+          const isOfferChecked =
+            document.getElementById("offerFilter")?.checked || false;
+
+          loadProducts(
+            selectedCategory,
+            selectedSort,
+            maxPrice,
+            currentPage,
+            brandStr,
+            isOfferChecked,
+          );
+        }
+
+        let allBrands = [];
+
+        // Load Active Brands for Sidebar
+        async function loadActiveBrands() {
+          try {
+            const res = await fetch("/api/products/active-brands");
+            if (!res.ok) throw new Error("Failed to fetch brands");
+            const data = await res.json();
+
+            const container = document.getElementById("brandsFilterContainer");
+            if (!container) return;
+
+            if (data.brands && data.brands.length > 0) {
+              allBrands = data.brands;
+              renderBrandList();
+            } else {
+              container.innerHTML = `<div class="text-muted small">No brands available</div>`;
             }
+          } catch (error) {
+            console.error("Error loading brands:", error);
+            const container = document.getElementById("brandsFilterContainer");
+            if (container)
+              container.innerHTML = `<div class="text-danger small">Failed to load</div>`;
+          }
+        }
 
-            window.goToPage = function(page) {
-                currentPage = page;
-                fetchProducts();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            };
+        function renderBrandList(searchTerm = "") {
+          const container = document.getElementById("brandsFilterContainer");
+          if (!container) return;
 
+          const filteredBrands = allBrands.filter((b) =>
+            b.name.toLowerCase().includes(searchTerm.toLowerCase()),
+          );
 
-            const menCheckbox = document.getElementById("cat1");
-            const womenCheckbox = document.getElementById("cat2");
-            const sortRadios = document.querySelectorAll("input[name='sort']");
-            const priceRangeInput = document.getElementById("priceRangeInput");
-            const priceRangeValue = document.getElementById("priceRangeValue");
+          if (filteredBrands.length === 0) {
+            container.innerHTML = `<div class="text-muted small px-1">No brands found</div>`;
+            return;
+          }
 
-            function fetchProducts(resetPage = false) {
-                if (resetPage) currentPage = 1;
-
-                let selectedCategory = "";
-                if (menCheckbox.checked) selectedCategory = "men";
-                if (womenCheckbox.checked) selectedCategory = "women";
-
-                let selectedSort = "newest";
-                if (document.getElementById("sort3").checked) selectedSort = "newest";
-                else if (document.getElementById("sort4").checked) selectedSort = "priceLow";
-                else if (document.getElementById("sort5").checked) selectedSort = "priceHigh";
-
-                let maxPrice = priceRangeInput.value;
-                if (Number(maxPrice) >= 50000) maxPrice = ""; // No limit when at max
-
-                // Get checked brands
-                const checkedBrands = Array.from(document.querySelectorAll('.brand-checkbox:checked')).map(cb => cb.value);
-                const brandStr = checkedBrands.join(",");
-
-                // Get offer filter
-                const isOfferChecked = document.getElementById("offerFilter")?.checked || false;
-
-                loadProducts(selectedCategory, selectedSort, maxPrice, currentPage, brandStr, isOfferChecked);
-            }
-
-            let allBrands = [];
-
-            // Load Active Brands for Sidebar
-            async function loadActiveBrands() {
-                try {
-                    const res = await fetch("/api/products/active-brands");
-                    if (!res.ok) throw new Error("Failed to fetch brands");
-                    const data = await res.json();
-                    
-                    const container = document.getElementById("brandsFilterContainer");
-                    if (!container) return;
-
-                    if (data.brands && data.brands.length > 0) {
-                        allBrands = data.brands;
-                        renderBrandList();
-                    } else {
-                        container.innerHTML = `<div class="text-muted small">No brands available</div>`;
-                    }
-                } catch (error) {
-                    console.error("Error loading brands:", error);
-                    const container = document.getElementById("brandsFilterContainer");
-                    if (container) container.innerHTML = `<div class="text-danger small">Failed to load</div>`;
-                }
-            }
-
-            function renderBrandList(searchTerm = "") {
-                const container = document.getElementById("brandsFilterContainer");
-                if (!container) return;
-
-                const filteredBrands = allBrands.filter(b => 
-                    b.name.toLowerCase().includes(searchTerm.toLowerCase())
-                );
-
-                if (filteredBrands.length === 0) {
-                    container.innerHTML = `<div class="text-muted small px-1">No brands found</div>`;
-                    return;
-                }
-
-                container.innerHTML = "";
-                filteredBrands.forEach((brand, idx) => {
-                    const div = document.createElement("div");
-                    div.className = "form-check mb-2";
-                    div.innerHTML = `
+          container.innerHTML = "";
+          filteredBrands.forEach((brand, idx) => {
+            const div = document.createElement("div");
+            div.className = "form-check mb-2";
+            div.innerHTML = `
                         <input class="form-check-input brand-checkbox" type="checkbox" id="brand_${brand._id || idx}" value="${brand.name}">
                         <label class="form-check-label w-100" for="brand_${brand._id || idx}">${brand.name}</label>
                     `;
-                    container.appendChild(div);
+            container.appendChild(div);
 
-                    // Listen for changes
-                    div.querySelector("input").addEventListener("change", () => {
-                        fetchProducts(true);
-                    });
-                });
-            }
-
-            document.getElementById("brandSearchInput")?.addEventListener("input", (e) => {
-                renderBrandList(e.target.value);
+            // Listen for changes
+            div.querySelector("input").addEventListener("change", () => {
+              fetchProducts(true);
             });
+          });
+        }
 
-            priceRangeInput.addEventListener("input", () => {
-                const val = Number(priceRangeInput.value);
-                if (val >= 50000) {
-                    priceRangeValue.textContent = `Up to ₹50,000+`;
-                } else {
-                    priceRangeValue.textContent = `Up to ₹${val.toLocaleString()}`;
-                }
-            });
+        document
+          .getElementById("brandSearchInput")
+          ?.addEventListener("input", (e) => {
+            renderBrandList(e.target.value);
+          });
 
-            priceRangeInput.addEventListener("change", () => {
-                fetchProducts(true);
-            });
-
-            menCheckbox.addEventListener("change", () => {
-                if (menCheckbox.checked) womenCheckbox.checked = false;
-                fetchProducts(true);
-            });
-
-            womenCheckbox.addEventListener("change", () => {
-                if (womenCheckbox.checked) menCheckbox.checked = false;
-                fetchProducts(true);
-            });
-
-            sortRadios.forEach(radio => {
-                radio.addEventListener("change", () => {
-                    fetchProducts(true);
-                });
-            });
-
-            document.getElementById("offerFilter")?.addEventListener("change", () => {
-                fetchProducts(true);
-            });
-
-
-
-
-            /* =====================
-               LOGOUT
-            ====================== */
-            if (logoutBtn) {
-                logoutBtn.addEventListener("click", async function (e) {
-                    e.preventDefault();
-                    await Auth.logout();
-                });
-            }
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const catFromUrl = urlParams.get('category');
-
-            if (catFromUrl === 'men') {
-                menCheckbox.checked = true;
-            } else if (catFromUrl === 'women') {
-                womenCheckbox.checked = true;
-            }
-
-            // Load brands which inherently has nothing checked at first
-            loadActiveBrands();
-
-            fetchProducts();
-
+        priceRangeInput.addEventListener("input", () => {
+          const val = Number(priceRangeInput.value);
+          if (val >= 50000) {
+            priceRangeValue.textContent = `Up to ₹50,000+`;
+          } else {
+            priceRangeValue.textContent = `Up to ₹${val.toLocaleString()}`;
+          }
         });
 
+        priceRangeInput.addEventListener("change", () => {
+          fetchProducts(true);
+        });
+
+        menCheckbox.addEventListener("change", () => {
+          if (menCheckbox.checked) womenCheckbox.checked = false;
+          fetchProducts(true);
+        });
+
+        womenCheckbox.addEventListener("change", () => {
+          if (womenCheckbox.checked) menCheckbox.checked = false;
+          fetchProducts(true);
+        });
+
+        sortRadios.forEach((radio) => {
+          radio.addEventListener("change", () => {
+            fetchProducts(true);
+          });
+        });
+
+        document
+          .getElementById("offerFilter")
+          ?.addEventListener("change", () => {
+            fetchProducts(true);
+          });
+
         /* =====================
+               LOGOUT
+            ====================== */
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", async function (e) {
+            e.preventDefault();
+            await Auth.logout();
+          });
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const catFromUrl = urlParams.get("category");
+
+        if (catFromUrl === "men") {
+          menCheckbox.checked = true;
+        } else if (catFromUrl === "women") {
+          womenCheckbox.checked = true;
+        }
+
+        // Load brands which inherently has nothing checked at first
+        loadActiveBrands();
+
+        fetchProducts();
+      });
+
+      /* =====================
            GLOBAL ADD TO CART
         ====================== */
-        function addToCartLocal(id, name, price, image, stock) {
-            if (!Auth.requireLogin("add items to your cart")) return;
+      function addToCartLocal(id, name, price, image, stock) {
+        if (!Auth.requireLogin("add items to your cart")) return;
 
-            let cart = JSON.parse(localStorage.getItem("cartItems")) || [];
-            const existingIndex = cart.findIndex(item => item.id === id);
+        let cart = JSON.parse(localStorage.getItem("cartItems")) || [];
+        const existingIndex = cart.findIndex((item) => item.id === id);
 
-            if (existingIndex > -1) {
-                const newQty = cart[existingIndex].quantity + 1;
-                if (newQty > stock) {
-                    Swal.fire({ icon: "error", title: "Oops...", text: "Cannot add more than available stock" });
-                    return;
-                }
-                cart[existingIndex].quantity = newQty;
-            } else {
-                if (1 > stock) {
-                    Swal.fire({ icon: "error", title: "Oops...", text: "Out of stock" });
-                    return;
-                }
-                cart.push({
-                    id: id,
-                    title: name,
-                    price: price,
-                    priceStr: `₹${price}`,
-                    image: image,
-                    quantity: 1
-                });
-            }
-
-            localStorage.setItem("cartItems", JSON.stringify(cart));
+        if (existingIndex > -1) {
+          const newQty = cart[existingIndex].quantity + 1;
+          if (newQty > stock) {
             Swal.fire({
-                icon: "success",
-                title: "Added to Cart!",
-                showConfirmButton: false,
-                timer: 1500
+              icon: "error",
+              title: "Oops...",
+              text: "Cannot add more than available stock",
             });
+            return;
+          }
+          cart[existingIndex].quantity = newQty;
+        } else {
+          if (1 > stock) {
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: "Out of stock",
+            });
+            return;
+          }
+          cart.push({
+            id: id,
+            title: name,
+            price: price,
+            priceStr: `₹${price}`,
+            image: image,
+            quantity: 1,
+          });
         }
 
-        /* =====================
+        localStorage.setItem("cartItems", JSON.stringify(cart));
+        Swal.fire({
+          icon: "success",
+          title: "Added to Cart!",
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      }
+
+      /* =====================
            GLOBAL ADD TO WISHLIST (API)
         ====================== */
-        async function addToWishlistApi(productId) {
-            const isLoggedIn = Auth.isLoggedIn();
-            const { role } = getAuth();
+      async function addToWishlistApi(productId) {
+        const isLoggedIn = Auth.isLoggedIn();
+        const { role } = getAuth();
 
-            if (!isLoggedIn) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Login Required',
-                    text: 'Please login to add items to your wishlist.',
-                    confirmButtonText: 'Login',
-                    confirmButtonColor: '#000'
-                }).then(() => {
-                    window.location.href = 'login.html';
-                });
-                return;
-            }
-
-            if (role !== "user") {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Access Denied',
-                    text: 'Only users can add items to the wishlist.'
-                });
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/users/wishlist/add', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ productId }),
-                    credentials: "include"
-                });
-
-                const data = await res.json();
-
-                if (!res.ok) {
-                    if (data.message === "Product already in wishlist") {
-                        Swal.fire({
-                            icon: "info",
-                            title: "Notice",
-                            text: "Product is already in your wishlist",
-                            showConfirmButton: false,
-                            timer: 1500
-                        });
-                        return;
-                    }
-                    throw new Error(data.message || 'Failed to add to wishlist');
-                }
-
-                // UI UPDATE: Fill the heart icon
-                const heartIcon = document.querySelector(`#wishlist-icon-${productId} i`);
-                if (heartIcon) {
-                    heartIcon.classList.remove('bi-heart');
-                    heartIcon.classList.add('bi-heart-fill');
-                    heartIcon.classList.add('text-danger');
-                }
-
-                Swal.fire({
-                    icon: "success",
-                    title: "Added to Wishlist!",
-                    showConfirmButton: false,
-                    timer: 1500
-                });
-
-            } catch (error) {
-                console.error("Error adding to wishlist:", error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: error.message || 'Something went wrong while adding to wishlist.'
-                });
-            }
+        if (!isLoggedIn) {
+          Swal.fire({
+            icon: "warning",
+            title: "Login Required",
+            text: "Please login to add items to your wishlist.",
+            confirmButtonText: "Login",
+            confirmButtonColor: "#000",
+          }).then(() => {
+            window.location.href = "login.html";
+          });
+          return;
         }
+
+        if (role !== "user") {
+          Swal.fire({
+            icon: "error",
+            title: "Access Denied",
+            text: "Only users can add items to the wishlist.",
+          });
+          return;
+        }
+
+        try {
+          const res = await fetch("/api/users/wishlist/add", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ productId }),
+            credentials: "include",
+          });
+
+          const data = await res.json();
+
+          if (!res.ok) {
+            if (data.message === "Product already in wishlist") {
+              Swal.fire({
+                icon: "info",
+                title: "Notice",
+                text: "Product is already in your wishlist",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+              return;
+            }
+            throw new Error(data.message || "Failed to add to wishlist");
+          }
+
+          // UI UPDATE: Fill the heart icon
+          const heartIcon = document.querySelector(
+            `#wishlist-icon-${productId} i`,
+          );
+          if (heartIcon) {
+            heartIcon.classList.remove("bi-heart");
+            heartIcon.classList.add("bi-heart-fill");
+            heartIcon.classList.add("text-danger");
+          }
+
+          Swal.fire({
+            icon: "success",
+            title: "Added to Wishlist!",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        } catch (error) {
+          console.error("Error adding to wishlist:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text:
+              error.message || "Something went wrong while adding to wishlist.",
+          });
+        }
+      }
     </script>
     <script src="/js/auth.js?v=2"></script>
-</body>
-
+  </body>
 </html>
-
-

@@ -35,6 +35,7 @@ exports.batchCheckStock = async (req, res) => {
                 results.push({
                     id: item.id,
                     name: product.name,
+                    image: product.images && product.images.length > 0 ? product.images[0] : '/uploads/placeholder.png',
                     availableStock: product.stock,
                     requestedQuantity: item.quantity,
                     isSufficient: product.stock >= item.quantity
@@ -43,6 +44,7 @@ exports.batchCheckStock = async (req, res) => {
                 results.push({
                     id: item.id,
                     name: "Unknown Product",
+                    image: '/uploads/placeholder.png',
                     availableStock: 0,
                     requestedQuantity: item.quantity,
                     isSufficient: false,

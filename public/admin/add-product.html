@@ -453,16 +453,23 @@
 
             // Handle Images (Backend compatibility workaround)
             try {
+                let hasNewImages = false;
                 for (let i = 0; i < 3; i++) {
-                    const file = fileInputs[i].files[0];
-                    if (file) {
-                        formData.append("images", file);
-                    } else if (productId && originalImages[i]) {
-                        // Re-fetch existing image and re-upload as blob to preserve order and existence
-                        const response = await fetch(originalImages[i]);
-                        const blob = await response.blob();
-                        const fileName = originalImages[i].split('/').pop();
-                        formData.append("images", blob, fileName);
+                    if (fileInputs[i].files[0]) hasNewImages = true;
+                }
+
+                if (!productId || hasNewImages) {
+                    for (let i = 0; i < 3; i++) {
+                        const file = fileInputs[i].files[0];
+                        if (file) {
+                            formData.append("images", file);
+                        } else if (productId && originalImages[i]) {
+                            // Re-fetch existing image and re-upload as blob to preserve order and existence
+                            const response = await fetch(originalImages[i]);
+                            const blob = await response.blob();
+                            const fileName = originalImages[i].split('/').pop();
+                            formData.append("images", blob, fileName);
+                        }
                     }
                 }
             } catch (err) {

@@ -576,6 +576,11 @@
                             adjusted = true;
                         }
                         cart[idx].availableStock = res.availableStock; // Store for UI
+                        // Sync image if changed due to product update
+                        if (res.image && cart[idx].image !== res.image) {
+                            cart[idx].image = res.image;
+                            adjusted = true;
+                        }
                     });
 
                     if (adjusted) {

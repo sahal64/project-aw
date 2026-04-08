@@ -236,6 +236,34 @@ document.addEventListener('DOMContentLoaded', function () {
             headStyles: { fillColor: [0, 0, 0] }
         });
 
+        // Summary Calculations
+        let totalCredit = 0;
+        let totalDebit = 0;
+
+        transactions.forEach(trx => {
+            if (trx.status === 'Paid') {
+                totalCredit += trx.amount;
+            } else if (trx.status === 'Refunded') {
+                totalDebit += trx.amount;
+            }
+        });
+
+        const totalAmount = totalCredit - totalDebit;
+
+        const finalY = doc.lastAutoTable.finalY + 15 || 40;
+        
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Summary", 14, finalY);
+        
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Total Credit (Paid)     : ${formatCurrency(totalCredit)}`, 14, finalY + 8);
+        doc.text(`Total Debit (Refunded)  : ${formatCurrency(totalDebit)}`, 14, finalY + 14);
+        
+        doc.setFont("helvetica", "bold");
+        doc.text(`Total Amount (Net)      : ${formatCurrency(totalAmount)}`, 14, finalY + 22);
+
         doc.save(`transactions_${new Date().toISOString().split('T')[0]}.pdf`);
     });
 

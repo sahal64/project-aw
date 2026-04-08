@@ -328,6 +328,16 @@
                         </div>
                     </div>
                 </div>
+                <div class="row mt-4" id="downloadReportBtns" style="display: none;">
+                    <div class="col-12 d-flex justify-content-end gap-2">
+                        <button class="btn btn-outline-danger btn-sm px-3" onclick="downloadSalesReportPDF()">
+                            <i class="bi bi-file-earmark-pdf"></i> Download PDF
+                        </button>
+                        <button class="btn btn-outline-success btn-sm px-3" onclick="downloadSalesReportExcel()">
+                            <i class="bi bi-file-earmark-excel"></i> Download Excel
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -335,6 +345,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="../js/auth.js"></script>
     <script>
         // ==========================
@@ -532,8 +544,15 @@ throw new Error(data.message || "Failed to generate report");
 }
 
 document.getElementById("reportOrders").innerText = data.totalOrders;
-document.getElementById("reportRevenue").innerText = "₹" + data.totalRevenue;
+document.getElementById("reportRevenue").innerText = "₹" + data.totalRevenue.toLocaleString("en-IN");
 document.getElementById("reportCustomers").innerText = data.totalCustomers;
+
+currentReportData = data.orders || [];
+if (currentReportData.length > 0) {
+    document.getElementById("downloadReportBtns").style.display = "block";
+} else {
+    document.getElementById("downloadReportBtns").style.display = "none";
+}
 
 }catch(err){
 
@@ -545,6 +564,74 @@ text:err.message
 
 }
 
+}
+
+// Storage for report downloads
+let currentReportData = [];
+
+function downloadSalesReportPDF() {
+    if(!currentReportData || currentReportData.length === 0) return;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+            
+    doc.setFontSize(18);
+    doc.text("AeroWatch Sales Report", 14, 22);
+    doc.setFontSize(11);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 30);
+    doc.text(`Date Range: ${document.getElementById("reportStart").value} to ${document.getElementById("reportEnd").value}`, 14, 36);
+            
+    const tableColumn = ["Order ID", "Date", "Customer", "Amount", "Method", "Status"];
+    const tableRows = currentReportData.map(o => [
+        o.orderNumber || String(o._id).slice(-6),
+        new Date(o.createdAt).toLocaleDateString(),
+        (o.user && o.user.name) ? o.user.name : "N/A",
+        "Rs. " + new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2 }).format(o.totalAmount),
+        o.paymentMethod,
+        o.orderStatus
+    ]);
+            
+    doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 40,
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [0, 0, 0] }
+    });
+
+    // Summary block
+    const finalY = doc.lastAutoTable.finalY + 15 || 40;
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+            
+    doc.text(`Total Orders: ${currentReportData.length}`, 14, finalY);
+            
+    const totalRev = currentReportData.reduce((sum, o) => sum + o.totalAmount, 0);
+    doc.text(`Total Revenue: Rs. ${new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2 }).format(totalRev)}`, 14, finalY + 8);
+            
+    doc.save(`Sales_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
+function downloadSalesReportExcel() {
+    if(!currentReportData || currentReportData.length === 0) return;
+    const headers = ['Order ID', 'Date', 'Customer', 'Amount', 'Payment Method', 'Status'];
+    const rows = currentReportData.map(o => [
+        o.orderNumber || String(o._id).slice(-6),
+        new Date(o.createdAt).toLocaleDateString(),
+        (o.user && o.user.name) ? o.user.name : "N/A",
+        o.totalAmount,
+        o.paymentMethod,
+        o.orderStatus
+    ]);
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Sales_Report_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
         document.addEventListener("DOMContentLoaded", () => {

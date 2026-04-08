@@ -12,10 +12,16 @@ message:"Start date and end date required"
 });
 }
 
+const start = new Date(startDate);
+start.setHours(0, 0, 0, 0);
+
+const end = new Date(endDate);
+end.setHours(23, 59, 59, 999);
+
 const orders = await Order.find({
 createdAt:{
-$gte:new Date(startDate),
-$lte:new Date(endDate)
+$gte:start,
+$lte:end
 }
 }).populate("user");
 
@@ -25,12 +31,13 @@ const totalRevenue = orders.reduce(
 );
 
 const uniqueCustomers =
-new Set(orders.map(o=>o.user._id.toString())).size;
+new Set(orders.map(o=>o.user ? o.user._id.toString() : o.user)).size;
 
 res.json({
 totalOrders:orders.length,
 totalRevenue,
-totalCustomers:uniqueCustomers
+totalCustomers:uniqueCustomers,
+orders: orders
 });
 
 }catch(err){

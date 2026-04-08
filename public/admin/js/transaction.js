@@ -21,6 +21,11 @@ document.addEventListener('DOMContentLoaded', function () {
         return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
     };
 
+    // Helper to format currency for PDF to fix unsupported '₹' symbol
+    const formatCurrencyPDF = (amount) => {
+        return "Rs. " + new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+    };
+
     // Helper to format date for display
     const formatDate = (dateString, showTime = false) => {
         const options = { year: 'numeric', month: 'short', day: 'numeric' };
@@ -223,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function () {
             trx.transactionId,
             trx.orderId,
             new Date(trx.date).toLocaleDateString(),
-            formatCurrency(trx.amount),
+            formatCurrencyPDF(trx.amount),
             trx.paymentMethod,
             trx.status
         ]);
@@ -250,19 +255,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const totalAmount = totalCredit - totalDebit;
 
-        const finalY = doc.lastAutoTable.finalY + 15 || 40;
-        
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.text("Summary", 14, finalY);
-        
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        doc.text(`Total Credit (Paid)     : ${formatCurrency(totalCredit)}`, 14, finalY + 8);
-        doc.text(`Total Debit (Refunded)  : ${formatCurrency(totalDebit)}`, 14, finalY + 14);
-        
-        doc.setFont("helvetica", "bold");
-        doc.text(`Total Amount (Net)      : ${formatCurrency(totalAmount)}`, 14, finalY + 22);
+        doc.autoTable({
+            body: [
+                ["Summary", ""],
+                ["Total Credit (Paid):", formatCurrencyPDF(totalCredit)],
+                ["Total Debit (Refunded):", formatCurrencyPDF(totalDebit)],
+                ["Total Amount (Net):", formatCurrencyPDF(totalAmount)]
+            ],
+            startY: doc.lastAutoTable.finalY + 10,
+            theme: 'plain',
+            margin: { left: 115, right: 14 },
+            styles: { fontSize: 11, cellPadding: 2 },
+            columnStyles: {
+                0: { fontStyle: 'bold', halign: 'right', cellWidth: 45 },
+                1: { fontStyle: 'bold', halign: 'right', cellWidth: 35 }
+            }
+        });
 
         doc.save(`transactions_${new Date().toISOString().split('T')[0]}.pdf`);
     });

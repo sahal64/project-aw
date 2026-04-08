@@ -6,8 +6,6 @@ const connectDB = require("./config/db");
 const morgan = require("morgan");
 const cors = require("cors");
 
-
-
 // Routes
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
@@ -21,17 +19,14 @@ const walletRoutes = require("./routes/walletRoutes");
 const couponRoutes = require("./routes/couponRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const saleRoutes = require("./routes/admin/saleRoutes");
-
+const adminRoutes = require("./routes/adminRoutes");
 
 dotenv.config();
 connectDB();
 
-const adminRoutes = require("./routes/adminRoutes");
-
 const app = express();
 
 app.set("trust proxy", 1);
-
 app.use(morgan("dev"));
 
 app.use(cors({
@@ -39,13 +34,12 @@ app.use(cors({
   credentials: true
 }));
 
-
 /* Middleware */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-/* API Routes */
+/* ================= API ROUTES ================= */
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
@@ -60,11 +54,9 @@ app.use("/api/sales", require("./routes/saleRoutes"));
 app.use("/api/admin/sales", saleRoutes);
 app.use("/api/admin", adminRoutes);
 
-
-/* Prevent back-button access to protected pages after logout */
+/* ================= CACHE CONTROL ================= */
 app.use((req, res, next) => {
-  // Apply no-cache headers to protected HTML pages
-  if (req.path.startsWith("/admin/") || req.path.startsWith("/user/")) {
+  if (req.path.startsWith("/admin") || req.path.startsWith("/user")) {
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
     res.setHeader("Pragma", "no-cache");
     res.setHeader("Expires", "0");
@@ -72,43 +64,40 @@ app.use((req, res, next) => {
   next();
 });
 
-/* Root Route */
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/user/home.html"));
-});
-
-
-// app.get("/shop", (req, res) => {
-//   res.sendFile(path.join(__dirname, "public/user/product.html"));
-// });
-
-// app.get("/single-product", (req, res) => {
-//   res.sendFile(path.join(__dirname, "public/user/single-product.html"));
-// });
-
-// app.get("/about", (req, res) => {
-//   res.sendFile(path.join(__dirname, "public/user/about.html"));
-// });
-
-// app.get("/contact", (req, res) => {
-//   res.sendFile(path.join(__dirname, "public/user/contact.html"));
-// });
-
-/* Serve Frontend */
+/* ================= STATIC FILES ================= */
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
+/* ================= ROOT ================= */
+app.get("/", (req, res) => {
+  res.redirect("/user/home.html");
+});
 
+/* ================= OPTIONAL CLEAN ROUTES ================= */
+app.get("/shop", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/user/product.html"));
+});
 
+app.get("/single-product", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/user/single-product.html"));
+});
 
-/* 404 Handler */
+app.get("/about", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/user/about.html"));
+});
+
+app.get("/contact", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/user/contact.html"));
+});
+
+/* ================= 404 ================= */
 app.use((req, res, next) => {
   const error = new Error("Route not found");
   error.statusCode = 404;
   next(error);
 });
 
-/* Global Error Handler */
+/* ================= ERROR HANDLER ================= */
 app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 5000;

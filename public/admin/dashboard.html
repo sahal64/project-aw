@@ -486,14 +486,38 @@ const start = document.getElementById("reportStart").value;
 const end = document.getElementById("reportEnd").value;
 
 if(!start || !end){
+    Swal.fire({
+        icon:"warning",
+        title:"Select Date Range",
+        text:"Please select both start and end date."
+    });
+    return;
+}
 
-Swal.fire({
-icon:"warning",
-title:"Select Date Range",
-text:"Please select both start and end date."
-});
+const startDateObj = new Date(start);
+const endDateObj = new Date(end);
+const today = new Date();
 
-return;
+startDateObj.setHours(0, 0, 0, 0);
+endDateObj.setHours(0, 0, 0, 0);
+today.setHours(0, 0, 0, 0);
+
+if (startDateObj > endDateObj) {
+    Swal.fire({
+        icon: "warning",
+        title: "Invalid Range",
+        text: "Start Date cannot be later than End Date."
+    });
+    return;
+}
+
+if (endDateObj > today) {
+    Swal.fire({
+        icon: "warning",
+        title: "Invalid End Date",
+        text: "End Date cannot be in the future."
+    });
+    return;
 }
 
             try {

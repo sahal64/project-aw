@@ -105,9 +105,6 @@
             <a href="/admin/all-products.html" class="nav-link"><i class="bi bi-list-ul"></i> Product List</a>
         </nav>
 
-        <span class="nav-label">Admin</span>
-        <nav class="nav flex-column">
-            <a href="/admin/admin-role.html" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Role</a>
             <a href="#" class="nav-link mt-3 text-danger" id="admin-logout"><i class="bi bi-box-arrow-right"></i>
                 Logout</a>
         </nav>
@@ -115,10 +112,10 @@
         <div class="mt-auto pt-4">
             <div class="d-flex align-items-center p-3 rounded bg-light">
                 <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center"
-                    style="width: 35px; height: 35px;">M</div>
+                    style="width: 35px; height: 35px;" id="adminAvatar">A</div>
                 <div class="ms-3">
-                    <h6 class="mb-0 fs-6">Mark Bert</h6>
-                    <small class="text-muted" style="font-size: 0.7rem;">Manager</small>
+                    <h6 class="mb-0 fs-6" id="adminName">Loading...</h6>
+                    <small class="text-muted" style="font-size: 0.7rem;">Admin</small>
                 </div>
             </div>
         </div>
@@ -239,6 +236,13 @@
         document.addEventListener("DOMContentLoaded", () => {
             checkAdminAuth();
             fetchBrands();
+            // Load admin name
+            Auth.fetch("/api/auth/me").then(r => r.json()).then(u => {
+                if(u.name) {
+                    document.getElementById("adminName").textContent = u.name;
+                    document.getElementById("adminAvatar").textContent = u.name.charAt(0).toUpperCase();
+                }
+            }).catch(() => {});
 
             // Debounce for Search
             const searchInput = document.getElementById("brandSearch");

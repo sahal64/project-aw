@@ -1053,11 +1053,14 @@
               method: "POST",
               headers: { "Content-Type": "application/json" },
               credentials: "include",
-              body: JSON.stringify({ amount: total - discountAmount })
+              body: JSON.stringify({ 
+                amount: total - discountAmount,
+                items: cart.map(item => ({ product: item.id, quantity: item.quantity, title: item.title }))
+              })
             });
 
-            if (!orderRes.ok) throw new Error("Could not initialize Razorpay order");
             const orderData = await orderRes.json();
+            if (!orderRes.ok) throw new Error(orderData.message || "Could not initialize Razorpay order");
 
             // 3. Open Razorpay Widget
             var options = {
@@ -1179,8 +1182,8 @@
           console.error(error);
           Swal.fire({
             icon: "error",
-            title: "Server Error",
-            text: "Server error. Please try again later.",
+            title: "Order Error",
+            text: error.message || "Server error. Please try again later.",
             confirmButtonColor: "#d33"
           });
           btn.disabled = false;

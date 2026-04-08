@@ -33,10 +33,27 @@ const getRazorpayInstance = () => {
 // Create Razorpay Order
 exports.createRazorpayOrder = async (req, res) => {
   try {
-    const { amount } = req.body;
+    const { amount, items } = req.body;
 
     if (!amount) {
       return res.status(400).json({ message: "Amount is required" });
+    }
+
+    // 🔥 PRE-CHECK STOCK BEFORE CREATING RAZORPAY ORDER
+    if (items && items.length > 0) {
+      for (const item of items) {
+        const product = await Product.findById(item.product);
+        if (!product || product.isActive === false) {
+          return res.status(400).json({ message: `${item.title || "Product"} is currently unavailable` });
+        }
+        if (product.stock < item.quantity) {
+          if (product.stock === 0) {
+            return res.status(400).json({ message: `${product.name} is out of stock` });
+          } else {
+            return res.status(400).json({ message: `Only ${product.stock} items available for ${product.name}` });
+          }
+        }
+      }
     }
 
     const options = {

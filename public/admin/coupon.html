@@ -167,7 +167,7 @@
                             <input type="text"
                                 class="form-control"
                                 id="couponCode"
-                                maxlength="20"c
+                                maxlength="20"
                                 placeholder="e.g. SUMMER10"
                                 style="text-transform: uppercase;"
                                 required>
@@ -207,10 +207,12 @@
                             <div class="col-6">
                                 <label class="form-label text-muted small mb-1">Start Date</label>
                                 <input type="date" class="form-control" id="startDate">
+                                <div class="invalid-feedback" id="startDateWarning" style="display:none; color:#dc3545; font-size:0.8rem; margin-top:4px;"></div>
                             </div>
                             <div class="col-6">
                                 <label class="form-label text-muted small mb-1">Expiry Date</label>
                                 <input type="date" class="form-control" id="expiryDate" required>
+                                <div class="invalid-feedback" id="expiryDateWarning" style="display:none; color:#dc3545; font-size:0.8rem; margin-top:4px;"></div>
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -324,13 +326,25 @@
             document.getElementById('minimumSpend').value = coupon.minimumSpend || 0;
             document.getElementById('maximumDiscount').value = coupon.maximumDiscount || '';
 
+            // For edit mode, remove min constraint so existing past dates can display
+            const startInput = document.getElementById('startDate');
+            const expiryInput = document.getElementById('expiryDate');
+            startInput.removeAttribute('min');
+            expiryInput.removeAttribute('min');
+
+            // Clear any previous warning states
+            startInput.classList.remove('is-invalid');
+            expiryInput.classList.remove('is-invalid');
+            document.getElementById('startDateWarning').style.display = 'none';
+            document.getElementById('expiryDateWarning').style.display = 'none';
+
             if (coupon.startDate) {
-                document.getElementById('startDate').value = new Date(coupon.startDate).toISOString().split('T')[0];
+                startInput.value = new Date(coupon.startDate).toISOString().split('T')[0];
             } else {
-                document.getElementById('startDate').value = '';
+                startInput.value = '';
             }
 
-            document.getElementById('expiryDate').value = new Date(coupon.expiryDate).toISOString().split('T')[0];
+            expiryInput.value = new Date(coupon.expiryDate).toISOString().split('T')[0];
             document.getElementById('maxUses').value = coupon.maxUses || '';
             document.getElementById('perUserLimit').value = coupon.perUserLimit || 1;
 
@@ -346,6 +360,18 @@
             document.querySelector('#addCouponModal .modal-title').innerText = 'Add New Coupon';
             document.querySelector('#addCouponForm button[type="submit"]').innerText = 'Save Coupon';
             document.getElementById('addCouponForm').reset();
+
+            // Clear any warning states
+            document.getElementById('startDate').classList.remove('is-invalid');
+            document.getElementById('expiryDate').classList.remove('is-invalid');
+            document.getElementById('startDateWarning').style.display = 'none';
+            document.getElementById('expiryDateWarning').style.display = 'none';
+
+            // Remove bypass flag if set
+            delete document.getElementById('addCouponForm').dataset.bypassStartDateCheck;
+
+            // Re-apply date constraints for the next "Add" session
+            setDateConstraints();
         });
 
         async function deleteCoupon(id) {
@@ -429,6 +455,12 @@
         document.getElementById('addCouponForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
+            // Check if we should bypass the start date check (confirmed by user via SweetAlert)
+            const bypassStartDateCheck = this.dataset.bypassStartDateCheck === 'true';
+            if (bypassStartDateCheck) {
+                delete this.dataset.bypassStartDateCheck;
+            }
+
             // ========================
             // COUPON FORM VALIDATION
             // ========================
@@ -504,6 +536,37 @@
             const start = startDate ? new Date(startDate) : null;
             const expiry = new Date(expiryDate);
 
+            if (!bypassStartDateCheck) {
+                // Start date cannot be in the past (only for new coupons)
+                if (!currentEditId && start && start < today) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Invalid Start Date",
+                        text: "Start date cannot be in the past. Please choose today or a future date."
+                    });
+                    return;
+                }
+
+                // For editing, warn but allow user to confirm past start date
+                if (currentEditId && start && start < today) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Past Start Date",
+                        text: "You are setting the start date in the past. The coupon will be active immediately.",
+                        showCancelButton: true,
+                        confirmButtonText: "Continue Anyway",
+                        cancelButtonText: "Change Date",
+                        confirmButtonColor: '#000',
+                        cancelButtonColor: '#6c757d'
+                    }).then(result => {
+                        if (!result.isConfirmed) return;
+                        document.getElementById('addCouponForm').dataset.bypassStartDateCheck = 'true';
+                        document.getElementById('addCouponForm').requestSubmit();
+                    });
+                    return;
+                }
+            }
+
             if (expiry < today) {
                 Swal.fire({
                     icon: "error",
@@ -517,7 +580,16 @@
                 Swal.fire({
                     icon: "error",
                     title: "Invalid Date Range",
-                    text: "Expiry date must be after start date."
+                    text: "Expiry date must be after the start date."
+                });
+                return;
+            }
+
+            if (start && expiry.getTime() === start.getTime()) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Invalid Date Range",
+                    text: "Expiry date must be at least one day after the start date."
                 });
                 return;
             }
@@ -613,6 +685,98 @@
             checkAdminAuth().then((isAuth) => {
                 if (isAuth) loadCoupons();
             });
+
+            // Set minimum dates on date inputs to today
+            setDateConstraints();
+        });
+
+        function getTodayString() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function setDateConstraints() {
+            const todayStr = getTodayString();
+            const startInput = document.getElementById('startDate');
+            const expiryInput = document.getElementById('expiryDate');
+
+            // Set min to today so the browser date picker prevents past dates
+            startInput.setAttribute('min', todayStr);
+            expiryInput.setAttribute('min', todayStr);
+        }
+
+        // Real-time date validation with inline warnings
+        document.getElementById('startDate').addEventListener('change', function () {
+            const todayStr = getTodayString();
+            const startWarning = document.getElementById('startDateWarning');
+            const expiryInput = document.getElementById('expiryDate');
+
+            if (this.value && this.value < todayStr && !currentEditId) {
+                startWarning.textContent = '⚠ Start date cannot be in the past.';
+                startWarning.style.display = 'block';
+                this.classList.add('is-invalid');
+            } else {
+                startWarning.style.display = 'none';
+                this.classList.remove('is-invalid');
+            }
+
+            // Update expiry min to be at least the day after start date
+            if (this.value) {
+                const nextDay = new Date(this.value);
+                nextDay.setDate(nextDay.getDate() + 1);
+                const nextDayStr = nextDay.toISOString().split('T')[0];
+                expiryInput.setAttribute('min', nextDayStr);
+
+                // If expiry is now invalid, warn
+                if (expiryInput.value && expiryInput.value <= this.value) {
+                    const expiryWarning = document.getElementById('expiryDateWarning');
+                    expiryWarning.textContent = '⚠ Expiry date must be after the start date.';
+                    expiryWarning.style.display = 'block';
+                    expiryInput.classList.add('is-invalid');
+                }
+            } else {
+                expiryInput.setAttribute('min', todayStr);
+            }
+        });
+
+        document.getElementById('expiryDate').addEventListener('change', function () {
+            const todayStr = getTodayString();
+            const expiryWarning = document.getElementById('expiryDateWarning');
+            const startInput = document.getElementById('startDate');
+
+            if (this.value < todayStr) {
+                expiryWarning.textContent = '⚠ Expiry date cannot be in the past.';
+                expiryWarning.style.display = 'block';
+                this.classList.add('is-invalid');
+                return;
+            }
+
+            if (startInput.value && this.value <= startInput.value) {
+                expiryWarning.textContent = '⚠ Expiry date must be after the start date.';
+                expiryWarning.style.display = 'block';
+                this.classList.add('is-invalid');
+                return;
+            }
+
+            expiryWarning.style.display = 'none';
+            this.classList.remove('is-invalid');
+
+            // Also clear start date warning if it was showing
+            if (startInput.value >= todayStr || currentEditId) {
+                const startWarning = document.getElementById('startDateWarning');
+                startWarning.style.display = 'none';
+                startInput.classList.remove('is-invalid');
+            }
+        });
+
+        // Reset date constraints when modal opens for adding (not editing)
+        document.getElementById('addCouponModal').addEventListener('shown.bs.modal', function () {
+            if (!currentEditId) {
+                setDateConstraints();
+            }
         });
 
         document.getElementById("admin-logout").addEventListener("click", async (e) => {

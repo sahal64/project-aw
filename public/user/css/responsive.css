@@ -1,0 +1,395 @@
+/* ============================================
+   AEROWATCH — RESPONSIVE DESIGN
+   Shared mobile-first overrides for all user pages
+   ============================================ */
+
+/* ===============================
+   TABLET & BELOW (≤991px)
+   =============================== */
+@media (max-width: 991.98px) {
+
+    /* Reduce heavy px-5 padding on containers */
+    .container-fluid.px-5,
+    .container.px-5 {
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+
+    /* Navbar icon spacing */
+    .icon-btn {
+        margin-left: 10px;
+    }
+
+    /* Search inline form — reposition for smaller screens */
+    .search-form-inline {
+        width: 200px;
+    }
+
+    .search-form-inline.active {
+        right: 120px;
+    }
+
+    /* Hero section */
+    .hero-section {
+        min-height: 300px;
+        border-radius: 15px;
+    }
+
+    .hero-content {
+        padding: 30px;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    /* Promo banner */
+    .promo-watch-img {
+        width: 100% !important;
+        height: 300px;
+    }
+
+    .promo-content h2 {
+        font-size: 2rem;
+    }
+
+    /* Single product */
+    .main-img-container {
+        height: 400px;
+    }
+
+    .product-title-large {
+        font-size: 1.6rem;
+    }
+
+    /* Checkout order summary */
+    .order-summary {
+        padding: 25px;
+    }
+
+    /* Footer */
+    footer {
+        margin-top: 50px;
+    }
+}
+
+/* ===============================
+   MOBILE LANDSCAPE & BELOW (≤767px)
+   =============================== */
+@media (max-width: 767.98px) {
+
+    /* Further reduce container padding */
+    .container-fluid.px-5,
+    .container.px-5 {
+        padding-left: 15px !important;
+        padding-right: 15px !important;
+    }
+
+    /* Navbar */
+    .navbar {
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+
+    .navbar-brand img {
+        height: 40px !important;
+    }
+
+    .icon-btn {
+        margin-left: 8px;
+        font-size: 1.1rem;
+    }
+
+    /* Hide search inline form on mobile — use overlay instead */
+    .search-form-inline,
+    .search-form-inline.active {
+        display: none !important;
+    }
+
+    /* Guest nav signup button — smaller on mobile */
+    #guest-nav .btn {
+        padding: 6px 14px !important;
+        font-size: 0.75rem !important;
+    }
+
+    /* Hero section */
+    .hero-section {
+        min-height: 250px;
+        border-radius: 12px;
+        margin-top: 10px;
+    }
+
+    .hero-content {
+        padding: 20px;
+        max-width: 100%;
+    }
+
+    .hero-title {
+        font-size: 1.8rem;
+        margin-bottom: 12px;
+    }
+
+    .hero-subtitle {
+        font-size: 0.8rem;
+    }
+
+    .btn-dark-custom {
+        padding: 10px 20px;
+        font-size: 0.85rem;
+    }
+
+    /* Feature boxes — 2 per row on mobile */
+    .feature-box {
+        padding: 15px;
+        gap: 10px;
+    }
+
+    .feature-icon {
+        font-size: 1.2rem;
+    }
+
+    .feature-text h6 {
+        font-size: 0.8rem;
+    }
+
+    .feature-text p {
+        font-size: 0.7rem;
+    }
+
+    /* Category cards */
+    .category-card {
+        min-height: 180px;
+        padding: 25px 20px;
+    }
+
+    .category-card h5 {
+        font-size: 1.1rem;
+    }
+
+    /* Product cards */
+    .product-img-container {
+        height: 160px;
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+    }
+
+    /* Promo banner */
+    .promo-banner {
+        min-height: auto;
+    }
+
+    .promo-banner .col-md-6.ps-5 {
+        padding-left: 20px !important;
+    }
+
+    .promo-watch-img {
+        width: 100% !important;
+        height: 220px;
+    }
+
+    .promo-content h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Single product page */
+    .main-img-container {
+        height: 300px;
+        border-radius: 15px;
+    }
+
+    .product-title-large {
+        font-size: 1.4rem;
+        margin-top: 15px;
+    }
+
+    .product-price-large {
+        font-size: 1.2rem;
+    }
+
+    .add-to-cart-btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    /* Cart page — make table scrollable horizontally */
+    .cart-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+    }
+
+    .cart-table table {
+        min-width: 600px;
+    }
+
+    .cart-img {
+        width: 60px;
+        height: 60px;
+    }
+
+    .cart-summary {
+        padding: 25px 20px;
+    }
+
+    /* Checkout */
+    .order-summary {
+        padding: 20px 15px;
+    }
+
+    .address-card {
+        padding: 15px;
+    }
+
+    /* About page */
+    .about-section {
+        padding: 40px 0;
+    }
+
+    .about-title {
+        font-size: 1.8rem;
+    }
+
+    /* Contact page */
+    .contact-box {
+        padding: 20px;
+    }
+
+    /* Footer — tighter spacing */
+    footer {
+        margin-top: 40px;
+        padding-top: 30px;
+    }
+
+    .footer-logo img {
+        height: 40px !important;
+    }
+
+    /* Search overlay */
+    .search-input {
+        font-size: 1.3rem;
+    }
+
+    .search-close {
+        top: 20px;
+        right: 20px;
+        font-size: 1.5rem;
+    }
+
+    /* Sale banner */
+    .sale-banner-dynamic {
+        min-height: 250px;
+    }
+}
+
+/* ===============================
+   SMALL MOBILE (≤575px)
+   =============================== */
+@media (max-width: 575.98px) {
+
+    .container-fluid.px-5,
+    .container.px-5 {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+
+    /* Navbar — compact */
+    .navbar-brand img {
+        height: 35px !important;
+    }
+
+    .icon-btn {
+        margin-left: 6px;
+        font-size: 1rem;
+    }
+
+    #guest-nav .btn {
+        padding: 5px 10px !important;
+        font-size: 0.7rem !important;
+    }
+
+    /* Hero */
+    .hero-section {
+        min-height: 200px;
+        border-radius: 10px;
+    }
+
+    .hero-content {
+        padding: 15px;
+    }
+
+    .hero-title {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+    }
+
+    .hero-subtitle {
+        font-size: 0.75rem;
+        margin-bottom: 5px;
+    }
+
+    .btn-dark-custom {
+        padding: 8px 16px;
+        font-size: 0.8rem;
+    }
+
+    /* Category cards */
+    .category-card {
+        min-height: 150px;
+        padding: 20px 15px;
+    }
+
+    .category-card h5 {
+        font-size: 1rem;
+    }
+
+    /* Product grid — ensure 2 columns on small mobile */
+    .product-img-container {
+        height: 140px;
+    }
+
+    .product-title {
+        font-size: 0.85rem;
+    }
+
+    .product-price {
+        font-size: 0.9rem;
+    }
+
+    /* Single product */
+    .main-img-container {
+        height: 250px;
+    }
+
+    .product-title-large {
+        font-size: 1.2rem;
+    }
+
+    /* Cart */
+    .cart-img {
+        width: 50px;
+        height: 50px;
+    }
+
+    /* Promo banner */
+    .promo-watch-img {
+        height: 180px;
+    }
+
+    .promo-content h2 {
+        font-size: 1.3rem;
+    }
+
+    /* About */
+    .about-title {
+        font-size: 1.5rem;
+    }
+
+    /* Footer */
+    footer {
+        margin-top: 30px;
+        padding-top: 25px;
+    }
+}

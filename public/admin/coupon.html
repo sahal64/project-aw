@@ -124,8 +124,18 @@
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="fw-bold m-0">Coupon Codes</h4>
-            <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addCouponModal"><i
-                    class="bi bi-plus-lg"></i> Add Coupon</button>
+            <div class="d-flex gap-2">
+                <div class="position-relative">
+                    <div class="input-group" style="width: 300px;">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control border-start-0" id="searchInput" placeholder="Search code or description..." maxlength="50">
+                        <button class="btn btn-outline-secondary bg-white text-dark border-start-0" type="button" id="clearSearchBtn" style="display:none; border-color: #dee2e6;"><i class="bi bi-x"></i></button>
+                    </div>
+                    <div class="invalid-feedback position-absolute text-start w-100" id="searchWarning" style="bottom: -20px; font-size: 0.75rem;"></div>
+                </div>
+                <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addCouponModal"><i
+                        class="bi bi-plus-lg"></i> Add Coupon</button>
+            </div>
         </div>
 
         <div class="card border-0 shadow-sm">
@@ -245,6 +255,8 @@
         // ==========================
         // COUPON MANAGEMENT
         // ==========================
+        let allCoupons = []; // Store fetched coupons for client-side search
+
         async function loadCoupons() {
             try {
                 const res = await Auth.fetch("/api/admin/coupons");
@@ -256,58 +268,122 @@
                 }
 
                 const coupons = await res.json();
+                allCoupons = coupons; // Save to global state
 
-                if (coupons.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No coupons found</td></tr>';
-                    return;
-                }
-
-                let html = '';
-                coupons.forEach(coupon => {
-                    const expiryDate = new Date(coupon.expiryDate);
-                    const isExpired = expiryDate < new Date();
-
-                    let statusBadge = '';
-                    if (!coupon.isActive) {
-                        statusBadge = '<span class="badge bg-secondary">Inactive</span>';
-                    } else if (isExpired) {
-                        statusBadge = '<span class="badge bg-danger">Expired</span>';
-                    } else {
-                        statusBadge = '<span class="badge bg-success">Active</span>';
-                    }
-
-                    const discountText = coupon.discountType === 'percentage' ? `${coupon.discountValue}% OFF` : `₹${coupon.discountValue} OFF`;
-                    const expiryText = expiryDate.toLocaleDateString("en-IN");
-
-                    const toggleIcon = coupon.isActive ? 'bi-toggle-on text-success' : 'bi-toggle-off text-muted';
-                    const usageText = coupon.maxUses ? `${coupon.usedCount} / ${coupon.maxUses}` : `${coupon.usedCount} / ∞`;
-                    const minSpendText = `₹${coupon.minimumSpend || 0}`;
-
-                    html += `
-                        <tr>
-                            <td>
-                                <div class="fw-bold text-primary">${coupon.code}</div>
-                                <small class="text-muted d-block" style="font-size: 0.7rem;">${coupon.description || 'No description'}</small>
-                            </td>
-                            <td>${discountText}</td>
-                            <td>${minSpendText}</td>
-                            <td>${usageText}</td>
-                            <td>${expiryText}</td>
-                            <td>${statusBadge}</td>
-                            <td>
-                                <button class="btn btn-sm btn-light" onclick="toggleCoupon('${coupon._id}')" title="Toggle Status"><i class="bi ${toggleIcon} fs-5"></i></button>
-                                <button class="btn btn-sm btn-light text-dark ms-1" onclick='openEditModal(${JSON.stringify(coupon)})' title="Edit"><i class="bi bi-pencil fs-6"></i></button>
-                                <button class="btn btn-sm btn-light text-danger ms-1" onclick="deleteCoupon('${coupon._id}')" title="Delete"><i class="bi bi-trash fs-6"></i></button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                tbody.innerHTML = html;
+                renderCoupons(allCoupons);
             } catch (err) {
                 console.error(err);
                 document.getElementById("couponTableBody").innerHTML = '<tr><td colspan="7" class="text-center py-4 text-danger">Error loading coupons</td></tr>';
             }
         }
+
+        function renderCoupons(couponsToRender) {
+            const tbody = document.getElementById("couponTableBody");
+            
+            if (couponsToRender.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No coupons found</td></tr>';
+                return;
+            }
+
+            let html = '';
+            couponsToRender.forEach(coupon => {
+                const expiryDate = new Date(coupon.expiryDate);
+                const isExpired = expiryDate < new Date();
+
+                let statusBadge = '';
+                if (!coupon.isActive) {
+                    statusBadge = '<span class="badge bg-secondary">Inactive</span>';
+                } else if (isExpired) {
+                    statusBadge = '<span class="badge bg-danger">Expired</span>';
+                } else {
+                    statusBadge = '<span class="badge bg-success">Active</span>';
+                }
+
+                const discountText = coupon.discountType === 'percentage' ? `${coupon.discountValue}% OFF` : `₹${coupon.discountValue} OFF`;
+                const expiryText = expiryDate.toLocaleDateString("en-IN");
+
+                const toggleIcon = coupon.isActive ? 'bi-toggle-on text-success' : 'bi-toggle-off text-muted';
+                const usageText = coupon.maxUses ? `${coupon.usedCount} / ${coupon.maxUses}` : `${coupon.usedCount} / ∞`;
+                const minSpendText = `₹${coupon.minimumSpend || 0}`;
+
+                html += `
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-primary">${coupon.code}</div>
+                            <small class="text-muted d-block" style="font-size: 0.7rem;">${coupon.description || 'No description'}</small>
+                        </td>
+                        <td>${discountText}</td>
+                        <td>${minSpendText}</td>
+                        <td>${usageText}</td>
+                        <td>${expiryText}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button class="btn btn-sm btn-light" onclick="toggleCoupon('${coupon._id}')" title="Toggle Status"><i class="bi ${toggleIcon} fs-5"></i></button>
+                            <button class="btn btn-sm btn-light text-dark ms-1" onclick='openEditModal(${JSON.stringify(coupon).replace(/'/g, "&#39;")})' title="Edit"><i class="bi bi-pencil fs-6"></i></button>
+                            <button class="btn btn-sm btn-light text-danger ms-1" onclick="deleteCoupon('${coupon._id}')" title="Delete"><i class="bi bi-trash fs-6"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // Search functionality with validation
+        const searchInput = document.getElementById("searchInput");
+        const searchWarning = document.getElementById("searchWarning");
+        const clearSearchBtn = document.getElementById("clearSearchBtn");
+        
+        function filterCoupons() {
+            const query = searchInput.value;
+            
+            // Validation: Show error if string is just whitespaces
+            if (query.length > 0 && query.trim().length === 0) {
+                searchWarning.textContent = "Please enter a valid search term.";
+                searchWarning.style.display = "block";
+                searchInput.classList.add("is-invalid");
+                return;
+            }
+            
+            // Validation: Limit special chars if needed, though simple text search is mostly fine.
+            // But to be extra safe against regex injection if we ever used it, or just to sanitize:
+            if (/[^\w\s-%%₹]/.test(query)) {
+                searchWarning.textContent = "Only alphanumeric characters and standard symbols are allowed.";
+                searchWarning.style.display = "block";
+                searchInput.classList.add("is-invalid");
+                return;
+            }
+
+            // Remove invalid state
+            searchWarning.style.display = "none";
+            searchInput.classList.remove("is-invalid");
+
+            const searchTerm = query.trim().toLowerCase();
+            
+            if (searchTerm) {
+                clearSearchBtn.style.display = "block";
+            } else {
+                clearSearchBtn.style.display = "none";
+            }
+
+            const filtered = allCoupons.filter(coupon => {
+                const codeMatch = coupon.code.toLowerCase().includes(searchTerm);
+                const descMatch = coupon.description && coupon.description.toLowerCase().includes(searchTerm);
+                return codeMatch || descMatch;
+            });
+
+            renderCoupons(filtered);
+        }
+
+        let searchTimeout;
+        searchInput.addEventListener("input", () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(filterCoupons, 300);
+        });
+
+        clearSearchBtn.addEventListener("click", () => {
+            searchInput.value = "";
+            filterCoupons();
+        });
 
         let currentEditId = null;
 
